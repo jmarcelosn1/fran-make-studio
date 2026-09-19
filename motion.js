@@ -16,7 +16,6 @@
     });
     splits = [];
     document.querySelectorAll('.tilt-visual').forEach(el => el.vanillaTilt?.destroy());
-    document.documentElement.classList.remove('story-active');
   }
 
   function setup() {
@@ -54,41 +53,6 @@
         if(config.parallax !== false && pointer.matches) {
           document.querySelectorAll('[data-parallax]').forEach(img => {
             gsap.fromTo(img,{yPercent:-3},{yPercent:3,ease:'none',scrollTrigger:{trigger:img.parentElement,start:'top bottom',end:'bottom top',scrub:.45}});
-          });
-        }
-        const story = document.querySelector('[data-look-story]');
-        if(story) {
-          document.documentElement.classList.add('story-active');
-          const frames = [...story.querySelectorAll('[data-look-frame]')];
-          const buttons = [...story.querySelectorAll('[data-look-step]')];
-          const timeline = gsap.timeline({scrollTrigger:{
-            trigger:story,start:()=>'top top+='+(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav'))+24),
-            end:()=>'+='+Math.max(650,story.offsetHeight-story.querySelector('.look-stage').offsetHeight),
-            scrub:.35,invalidateOnRefresh:true,
-            onUpdate:self => {
-              const current = self.progress < .36 ? 0 : self.progress < .77 ? 1 : 2;
-              buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(i===current)));
-            }
-          }});
-          gsap.set(frames.slice(1),{autoAlpha:0});
-          if (!pointer.matches) {
-            gsap.set(frames.slice(1),{yPercent:-6});
-            timeline.to(frames[0],{autoAlpha:0,yPercent:10,duration:1,ease:'none'},.6)
-              .to(frames[1],{autoAlpha:1,yPercent:0,duration:1,ease:'none'},.6)
-              .to(frames[1],{autoAlpha:0,yPercent:10,duration:1,ease:'none'},2)
-              .to(frames[2],{autoAlpha:1,yPercent:0,duration:1,ease:'none'},2);
-          } else {
-            timeline.to(frames[1],{autoAlpha:1,duration:1,ease:'none'},.6)
-              .to(frames[2],{autoAlpha:1,duration:1,ease:'none'},2);
-          }
-          timeline.to({}, {duration:.4});
-          buttons.forEach((button,i)=>{
-            button.onclick = () => {
-              const trigger=timeline.scrollTrigger;
-              const position=trigger.start+(trigger.end-trigger.start)*[0,.53,1][i];
-              if(lenis) lenis.scrollTo(position,{duration:.8});
-              else window.scrollTo({top:position,behavior:'smooth'});
-            };
           });
         }
       });

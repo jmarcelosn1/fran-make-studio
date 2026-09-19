@@ -22,10 +22,6 @@
   const introMark = $('.intro-mark');
   const brushScene = $('.brush-scene'), brushVideo = $('.brush-video');
   let brushLoading = false, brushURL = '', brushBroken = false, brushTarget = 0;
-  const lookPhotos = $('.look-photos');
-  lookPhotos.tabIndex = 0;
-  lookPhotos.setAttribute('role', 'region');
-  lookPhotos.setAttribute('aria-label', 'Três perspectivas da maquiagem de formanda');
   // No touch interception or independent animation loop. Portrait light is behind the cutout.
   const spotlights = $$('.mp-card,.portfolio-card,.look-frame');
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)');
@@ -403,25 +399,11 @@
     document.body.append(star);star.addEventListener('animationend',()=>star.remove(),{once:true});
   });
 
-  // A valid configured location replaces the contact fallback, never a guessed point.
-  const map = $('#studio-map'), mapLink = $('#map-link');
+  // O mapa embutido saiu; resta o link externo, validado contra dominios Google.
   const lat=config.latitude, lng=config.longitude;
   const exact = typeof lat==='number' && typeof lng==='number' && Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat)<=90 && Math.abs(lng)<=180;
-  function googleURL(value, embed=false) {
-    return window.FRAN_SAFETY.googleURL(value, embed);
-  }
-  const embed = exact ? `https://maps.google.com/maps?q=${lat},${lng}&z=17&output=embed` : googleURL(config.mapsEmbedUrl,true);
-  const mapsURL = googleURL(config.mapsUrl) || (exact ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : '');
-  if(mapsURL || embed) mapLink.href=mapsURL || embed;
-  const showMap = $('#show-map');
-  if (!embed) showMap.hidden = true;
-  showMap.addEventListener('click', () => {
-    const opening = map.hidden;
-    if (opening && !map.getAttribute('src')) map.src=embed;
-    map.hidden=!opening; mapLink.hidden=!opening;
-    showMap.setAttribute('aria-expanded',String(opening));
-    showMap.textContent=opening?'Fechar mapa':'Ver mapa nesta página';
-  });
+  const mapsURL = window.FRAN_SAFETY.googleURL(config.mapsUrl) || (exact ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : '');
+  if (mapsURL) $$('a[href*="maps.app.goo.gl"],a[href*="google.com/maps"]').forEach(a => { a.href = mapsURL; });
   if(localAsset(config.portraitImage) && config.portraitImage!==$('#hero-img').getAttribute('src')) {
     const img=$('#hero-img');img.addEventListener('error',()=>{img.src='images/franciana.png';},{once:true});img.src=localAsset(config.portraitImage);
   }
