@@ -4,7 +4,6 @@
 .spotlight-surface:focus-within{--spot-strength:1}
 .portfolio-card,.bridal-image,.eyes-image,.look-frame{position:relative}
 .portfolio-card .spotlight-light,.look-frame .spotlight-light,.bridal-image .spotlight-light,.eyes-image .spotlight-light{background:radial-gradient(260px circle at var(--spot-x) var(--spot-y),transparent 22%,rgba(240,160,160,.09) 60%,transparent 85%);box-shadow:inset 0 0 0 1px rgba(240,160,160,.55)}
-.hero-photo .spotlight-light{inset:5% -8% 8%;z-index:-1;border-radius:50%;box-shadow:none;background:radial-gradient(ellipse at var(--spot-x) var(--spot-y),rgba(240,160,160,.32),rgba(240,160,160,.08) 38%,transparent 70%);opacity:.8}
 #servicos .makes-prices{gap:20px;border:0;align-items:stretch}
 #servicos .mp-card{position:relative;overflow:hidden;min-height:310px;padding:32px;gap:22px;border:1px solid rgba(240,160,160,.22);border-radius:18px;background:linear-gradient(145deg,rgba(240,160,160,.075),transparent 62%);justify-content:flex-start}
 #servicos .mp-card::after{content:'';width:44px;height:2px;background:var(--rose);margin-top:auto;opacity:.7}
@@ -13,6 +12,5 @@
 #servicos .mp-card p{color:var(--muted);line-height:1.85;max-width:34ch}
 #servicos .service-bridal{border-color:rgba(240,160,160,.6);background:linear-gradient(145deg,rgba(240,160,160,.17),rgba(240,160,160,.025) 75%)}
 #servicos .service-bridal .service-name{color:var(--rose)}
-.intro-character{display:inline-block;white-space:pre;font-style:normal}
-@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px}#servicos .mp-card{min-height:230px;padding:26px;gap:18px}#servicos .service-name{font-size:30px}.spotlight-surface.spotlight-visible{--spot-strength:.65}.hero-photo .spotlight-light{inset:0 -4% 10%;opacity:.65}}
-@media(prefers-reduced-motion:reduce){.spotlight-light{transition:none;opacity:.25}.hero-photo .spotlight-light{opacity:.5}.intro-character{transform:none!important}}
+@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px}#servicos .mp-card{min-height:230px;padding:26px;gap:18px}#servicos .service-name{font-size:30px}.spotlight-surface.spotlight-visible{--spot-strength:.65}}
+@media(prefers-reduced-motion:reduce){.spotlight-light{transition:none;opacity:.25}}

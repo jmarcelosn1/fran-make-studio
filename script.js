@@ -20,12 +20,14 @@
   const introVideo = $('#intro-video'), introMedia = $('.intro-media'), navbar = $('#navbar');
   const playIntro = $('#intro-play');
   const introMark = $('.intro-mark');
+  const brushScene = $('.brush-scene'), brushVideo = $('.brush-video');
+  let brushLoading = false, brushURL = '', brushBroken = false, brushTarget = 0;
   const lookPhotos = $('.look-photos');
   lookPhotos.tabIndex = 0;
   lookPhotos.setAttribute('role', 'region');
   lookPhotos.setAttribute('aria-label', 'Três perspectivas da maquiagem de formanda');
   // No touch interception or independent animation loop. Portrait light is behind the cutout.
-  const spotlights = $$('.mp-card,.portfolio-card,.bridal-image,.eyes-image,.look-frame,.hero-photo');
+  const spotlights = $$('.mp-card,.portfolio-card,.bridal-image,.eyes-image,.look-frame');
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)');
   const spotlightObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => entry.target.classList.toggle('spotlight-visible', entry.isIntersecting));
@@ -82,6 +84,34 @@
       if (error.name !== 'AbortError') introMedia.classList.add('poster-only');
     }
   }
+  async function loadBrushVideo() {
+    if (reduced.matches || navigator.connection?.saveData) return;
+    if (brushLoading || brushBroken || brushVideo.getAttribute('src')) return;
+    brushLoading = true;
+    try {
+      // Buffer completo em memoria: hospedagem estatica sem HTTP Range nao
+      // permite seek, e o scrub depende de buscar para frente e para tras.
+      const source = mobile.matches ? 'images/pincel-scroll-mobile.mp4' : 'images/pincel-scroll.mp4';
+      const response = await fetch(source, {signal:videoRequest.signal});
+      if (!response.ok) throw new Error('Brush video unavailable');
+      const blob = await response.blob();
+      if (videoRequest.signal.aborted) return;
+      brushURL = URL.createObjectURL(blob);
+      brushVideo.src = brushURL;
+      brushVideo.load();
+    } catch (error) {
+      if (error.name !== 'AbortError') brushBroken = true;
+    }
+  }
+  function seekBrush() {
+    if (brushBroken || brushVideo.readyState < 1 || brushVideo.seeking) return;
+    if (!Number.isFinite(brushVideo.duration)) return;
+    const target = Math.min(brushTarget, Math.max(0, brushVideo.duration - .05));
+    if (Math.abs(brushVideo.currentTime - target) > .025) brushVideo.currentTime = target;
+  }
+  brushVideo.addEventListener('loadedmetadata', () => { dirty = true; schedule(); });
+  brushVideo.addEventListener('loadeddata', seekBrush);
+  brushVideo.addEventListener('error', () => { brushBroken = true; });
   function seekVideo() {
     if (mobile.matches || reduced.matches || introVideo.readyState < 1 || introVideo.seeking || !Number.isFinite(introVideo.duration)) return;
     const target = Math.min(videoTarget, Math.max(0, introVideo.duration - .05));
@@ -111,23 +141,52 @@
   function schedule() { if (!tickerDriven && !frame && !document.hidden) frame = requestAnimationFrame(tick); }
   function measure() {
     start = hero.offsetTop;
-    range = Math.max(1, mobile.matches ? introMedia.offsetHeight : hero.offsetHeight - stage.offsetHeight);
+    range = Math.max(1, hero.offsetHeight - stage.offsetHeight);
     carousels.forEach(c => { c.max = c.track.scrollWidth - c.track.clientWidth; c.position = c.track.scrollLeft; });
     sceneAPI?.resize(); dirty = true; schedule();
   }
+  /* Fases da abertura, em fracao do curso do hero. A narrativa e uma so:
+     assinatura -> pincel com Beleza e Sofisticacao -> Franciana em PNG.
+     Um driver unico controla tudo, entao nao ha animacoes concorrentes. */
+  const PHASE = {
+    draw:     [0,   .20],
+    titleOut: [.23, .33],
+    brushIn:  [.26, .36],
+    scrub:    [.29, .74],
+    wordA:    [.38, .48],
+    wordB:    [.52, .62],
+    wordOut:  [.68, .78],
+    brushOut: [.76, .87],
+    reveal:   [.85, .97]
+  };
+  const at = (name, p) => smooth(PHASE[name][0], PHASE[name][1], p);
+
   function updateIntro() {
     progress = reduced.matches ? 1 : clamp((scrollY - start) / range);
-    const drawn = reduced.matches ? 1 : smooth(0, mobile.matches ? .44 : .58, progress);
+    const still = reduced.matches;
+    const drawn = still ? 1 : at('draw', progress);
     introMark.style.setProperty('--draw', drawn.toFixed(4));
-    const reveal = reduced.matches ? 1 : mobile.matches ? smooth(.54, .9, progress) : smooth(.73, .94, progress);
-    const fade = reduced.matches ? 1 : mobile.matches ? smooth(.46, .78, progress) : smooth(.62, .76, progress);
-    const navigationVisible = reduced.matches || progress >= .94;
+    const reveal = still ? 1 : at('reveal', progress);
+    const fade = still ? 1 : at('titleOut', progress);
+
+    // Pincel: entra, o scroll conduz o tempo do video, sai antes da Franciana.
+    const brushOn = still ? 0 : at('brushIn', progress) * (1 - at('brushOut', progress));
+    brushScene.style.setProperty('--brush-in', brushOn.toFixed(4));
+    if (brushOn > .008) loadBrushVideo();
+    const wordsGone = still ? 1 : at('wordOut', progress);
+    brushScene.style.setProperty('--word-a', (still ? 0 : at('wordA', progress) * (1 - wordsGone)).toFixed(4));
+    brushScene.style.setProperty('--word-b', (still ? 0 : at('wordB', progress) * (1 - wordsGone)).toFixed(4));
+    const [s0, s1] = PHASE.scrub;
+    brushTarget = clamp((progress - s0) / (s1 - s0)) * (Number.isFinite(brushVideo.duration) ? brushVideo.duration : 0);
+    if (brushOn > .008) seekBrush();
+
+    const navigationVisible = still || progress >= .97;
     document.documentElement.classList.toggle('intro-pending', !navigationVisible);
     navbar.inert = !navigationVisible;
     navbar.setAttribute('aria-hidden', String(!navigationVisible));
-    introMedia.style.opacity = mobile.matches ? 1 - .8 * smooth(.18,.92,progress) : 1 - (reduced.matches ? 1 : smooth(.69, .91, progress));
-    introVideo.style.transform = mobile.matches && !reduced.matches ? `translate3d(0,${18 * progress}px,0) scale(1.025)` : '';
-    videoTarget = clamp(progress / .72) * (Number.isFinite(introVideo.duration) ? introVideo.duration : 0);
+    introMedia.style.opacity = still ? 0 : 1 - at('brushIn', progress);
+    introVideo.style.transform = mobile.matches && !still ? `translate3d(0,${18 * progress}px,0) scale(1.025)` : '';
+    videoTarget = clamp(progress / .22) * (Number.isFinite(introVideo.duration) ? introVideo.duration : 0);
     seekVideo();
     title.style.opacity = reduced.matches ? 1 : 1 - fade;
     title.style.transform = `translate3d(0,${-45 * fade}px,0)`;

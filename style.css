@@ -25,7 +25,9 @@ section{padding:112px 0;scroll-margin-top:var(--nav)}
 /* The sticky stage is real document content; scroll is never captured. */
 #hero{padding:var(--nav) 0 0;position:relative;background:#fcf3ef}
 .hero-stage{position:relative;min-height:690px;height:calc(100svh - var(--nav));isolation:isolate;overflow:hidden}
-.cinematic #hero{padding-top:0;height:260svh}.cinematic .hero-stage{position:sticky;top:0;height:100svh;min-height:690px}.cinematic .hero-layout{padding-top:calc(var(--nav) + 32px)}
+/* 400svh: 100 do palco fixo + 300 de curso. A fase do pincel ocupa a faixa
+   central dessa rolagem, entre a assinatura e a entrada da Franciana. */
+.cinematic #hero{padding-top:0;height:460svh}.cinematic .hero-stage{position:sticky;top:0;height:100svh;min-height:690px}.cinematic .hero-layout{padding-top:calc(var(--nav) + 32px)}
 .hero-halo{position:absolute;inset:0;z-index:-3;background:radial-gradient(ellipse at 73% 58%,#e2b4ba 0%,#f3dfdc 38%,#fcf3ef 72%);opacity:.8;pointer-events:none}
 #webgl-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
 .intro-title{display:flex;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;text-align:center;pointer-events:none;padding:40px 20px 110px}
@@ -137,12 +139,17 @@ html:not(.cinematic) .intro-media{display:none}
 .intro-play{position:absolute;right:24px;top:24px;z-index:5;min-height:44px;padding:10px 16px;background:#fff9f6;color:#59343e;border:1px solid #975266;pointer-events:auto;font-size:12px;font-weight:600}
 .portfolio-card{cursor:grab;touch-action:manipulation}
 .portfolio-track{touch-action:manipulation;overscroll-behavior-y:auto}
-.mobile-layout.cinematic #hero{height:auto;padding:0}
-.mobile-layout.cinematic .hero-stage{position:relative;top:auto;height:auto;min-height:0}
+/* O palco tambem fica fixo no celular: a fase do pincel precisa de curso
+   proprio entre a assinatura e a entrada da Franciana. A rolagem segue
+   nativa, sem captura de gesto. */
+.mobile-layout.cinematic #hero{height:450svh;padding:0}
+.mobile-layout.cinematic .hero-stage{position:sticky;top:0;height:100svh;min-height:0;overflow:hidden}
 .mobile-layout.cinematic .intro-media{height:100svh;min-height:420px;max-height:none}
 .mobile-layout.cinematic .intro-title{height:100svh;min-height:420px;max-height:none;padding:30px 24px 60px;align-items:center;text-align:center}
 .mobile-layout.cinematic .intro-mark{width:min(84vw,380px)}
-.mobile-layout.cinematic .hero-layout{height:auto;padding:calc(max(420px,100svh) + 38px) 0 42px;grid-template-columns:1fr;grid-template-rows:auto auto;gap:26px;text-align:center}
+/* Com o palco fixo, o conteudo ocupa a propria tela em vez de ser empurrado
+   para baixo da midia da intro, como acontecia no fluxo antigo. */
+.mobile-layout.cinematic .hero-layout{height:100%;padding:calc(var(--nav) + 20px) 0 46px;grid-template-columns:1fr;grid-template-rows:auto auto;align-content:center;gap:18px;text-align:center}
 .mobile-layout .hero-content{padding:0}
 .mobile-layout .hero-logo{width:150px;margin:0 auto 18px}
 .mobile-layout .hero-content h2{font-size:32px}
@@ -246,17 +253,19 @@ html:not(.cinematic) .intro-media{display:none}
    poster. A altura alta e o sticky so entram com .motion-ready, para que
    ninguem fique preso rolando uma cena longa sem animacao.
    O pincel nunca recebe scale ou rotacao: o video ja traz o movimento. */
-.brush-scene{position:relative;background:#000}
-.brush-sticky{position:relative;display:grid;place-items:center;overflow:hidden;background:#000}
-.brush-inner{width:100%;display:grid;place-items:center}
-.brush-video{display:block;width:100%;height:auto;max-height:66svh;object-fit:contain;background:#000}
-.brush-edge{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 82% 72% at 50% 50%,transparent 54%,#000 100%)}
-.brush-scene.brush-ready{height:170vh}
-.brush-scene.brush-ready .brush-sticky{position:sticky;top:0;height:100svh}
-.brush-scene.brush-ready .brush-inner{height:100%;opacity:var(--brush-in,0)}
-.brush-scene.brush-ready .brush-video{height:100%;max-height:none}
+.brush-scene{position:absolute;inset:0;z-index:0;pointer-events:none;background:#000;opacity:var(--brush-in,0)}
+.brush-inner{position:absolute;inset:0;display:grid;place-items:center}
+.brush-video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.brush-edge{position:absolute;inset:0;background:radial-gradient(ellipse 82% 72% at 50% 50%,transparent 54%,#000 100%)}
+.brush-word{position:absolute;top:50%;margin:0;white-space:nowrap;color:#fff9f6;
+  font:600 clamp(24px,4.2vw,62px)/1 var(--serif);letter-spacing:.015em}
+/* Entram pelas laterais conforme o scroll, sem competir com o pincel. */
+.brush-left{left:max(6vw,22px);opacity:var(--word-a,0);translate:calc(-52px + var(--word-a,0) * 52px) -50%}
+.brush-right{right:max(6vw,22px);opacity:var(--word-b,0);translate:calc(52px - var(--word-b,0) * 52px) -50%}
+html:not(.cinematic) .brush-scene{display:none}
 @media(max-width:850px){
-  .brush-scene.brush-ready{height:134vh}
-  .brush-video{max-height:56svh}
+  .brush-word{font-size:clamp(20px,6.2vw,34px)}
+  .brush-left{left:max(5vw,16px)}
+  .brush-right{right:max(5vw,16px)}
   .brush-edge{background:radial-gradient(ellipse 94% 64% at 50% 50%,transparent 58%,#000 100%)}
 }

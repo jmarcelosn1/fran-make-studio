@@ -18,87 +18,6 @@
     document.querySelectorAll('.tilt-visual').forEach(el => el.vanillaTilt?.destroy());
     document.documentElement.classList.remove('story-active');
   }
-  /* Cena do pincel. O scroll controla o tempo do video e nada mais: nenhum
-     transform, scale ou rotacao entra no pincel, porque o movimento ja esta
-     gravado no arquivo. Sem loop proprio, sem segundo requestAnimationFrame.
-     A classe brush-ready so e aplicada quando tudo inicializa, entao uma
-     falha de CDN deixa a secao curta e estatica em vez de um vazio alto. */
-  function brushScene() {
-    const scene = document.querySelector('#pincel');
-    const sticky = scene?.querySelector('.brush-sticky');
-    const video = scene?.querySelector('.brush-video');
-    if (!scene || !sticky || !video || !window.ScrollTrigger) return null;
-
-    // Scrub so onde seek e confiavel. No celular o clipe toca ao entrar em
-    // cena, mesma decisao ja adotada pelo video da intro deste projeto.
-    const scrubbable = pointer.matches;
-    const source = scrubbable ? 'images/pincel-scroll.mp4' : 'images/pincel-scroll-mobile.mp4';
-    let duration = 0, target = 0, applied = -1, broken = false, active = false, scrub = null;
-    let objectURL = '', loading = false;
-    const abort = new AbortController();
-    const timeAt = p => Math.min(Math.max(p, 0) * duration, Math.max(0, duration - .05));
-
-    async function load() {
-      if (broken || loading || video.getAttribute('src')) return;
-      loading = true;
-      video.preload = 'auto';
-      if (!scrubbable) { video.loop = true; video.src = source; video.load(); return; }
-      try {
-        // Buffer completo em memoria: hospedagem estatica sem HTTP Range nao
-        // permite seek, e o scrub depende de buscar para frente e para tras.
-        const response = await fetch(source, {signal:abort.signal});
-        if (!response.ok) throw new Error('brush video unavailable');
-        const blob = await response.blob();
-        if (abort.signal.aborted) return;
-        objectURL = URL.createObjectURL(blob);
-        video.src = objectURL;
-        video.load();
-      } catch (error) {
-        if (error.name !== 'AbortError') broken = true;
-      }
-    }
-    video.addEventListener('loadedmetadata', () => {
-      if (!Number.isFinite(video.duration) || video.duration <= .2) return;
-      duration = video.duration;
-      if (scrub) { target = timeAt(scrub.progress); applied = -1; }
-    }, {once:true});
-    video.addEventListener('error', () => { broken = true; }, {once:true});
-
-    // Um unico seek por frame, e so quando o tempo mudou o bastante para valer.
-    const seek = () => {
-      if (!active || broken || !duration || !scrubbable || video.seeking) return;
-      if (Math.abs(target - applied) < 1/48) return;
-      applied = target;
-      try { video.currentTime = target; } catch { broken = true; }
-    };
-    gsap.ticker.add(seek);
-
-    ScrollTrigger.create({trigger:scene,start:'top bottom+=70%',end:'bottom top-=70%',onEnter:load,onEnterBack:load});
-    scrub = ScrollTrigger.create({
-      trigger:scene,start:'top top',end:'bottom bottom',scrub:true,invalidateOnRefresh:true,
-      onToggle:self => {
-        active = self.isActive;
-        if (scrubbable) return;
-        if (active) video.play().catch(()=>{}); else video.pause();
-      },
-      onUpdate:self => {
-        const p = self.progress;
-        const enter = Math.min(1, p / .15);
-        const leave = Math.min(1, Math.max(0, (p - .85) / .15));
-        sticky.style.setProperty('--brush-in', (enter * (1 - leave)).toFixed(3));
-        if (duration) target = timeAt(p);
-      }
-    });
-    scene.classList.add('brush-ready');
-    return () => {
-      gsap.ticker.remove(seek);
-      abort.abort();
-      video.pause();
-      if (objectURL) { URL.revokeObjectURL(objectURL); objectURL = ''; }
-      scene.classList.remove('brush-ready');
-      sticky.style.removeProperty('--brush-in');
-    };
-  }
 
   function setup() {
     cleanup();
@@ -172,8 +91,6 @@
             };
           });
         }
-        const disposeBrush = brushScene();
-        return () => disposeBrush?.();
       });
       document.fonts.ready.then(()=>ScrollTrigger.refresh());
     }
