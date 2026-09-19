@@ -49,6 +49,14 @@
       surface.style.removeProperty('--spot-x'); surface.style.removeProperty('--spot-y');
     });
   });
+  // O corredor de imagens gira em laco; parar fora da tela evita gastar
+  // bateria animando 18 cartoes que ninguem esta vendo.
+  const corridor = $('.corridor');
+  if (corridor) {
+    new IntersectionObserver(entries => {
+      corridor.classList.toggle('fora-de-vista', !entries[0].isIntersecting);
+    }, {threshold:0}).observe(corridor);
+  }
   let introInView = true;
   let videoTarget = 0, videoLoading = false, videoObjectURL = '';
   const videoRequest = new AbortController();

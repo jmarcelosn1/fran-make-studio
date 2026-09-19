@@ -1,5 +1,23 @@
 /* Portfolio: grade editorial em colunas. Cada fotografia mantem a proporcao
    original, entao nenhum rosto e cortado para encaixar num card. */
+/* Mesma assinatura da home, mas desenhada por tempo: aqui nao existe
+   sequencia de rolagem para conduzir o traco. */
+.pf-mark{display:block;width:min(62vw,400px);margin:0 0 22px}
+.pf-mark img{display:block;width:100%;height:auto}
+@supports ((mask-image:linear-gradient(#000,#000)) or (-webkit-mask-image:linear-gradient(#000,#000))){
+  .pf-mark{
+    -webkit-mask-image:linear-gradient(97deg,#000 0 40%,rgba(0,0,0,.5) 41.5%,transparent 43%);
+    mask-image:linear-gradient(97deg,#000 0 40%,rgba(0,0,0,.5) 41.5%,transparent 43%);
+    -webkit-mask-size:300% 100%;mask-size:300% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    animation:pf-escreve 2.8s cubic-bezier(.3,.7,.2,1) .3s both
+  }
+}
+@keyframes pf-escreve{
+  from{-webkit-mask-position:100% 0;mask-position:100% 0}
+  to{-webkit-mask-position:0 0;mask-position:0 0}
+}
+
 .pf-hero{padding:calc(var(--nav) + 64px) 0 40px}
 .pf-hero .container{display:grid;gap:34px;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);align-items:end}
 .pf-lead h1{font:700 clamp(38px,5.4vw,74px)/1.04 var(--serif);letter-spacing:-.01em;margin:14px 0 18px}
@@ -15,10 +33,14 @@
 .pf-filters button[aria-pressed="true"]{background:var(--rose);border-color:var(--rose);color:#180d12}
 
 .pf-count{font:500 12px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 22px}
-.pf-grid{column-count:3;column-gap:18px}
-.pf-item{break-inside:avoid;margin:0 0 18px;display:block;width:100%;padding:0;border:0;background:none;
-  color:inherit;cursor:zoom-in;position:relative;overflow:hidden}
-.pf-item img{display:block;width:100%;height:auto;border-radius:2px}
+/* Grade uniforme em 4:5. O corte tira as laterais das fotos horizontais e o
+   rodape das verticais, entao o enquadramento vertical e o que decide se o
+   rosto sobrevive: 28% por padrao, mais alto nas fotos de corpo inteiro. */
+.pf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.pf-item{display:block;width:100%;padding:0;border:0;background:none;
+  color:inherit;cursor:zoom-in;position:relative}
+.pf-item img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;object-position:50% 28%;border-radius:2px}
+.pf-item.crop-alto img{object-position:50% 15%}
 .pf-cap{display:flex;justify-content:space-between;align-items:baseline;gap:12px;text-align:left;
   font:500 11px/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:9px 2px 0}
 .pf-item:hover img,.pf-item:focus-visible img{opacity:.88}
@@ -39,12 +61,12 @@
 #lb-next{right:16px}
 
 @media(max-width:1024px){
-  .pf-grid{column-count:2}
+  .pf-grid{grid-template-columns:repeat(2,1fr)}
   .pf-hero .container{grid-template-columns:1fr;gap:26px}
   .pf-feature{max-width:460px}
 }
 @media(max-width:620px){
-  .pf-grid{column-count:1}
+  .pf-grid{grid-template-columns:1fr}
   .pf-hero{padding:calc(var(--nav) + 34px) 0 26px}
   .lb-nav{width:44px;height:44px}
   #lb-prev{left:8px}

@@ -243,6 +243,39 @@ html:not(.cinematic) .intro-media{display:none}
   .btn-pk:active,.btn-ol:active,.nb-cta:active{transform:none}
 }
 
+/* ---- Corredor de imagens: porta de entrada do portfolio ------------------
+   Dois trilhos de cartoes vem do fundo na direcao de quem olha. A perspectiva
+   faz sozinha o que parece duas animacoes: conforme o z cresce o cartao
+   aumenta e o x na tela se abre, porque a projecao escala posicao e tamanho
+   pelo mesmo fator. Tudo em cqw, porcentagem da largura do container, entao a
+   proporcao se mantem em qualquer tamanho.
+   O laco existe para mostrar trabalho real em rotacao, nao como enfeite: ele
+   para fora da tela e para com reducao de movimento. */
+.corridor{position:relative;overflow:hidden;container-type:inline-size;background:#000;
+  min-height:clamp(430px,60svh,640px);display:grid;place-items:center}
+.corridor-rails{position:absolute;inset:0;pointer-events:none;perspective:30cqw;perspective-origin:50% 52%}
+.corridor-stage{position:absolute;inset:0;transform-style:preserve-3d}
+.corridor-card{position:absolute;left:50%;top:52%;width:18cqw;height:25cqw;margin:-12.5cqw 0 0 -9cqw;
+  border-radius:.4cqw;overflow:hidden;backface-visibility:hidden;animation:rail-dir 20s linear infinite}
+.corridor-card.esq{animation-name:rail-esq}
+.corridor-card img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 26%}
+.corridor-veil{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 62% at 50% 52%,transparent 34%,rgba(0,0,0,.82) 78%,#000 100%)}
+.corridor-copy{position:relative;z-index:1;text-align:center;padding:0 24px;isolation:isolate}
+/* Sem este escurecimento o texto cai em cima dos cartoes e some. */
+.corridor-copy::before{content:'';position:absolute;inset:-14% -10%;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.94) 0 42%,rgba(0,0,0,.78) 64%,transparent 82%)}
+.corridor-copy h2{font:700 clamp(30px,4.1vw,56px)/1.1 var(--serif);margin:0 0 14px}
+.corridor-copy p{color:var(--muted);max-width:42ch;margin:0 auto 26px}
+.corridor.fora-de-vista .corridor-card{animation-play-state:paused}
+@media(max-width:850px){
+  .corridor{min-height:clamp(380px,52svh,520px)}
+  .corridor-card{width:26cqw;height:36cqw;margin:-18cqw 0 0 -13cqw}
+}
+@media(prefers-reduced-motion:reduce){.corridor-card{animation-play-state:paused}}
+@keyframes rail-dir{0.0%{transform:translate3d(-11.0cqw,0,-258.5cqw) rotateY(-6.0deg)}5.6%{transform:translate3d(-1.5cqw,0,-215.9cqw) rotateY(-7.2deg)}11.1%{transform:translate3d(6.7cqw,0,-179.6cqw) rotateY(-8.4deg)}16.7%{transform:translate3d(13.9cqw,0,-148.7cqw) rotateY(-9.7deg)}22.2%{transform:translate3d(20.0cqw,0,-122.3cqw) rotateY(-10.9deg)}27.8%{transform:translate3d(25.2cqw,0,-99.9cqw) rotateY(-12.1deg)}33.3%{transform:translate3d(29.6cqw,0,-80.7cqw) rotateY(-13.3deg)}38.9%{transform:translate3d(33.2cqw,0,-64.4cqw) rotateY(-14.6deg)}44.4%{transform:translate3d(36.1cqw,0,-50.4cqw) rotateY(-15.8deg)}50.0%{transform:translate3d(38.4cqw,0,-38.6cqw) rotateY(-17.0deg)}55.6%{transform:translate3d(40.2cqw,0,-28.5cqw) rotateY(-18.2deg)}61.1%{transform:translate3d(41.6cqw,0,-19.8cqw) rotateY(-19.4deg)}66.7%{transform:translate3d(42.5cqw,0,-12.5cqw) rotateY(-20.7deg)}72.2%{transform:translate3d(43.2cqw,0,-6.2cqw) rotateY(-21.9deg)}77.8%{transform:translate3d(43.6cqw,0,-0.9cqw) rotateY(-23.1deg)}83.3%{transform:translate3d(43.9cqw,0,3.7cqw) rotateY(-24.3deg)}88.9%{transform:translate3d(44.0cqw,0,7.6cqw) rotateY(-25.6deg)}94.4%{transform:translate3d(44.0cqw,0,10.9cqw) rotateY(-26.8deg)}100.0%{transform:translate3d(44.0cqw,0,13.7cqw) rotateY(-28.0deg)}}
+@keyframes rail-esq{0.0%{transform:translate3d(11.0cqw,0,-258.5cqw) rotateY(6.0deg)}5.6%{transform:translate3d(1.5cqw,0,-215.9cqw) rotateY(7.2deg)}11.1%{transform:translate3d(-6.7cqw,0,-179.6cqw) rotateY(8.4deg)}16.7%{transform:translate3d(-13.9cqw,0,-148.7cqw) rotateY(9.7deg)}22.2%{transform:translate3d(-20.0cqw,0,-122.3cqw) rotateY(10.9deg)}27.8%{transform:translate3d(-25.2cqw,0,-99.9cqw) rotateY(12.1deg)}33.3%{transform:translate3d(-29.6cqw,0,-80.7cqw) rotateY(13.3deg)}38.9%{transform:translate3d(-33.2cqw,0,-64.4cqw) rotateY(14.6deg)}44.4%{transform:translate3d(-36.1cqw,0,-50.4cqw) rotateY(15.8deg)}50.0%{transform:translate3d(-38.4cqw,0,-38.6cqw) rotateY(17.0deg)}55.6%{transform:translate3d(-40.2cqw,0,-28.5cqw) rotateY(18.2deg)}61.1%{transform:translate3d(-41.6cqw,0,-19.8cqw) rotateY(19.4deg)}66.7%{transform:translate3d(-42.5cqw,0,-12.5cqw) rotateY(20.7deg)}72.2%{transform:translate3d(-43.2cqw,0,-6.2cqw) rotateY(21.9deg)}77.8%{transform:translate3d(-43.6cqw,0,-0.9cqw) rotateY(23.1deg)}83.3%{transform:translate3d(-43.9cqw,0,3.7cqw) rotateY(24.3deg)}88.9%{transform:translate3d(-44.0cqw,0,7.6cqw) rotateY(25.6deg)}94.4%{transform:translate3d(-44.0cqw,0,10.9cqw) rotateY(26.8deg)}100.0%{transform:translate3d(-44.0cqw,0,13.7cqw) rotateY(28.0deg)}}
+
 /* Chamada para o portfolio: a home mostra um recorte, nao a galeria inteira. */
 .pf-teaser{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;
   padding:30px 0 6px;margin-top:8px;border-top:1px solid var(--line)}
