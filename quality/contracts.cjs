@@ -6,9 +6,13 @@ for(const page of ['index.html','portfolio.html']){
  assert.equal(ids.length,new Set(ids).size,`Duplicate IDs in ${page}`);
  for(const m of html.matchAll(/(?:src|href)="([^"#]+)"/g))if(!/^https?:/.test(m[1]))assert.ok(fs.existsSync(m[1]),`Missing asset in ${page}: ${m[1]}`);
  for(const m of html.matchAll(/href="#([^"]+)"/g))assert.ok(ids.includes(m[1]),`Missing anchor in ${page}: ${m[1]}`);
+ // Ancora entre paginas: o alvo precisa existir na pagina de destino.
+ for(const m of html.matchAll(/href="([a-z0-9-]+.html)#([^"]+)"/g)){
+  const destino=fs.readFileSync(m[1],'utf8');
+  assert.ok(new RegExp('id="'+m[2]+'"').test(destino),`Dead cross-page anchor in ${page}: ${m[1]}#${m[2]}`);
+ }
  const scripts=[...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(m=>m[1]);
  assert.equal(scripts.length,new Set(scripts).size,`Duplicate scripts in ${page}`);
- // Imagem sem dimensao declarada empurra o layout quando carrega (CLS).
  // Imagem sem dimensao declarada empurra o layout quando carrega (CLS). As que
  // nao trazem src no HTML recebem origem e tamanho por JS e nao deslocam nada.
  for(const m of html.matchAll(/<img\b[^>]*>/g)){

@@ -27,7 +27,7 @@
   lookPhotos.setAttribute('role', 'region');
   lookPhotos.setAttribute('aria-label', 'Três perspectivas da maquiagem de formanda');
   // No touch interception or independent animation loop. Portrait light is behind the cutout.
-  const spotlights = $$('.mp-card,.portfolio-card,.bridal-image,.eyes-image,.look-frame');
+  const spotlights = $$('.mp-card,.portfolio-card,.look-frame');
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)');
   const spotlightObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => entry.target.classList.toggle('spotlight-visible', entry.isIntersecting));
@@ -315,7 +315,7 @@
         mobileRevealObserver.unobserve(entry.target);
       }
     }, {threshold:.08,rootMargin:'0px 0px -24px 0px'});
-    $$('.sh,.bridal-copy,.bridal-image,.eyes-feature>div,.mp-card,.ctc-card,.hero-photo img').forEach(el => {
+    $$('.sh,.mp-card,.ctc-card,.hero-photo img').forEach(el => {
       el.classList.add('mobile-reveal');
       mobileRevealObserver.observe(el);
     });
