@@ -38,6 +38,19 @@ html:not(.cinematic) .intro-title{width:1px;height:1px;padding:0;overflow:hidden
 .intro-mark-draw,.intro-mark-draw img{display:block;width:100%;height:auto}
 .intro-signature{font:500 16px/1.6 var(--serif);color:var(--muted);margin-top:32px}
 .hero-layout{height:100%;display:grid;grid-template-columns:56% 44%;align-items:center;padding-block:38px 98px;gap:0}
+/* Credito do hero: nome, fio e funcao em tres niveis. Antes era uma unica
+   linha em caixa alta, que lia como um bloco so depois que o separador saiu. */
+.hero-credit{display:flex;align-items:center;gap:13px;margin-bottom:24px;flex-wrap:wrap}
+.hc-nome{font:500 clamp(15px,1.3vw,18px)/1 var(--serif);letter-spacing:.03em;color:var(--rose)}
+.hc-fio{width:30px;height:1px;background:var(--rose);opacity:.42}
+.hc-papel{font:500 9px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+/* O link secundario perde a borda fixa: o fio nasce discreto e acende no
+   hover, e ganha a mesma altura do botao para os dois assentarem na linha. */
+.hero-btns .text-link{position:relative;border-bottom:0;min-height:48px;padding:8px 2px;
+  display:inline-flex;align-items:center}
+.hero-btns .text-link::after{content:'';position:absolute;left:0;right:0;bottom:10px;height:1px;
+  background:currentColor;opacity:.28;transition:opacity .3s var(--ease),background .3s var(--ease)}
+.hero-btns .text-link:hover::after,.hero-btns .text-link:focus-visible::after{opacity:1;background:var(--rose)}
 .hero-content{position:relative;z-index:2;padding-right:46px}.hero-content .slabel{margin-bottom:18px;font-size:9px}.hero-logo{width:clamp(190px,19vw,260px);height:auto;margin-bottom:25px;border:0}
 .hero-content h2{font:700 clamp(34px,3.8vw,54px)/1.06 var(--serif);letter-spacing:-.02em;margin-bottom:30px}.hero-content h2 em{color:#975266}.hero-btns{display:flex;align-items:center;gap:25px;flex-wrap:wrap}
 .hero-photo{position:relative;z-index:1;width:100%;max-width:480px;justify-self:end}.hero-photo img{width:100%;height:auto;object-fit:contain;object-position:bottom right}
@@ -313,3 +326,30 @@ html:not(.cinematic) .brush-scene{display:none}
 }
 @keyframes rail-dir-mob{0.0%{transform:translate3d(-7.0cqw,0,-240.0cqw) rotateY(-5.0deg)}6.3%{transform:translate3d(1.6cqw,0,-197.5cqw) rotateY(-6.1deg)}12.5%{transform:translate3d(9.0cqw,0,-161.7cqw) rotateY(-7.1deg)}18.8%{transform:translate3d(15.3cqw,0,-131.5cqw) rotateY(-8.2deg)}25.0%{transform:translate3d(20.6cqw,0,-106.1cqw) rotateY(-9.3deg)}31.3%{transform:translate3d(24.9cqw,0,-84.7cqw) rotateY(-10.3deg)}37.5%{transform:translate3d(28.5cqw,0,-66.6cqw) rotateY(-11.4deg)}43.8%{transform:translate3d(31.3cqw,0,-51.4cqw) rotateY(-12.4deg)}50.0%{transform:translate3d(33.4cqw,0,-38.6cqw) rotateY(-13.5deg)}56.3%{transform:translate3d(35.1cqw,0,-27.8cqw) rotateY(-14.6deg)}62.5%{transform:translate3d(36.2cqw,0,-18.7cqw) rotateY(-15.6deg)}68.8%{transform:translate3d(37.0cqw,0,-11.0cqw) rotateY(-16.7deg)}75.0%{transform:translate3d(37.5cqw,0,-4.6cqw) rotateY(-17.8deg)}81.3%{transform:translate3d(37.8cqw,0,0.9cqw) rotateY(-18.8deg)}87.5%{transform:translate3d(38.0cqw,0,5.5cqw) rotateY(-19.9deg)}93.8%{transform:translate3d(38.0cqw,0,9.3cqw) rotateY(-20.9deg)}100.0%{transform:translate3d(38.0cqw,0,12.6cqw) rotateY(-22.0deg)}}
 @keyframes rail-esq-mob{0.0%{transform:translate3d(7.0cqw,0,-240.0cqw) rotateY(5.0deg)}6.3%{transform:translate3d(-1.6cqw,0,-197.5cqw) rotateY(6.1deg)}12.5%{transform:translate3d(-9.0cqw,0,-161.7cqw) rotateY(7.1deg)}18.8%{transform:translate3d(-15.3cqw,0,-131.5cqw) rotateY(8.2deg)}25.0%{transform:translate3d(-20.6cqw,0,-106.1cqw) rotateY(9.3deg)}31.3%{transform:translate3d(-24.9cqw,0,-84.7cqw) rotateY(10.3deg)}37.5%{transform:translate3d(-28.5cqw,0,-66.6cqw) rotateY(11.4deg)}43.8%{transform:translate3d(-31.3cqw,0,-51.4cqw) rotateY(12.4deg)}50.0%{transform:translate3d(-33.4cqw,0,-38.6cqw) rotateY(13.5deg)}56.3%{transform:translate3d(-35.1cqw,0,-27.8cqw) rotateY(14.6deg)}62.5%{transform:translate3d(-36.2cqw,0,-18.7cqw) rotateY(15.6deg)}68.8%{transform:translate3d(-37.0cqw,0,-11.0cqw) rotateY(16.7deg)}75.0%{transform:translate3d(-37.5cqw,0,-4.6cqw) rotateY(17.8deg)}81.3%{transform:translate3d(-37.8cqw,0,0.9cqw) rotateY(18.8deg)}87.5%{transform:translate3d(-38.0cqw,0,5.5cqw) rotateY(19.9deg)}93.8%{transform:translate3d(-38.0cqw,0,9.3cqw) rotateY(20.9deg)}100.0%{transform:translate3d(-38.0cqw,0,12.6cqw) rotateY(22.0deg)}}
+@media(max-width:600px){
+  /* Lado a lado num viewport estreito os dois CTAs se espremem e as linhas de
+     base desencontram; empilhados ficam com area de toque cheia. */
+  .hero-btns{flex-direction:column;align-items:stretch;gap:8px;width:100%}
+  .hero-btns .btn-ol{width:100%}
+  .hero-btns .text-link{justify-content:center}
+  .hero-credit{justify-content:center;gap:10px}
+  .hc-nome{font-size:15px}
+  .hc-fio{width:22px}
+  .hc-papel{font-size:8px;letter-spacing:.2em}
+  /* A pista de rolagem e a terceira chamada da mesma faixa: fica subordinada. */
+  .hero-bottom{font-size:8px}
+  .intro-skip{color:var(--muted);font-weight:500}
+}
+@media(max-width:850px){
+  /* O conteudo do hero excedia a area util do palco fixo e o centramento
+     empurrava a primeira linha para tras da navbar. Compactado para caber. */
+  .mobile-layout.cinematic .hero-logo{width:clamp(92px,26vw,118px);margin-bottom:14px}
+  .mobile-layout.cinematic .hero-content h2{margin-bottom:16px}
+  .mobile-layout.cinematic .hero-description{font-size:13px;line-height:1.68}
+  .mobile-layout.cinematic .hero-credit{margin-bottom:14px}
+}
+@media(max-width:850px){
+  /* Centrar ignora o padding quando o conteudo transborda, e a primeira linha
+     sobe para tras da navbar. Ancorado no topo, o padding sempre vale. */
+  .mobile-layout.cinematic .hero-layout{align-content:start}
+}
