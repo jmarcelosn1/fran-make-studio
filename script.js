@@ -1,0 +1,433 @@
+/* FRAN MAKE STUDIO. Native scrolling, progressive enhancement, one frame scheduler. */
+(() => {
+  'use strict';
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+  const config = window.FRAN_CONFIG || {};
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const mobile = matchMedia('(max-width:850px), (pointer:coarse)');
+  const hero = $('#hero'), stage = $('.hero-stage'), title = $('.intro-title');
+  const kicker = $('#intro-kicker'), heading = $('.intro-title h1');
+  const content = $('.hero-content'), portrait = $('.hero-photo');
+  const clamp = n => Math.min(1, Math.max(0, n));
+  const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+  let frame = 0, lastTime = 0, dirty = true, heroVisible = true;
+  let range = 1, start = 0, progress = 0, sceneAPI = null;
+  let currentModal = null;
+  const carousels = [];
+  const motion = window.FRAN_MOTION;
+  const tickerDriven = !!window.gsap;
+  const introVideo = $('#intro-video'), introMedia = $('.intro-media'), navbar = $('#navbar');
+  const playIntro = $('#intro-play');
+  // Preserve a single accessible heading while letters converge with scroll.
+  const introCharacters = [];
+  heading.setAttribute('aria-label', 'FRAN MAKE STUDIO');
+  $$('h1 > span', title).forEach(line => {
+    const text = line.textContent;
+    line.setAttribute('aria-hidden', 'true');
+    line.textContent = '';
+    [...text].forEach((character, index) => {
+      const span = document.createElement('span');
+      span.className = 'intro-character'; span.textContent = character;
+      span.setAttribute('aria-hidden', 'true'); line.append(span);
+      introCharacters.push({span, distance:index - (text.length - 1) / 2});
+    });
+  });
+  const lookPhotos = $('.look-photos');
+  lookPhotos.tabIndex = 0;
+  lookPhotos.setAttribute('role', 'region');
+  lookPhotos.setAttribute('aria-label', 'Três perspectivas da maquiagem de formanda');
+  // No touch interception or independent animation loop. Portrait light is behind the cutout.
+  const spotlights = $$('.mp-card,.portfolio-card,.bridal-image,.eyes-image,.look-frame,.hero-photo');
+  const finePointer = matchMedia('(hover:hover) and (pointer:fine)');
+  const spotlightObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => entry.target.classList.toggle('spotlight-visible', entry.isIntersecting));
+  }, {threshold:.25});
+  spotlights.forEach(surface => {
+    surface.classList.add('spotlight-surface');
+    const light = document.createElement('span');
+    light.className = 'spotlight-light'; light.setAttribute('aria-hidden','true'); surface.append(light);
+    spotlightObserver.observe(surface);
+    surface.addEventListener('pointermove', event => {
+      if (!finePointer.matches || reduced.matches || event.pointerType === 'touch') return;
+      const rect = surface.getBoundingClientRect();
+      surface.style.setProperty('--spot-x', `${event.clientX - rect.left}px`);
+      surface.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
+      surface.style.setProperty('--spot-strength', '1');
+    }, {passive:true});
+    surface.addEventListener('pointerleave', () => {
+      surface.style.removeProperty('--spot-strength');
+      surface.style.removeProperty('--spot-x'); surface.style.removeProperty('--spot-y');
+    });
+  });
+  let introInView = true;
+  let videoTarget = 0, videoLoading = false, videoObjectURL = '';
+  const videoRequest = new AbortController();
+  // Only same-origin media paths are accepted; configuration never executes code.
+  function localAsset(value) {
+    return window.FRAN_SAFETY.localAsset(value, location.href);
+  }
+  const videoSource = localAsset(config.introVideo || 'images/franciana-scroll.mp4');
+  const posterSource = localAsset(config.introPoster || 'images/intro-poster.webp');
+  if (posterSource) introVideo.poster = posterSource;
+  async function loadIntroVideo() {
+    if (reduced.matches || navigator.connection?.saveData || videoLoading || introVideo.getAttribute('src') || !videoSource) return;
+    videoLoading = true;
+    if (mobile.matches) {
+      introVideo.muted = true; introVideo.defaultMuted = true;
+      introVideo.loop = true; introVideo.autoplay = true;
+      introVideo.src = localAsset(config.introMobileVideo) || videoSource;
+      introVideo.load();
+      startMobileVideo();
+      return;
+    }
+    try {
+      // The small optimized clip is fully buffered so reverse seeking also works
+      // on static preview servers that do not implement HTTP range requests.
+      const response = await fetch(videoSource, {signal:videoRequest.signal});
+      if (!response.ok) throw new Error('Video unavailable');
+      const blob = await response.blob();
+      if (videoRequest.signal.aborted) return;
+      videoObjectURL = URL.createObjectURL(blob);
+      introVideo.src = videoObjectURL;
+      introVideo.load();
+    } catch(error) {
+      if (error.name !== 'AbortError') introMedia.classList.add('poster-only');
+    }
+  }
+  function seekVideo() {
+    if (mobile.matches || reduced.matches || introVideo.readyState < 1 || introVideo.seeking || !Number.isFinite(introVideo.duration)) return;
+    const target = Math.min(videoTarget, Math.max(0, introVideo.duration - .05));
+    if (Math.abs(introVideo.currentTime - target) > .025) introVideo.currentTime = target;
+  }
+  introVideo.addEventListener('loadedmetadata', () => { dirty = true; schedule(); });
+  introVideo.addEventListener('loadeddata', seekVideo);
+  async function startMobileVideo() {
+    if (!mobile.matches || reduced.matches || !introInView || document.hidden) return;
+    try { await introVideo.play(); playIntro.hidden = true; }
+    catch { if (introInView) playIntro.hidden = false; }
+  }
+  introVideo.addEventListener('canplay', startMobileVideo);
+  playIntro.addEventListener('click', () => {
+    introMedia.classList.remove('poster-only');
+    if (!introVideo.getAttribute('src')) { introVideo.src = localAsset(config.introMobileVideo) || videoSource; introVideo.muted = true; introVideo.loop = true; }
+    if (introVideo.error) introVideo.load();
+    startMobileVideo();
+  });
+  new IntersectionObserver(entries => {
+    introInView = entries[0].isIntersecting;
+    if (mobile.matches) { if (introInView) startMobileVideo(); else introVideo.pause(); }
+  }, {threshold:.05}).observe(introMedia);
+  introVideo.addEventListener('seeked', seekVideo);
+  introVideo.addEventListener('error', () => { introMedia.classList.add('poster-only'); if(mobile.matches && !reduced.matches)playIntro.hidden=false; });
+
+  function schedule() { if (!tickerDriven && !frame && !document.hidden) frame = requestAnimationFrame(tick); }
+  function measure() {
+    start = hero.offsetTop;
+    range = Math.max(1, mobile.matches ? introMedia.offsetHeight : hero.offsetHeight - stage.offsetHeight);
+    carousels.forEach(c => { c.max = c.track.scrollWidth - c.track.clientWidth; c.position = c.track.scrollLeft; });
+    sceneAPI?.resize(); dirty = true; schedule();
+  }
+  function updateIntro() {
+    progress = reduced.matches ? 1 : clamp((scrollY - start) / range);
+    const letterReveal = reduced.matches ? 1 : smooth(0, mobile.matches ? .2 : .28, progress);
+    introCharacters.forEach(({span,distance}) => {
+      const spread = (1-letterReveal) * (mobile.matches ? 1.4 : 4);
+      span.style.transform = `translate3d(${distance * spread}px,${Math.abs(distance) * spread * .45}px,0)`;
+    });
+    const reveal = reduced.matches ? 1 : mobile.matches ? smooth(.2, .68, progress) : smooth(.73, .94, progress);
+    const fade = reduced.matches ? 1 : mobile.matches ? smooth(.08, .62, progress) : smooth(.62, .76, progress);
+    const navigationVisible = reduced.matches || progress >= .94;
+    document.documentElement.classList.toggle('intro-pending', !navigationVisible);
+    navbar.inert = !navigationVisible;
+    navbar.setAttribute('aria-hidden', String(!navigationVisible));
+    introMedia.style.opacity = mobile.matches ? 1 - .8 * smooth(.18,.92,progress) : 1 - (reduced.matches ? 1 : smooth(.69, .91, progress));
+    introVideo.style.transform = mobile.matches && !reduced.matches ? `translate3d(0,${18 * progress}px,0) scale(1.025)` : '';
+    videoTarget = clamp(progress / .72) * (Number.isFinite(introVideo.duration) ? introVideo.duration : 0);
+    seekVideo();
+    title.style.opacity = reduced.matches ? 1 : 1 - fade;
+    title.style.transform = `translate3d(0,${-45 * fade}px,0)`;
+    kicker.style.opacity = .8 + .2 * smooth(0, .15, progress);
+    kicker.style.transform = `translateY(${12 * (1 - smooth(0, .15, progress))}px)`;
+    heading.style.opacity = .75 + .25 * smooth(.06, .29, progress);
+    heading.style.transform = `translateY(${20 * (1 - smooth(.06, .29, progress))}px)`;
+    content.style.opacity = reveal;
+    content.style.visibility = reveal > .01 ? 'visible' : 'hidden';
+    content.style.transform = `translate3d(0,${28 * (1 - reveal)}px,0)`;
+    content.inert = reveal < .92;
+    portrait.style.opacity = reveal;
+    portrait.style.visibility = reveal > .01 ? 'visible' : 'hidden';
+    portrait.style.transform = `translate3d(${20 * (1 - reveal)}px,${14 * (1 - reveal)}px,0)`;
+  }
+  function tick(time) {
+    if(document.hidden) return;
+    frame = 0;
+    const smoothActive = motion?.frame(time);
+    const dt = Math.min(50, time - (lastTime || time)); lastTime = time;
+    if (dirty) { updateIntro(); dirty = false; }
+    let live = !!smoothActive;
+    if (sceneAPI && heroVisible && !reduced.matches) { sceneAPI.render(time * .001, progress); live = true; }
+    for (const c of carousels) {
+      if (!c.visible || c.paused || reduced.matches || currentModal || c.hover || c.focus || c.drag || c.touch || time < c.resumeAt || c.max <= 0) continue;
+      // Floating accumulator keeps sub-pixel velocity smooth in every browser.
+      c.position += c.direction * dt * (Math.min(35,Math.max(0,Number(config.autoplaySpeed) || 18)) / 1000);
+      if (c.position >= c.max || c.position <= 0) {
+        c.position = Math.min(c.max, Math.max(0, c.position));
+        c.direction *= -1; c.resumeAt = time + 1300;
+      }
+      c.track.scrollLeft = c.position; live = true;
+    }
+    // A single delayed wake resumes autoplay; no idle animation loop is required.
+    if (live) schedule();
+    else armResume();
+  }
+  let resumeTimer = 0;
+  function armResume() {
+    clearTimeout(resumeTimer);
+    if (reduced.matches || document.hidden) return;
+    const now = performance.now();
+    const times = carousels.filter(c => c.visible && !c.paused && !c.hover && !c.focus && !c.drag && !c.touch && c.max > 0 && !currentModal).map(c => Math.max(20, c.resumeAt - now));
+    if (times.length) resumeTimer = setTimeout(schedule, Math.min(...times));
+  }
+  function motionPreference() {
+    document.documentElement.classList.toggle('mobile-layout', mobile.matches);
+    document.documentElement.classList.toggle('cinematic', !reduced.matches);
+    document.documentElement.classList.toggle('motion-ready', !reduced.matches);
+    if (reduced.matches) { sceneAPI?.clear(); introVideo.pause(); playIntro.hidden=true; }
+    loadIntroVideo();
+    carousels.forEach(c => { c.position = c.track.scrollLeft; });
+    measure();
+  }
+  addEventListener('scroll', () => { dirty = true; schedule(); }, { passive: true });
+  new ResizeObserver(measure).observe(stage);
+  new IntersectionObserver(entries => { heroVisible = entries[0].isIntersecting; schedule(); }, { threshold: 0 }).observe(stage);
+  reduced.addEventListener('change', motionPreference);
+  mobile.addEventListener('change', () => {
+    introVideo.pause(); introVideo.loop=mobile.matches; introVideo.autoplay=mobile.matches;
+    playIntro.hidden=true; motionPreference(); startMobileVideo();
+  });
+  document.addEventListener('visibilitychange', () => {
+    lastTime = 0;
+    if (document.hidden) { cancelAnimationFrame(frame); frame = 0; clearTimeout(resumeTimer); $$('video').forEach(v => v.pause()); }
+    else { dirty = true; schedule(); startMobileVideo(); }
+  });
+
+  // Mobile navigation: hidden links are inert, Escape closes, focus stays in menu.
+  const ham = $('#nb-ham'), menu = $('#nb-mob');
+  function closeMenu(restore = true) {
+    menu.hidden = true; menu.inert = true; menu.classList.remove('on');
+    ham.setAttribute('aria-expanded', 'false'); ham.setAttribute('aria-label', 'Abrir menu');
+    document.body.classList.remove('modal-open'); currentModal = null; motion?.pause(false);
+    if (restore) ham.focus(); schedule();
+  }
+  ham.addEventListener('click', () => {
+    if (!menu.hidden) return closeMenu();
+    menu.hidden = false; menu.inert = false; menu.classList.add('on');
+    ham.setAttribute('aria-expanded', 'true'); ham.setAttribute('aria-label', 'Fechar menu');
+    document.body.classList.add('modal-open'); currentModal = 'menu'; motion?.pause(true); $('a', menu).focus();
+  });
+  $$('a', menu).forEach(a => a.addEventListener('click', () => closeMenu(false)));
+  matchMedia('(min-width:851px)').addEventListener('change', e => { if(e.matches && !menu.hidden) closeMenu(false); });
+  document.addEventListener('keydown', e => {
+    if (currentModal !== 'menu') return;
+    if (e.key === 'Escape') closeMenu();
+    if (e.key === 'Tab') {
+      const items = [ham, ...$$('a', menu)], first = items[0], last = items.at(-1);
+      if(e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      if(!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  $$('a[href^="#"]').forEach(a => a.addEventListener('click', () => {
+    const target = document.getElementById(a.hash.slice(1));
+    if (target && a.closest('#nb-mob')) { target.tabIndex = -1; target.focus({preventScroll:true}); }
+  }));
+  const navObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) if(entry.isIntersecting) {
+      $$('.nb-links a').forEach(a => { if(a.hash === '#' + entry.target.id) a.setAttribute('aria-current','location'); else a.removeAttribute('aria-current'); });
+    }
+  }, {rootMargin:'-15% 0px -60% 0px'});
+  $$('main section[id]').forEach(el => navObserver.observe(el));
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('show'); revealObserver.unobserve(e.target); } });
+  }, {threshold:.08});
+  $$('.rv').forEach(el => revealObserver.observe(el));
+
+  // Lightweight touch reveals use compositor-friendly properties and no frame loop.
+  let mobileRevealObserver = null;
+  function setupMobileReveals() {
+    mobileRevealObserver?.disconnect();
+    $$('.mobile-reveal').forEach(el => el.classList.remove('mobile-reveal','is-visible'));
+    if (!mobile.matches || reduced.matches) return;
+    mobileRevealObserver = new IntersectionObserver(entries => {
+      for (const entry of entries) if(entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        mobileRevealObserver.unobserve(entry.target);
+      }
+    }, {threshold:.08,rootMargin:'0px 0px -24px 0px'});
+    $$('.sh,.bridal-copy,.bridal-image,.eyes-feature>div,.mp-card,.ctc-card,.hero-photo img').forEach(el => {
+      el.classList.add('mobile-reveal');
+      mobileRevealObserver.observe(el);
+    });
+  }
+  setupMobileReveals();
+  mobile.addEventListener('change', setupMobileReveals);
+  reduced.addEventListener('change', setupMobileReveals);
+
+  // Accessible photograph dialog, native focus trap and Escape handling.
+  const dialog = $('#lightbox'), lbImage = $('#lb-img');
+  let lastPhoto = null;
+  function openPhoto(button) {
+    lastPhoto = button; lbImage.src = button.dataset.img; lbImage.alt = $('img',button).alt;
+    $('#lb-caption').textContent = lbImage.alt;
+    dialog.showModal(); document.body.classList.add('modal-open'); currentModal = 'photo'; motion?.pause(true);
+  }
+  $('#lb-close').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', e => { if(e.target === dialog) { const r = dialog.getBoundingClientRect(); if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close(); } });
+  dialog.addEventListener('close', () => { document.body.classList.remove('modal-open'); currentModal = null; motion?.pause(false); lastPhoto?.focus({preventScroll:true}); schedule(); });
+
+  const galleryObserver = new IntersectionObserver(entries => { for(const e of entries) { const c=carousels.find(c=>c.track===e.target); if(c) c.visible=e.isIntersecting; } schedule(); }, {threshold:.05});
+  $$('[data-carousel]').forEach(root => {
+    const track = $('.portfolio-track',root), toggle = $('[data-autoplay]',root);
+    const c = {track, position:0, max:0, direction:1, resumeAt:0, visible:false, paused:false, hover:false, focus:false, touch:false, drag:null, suppress:false};
+    let lastTap = null, pointerType = 'mouse';
+    carousels.push(c);
+    function pause() { c.resumeAt = performance.now() + Math.max(1500,Number(config.autoplayPause) || 4500); c.position = track.scrollLeft; armResume(); }
+    track.addEventListener('pointerenter', e => { if(e.pointerType === 'mouse') c.hover = true; });
+    track.addEventListener('pointerleave', () => { c.hover = false; pause(); });
+    track.addEventListener('focusin', e => { c.focus = e.target.matches(':focus-visible'); pause(); });
+    track.addEventListener('focusout', e => { if(!track.contains(e.relatedTarget)) { c.focus = false; pause(); } });
+    track.addEventListener('wheel', pause, {passive:true});
+    track.addEventListener('touchstart', () => { c.touch=true; pause(); }, {passive:true});
+    track.addEventListener('touchend', () => { c.touch=false; pause(); }, {passive:true});
+    track.addEventListener('touchcancel', () => { c.touch=false; pause(); }, {passive:true});
+    track.addEventListener('scroll', () => { if(c.drag || c.focus || c.hover || performance.now() < c.resumeAt) c.position = track.scrollLeft; }, {passive:true});
+    track.addEventListener('pointerdown', e => {
+      pointerType = e.pointerType;
+      pause(); c.suppress = false;
+      if(e.pointerType !== 'mouse' || e.button !== 0) return;
+      c.drag = {id:e.pointerId,x:e.clientX,y:e.clientY,top:scrollY,left:track.scrollLeft,moved:false,axis:null};
+    });
+    track.addEventListener('pointermove', e => {
+      if(!c.drag) return;
+      const dx = e.clientX - c.drag.x;
+      const dy = e.clientY - c.drag.y;
+      if(!c.drag.axis && Math.max(Math.abs(dx),Math.abs(dy))>7) { c.drag.axis = Math.abs(dx)>Math.abs(dy)?'x':'y'; c.drag.moved = true; c.suppress = true; track.classList.add('dragging'); track.setPointerCapture(e.pointerId); }
+      if(c.drag.axis==='x') { track.scrollLeft = c.drag.left - dx; c.position = track.scrollLeft; }
+      if(c.drag.axis==='y') window.scrollTo({top:c.drag.top-dy,behavior:'instant'});
+    });
+    function endDrag(e) { if(!c.drag) return; if(track.hasPointerCapture(e.pointerId)) track.releasePointerCapture(e.pointerId); c.drag = null; track.classList.remove('dragging'); pause(); }
+    track.addEventListener('pointerup', endDrag); track.addEventListener('pointercancel', endDrag); track.addEventListener('lostpointercapture', endDrag);
+    track.addEventListener('click', e => {
+      if(c.suppress) { e.preventDefault(); lastTap=null; return; }
+      const button=e.target.closest('[data-img]'); if(!button)return;
+      if(e.detail===0) { openPhoto(button); return; } // Keyboard and assistive activation.
+      if(pointerType==='touch') {
+        const now=performance.now();
+        if(lastTap?.button===button && now-lastTap.time<350) { if(!dialog.open)openPhoto(button); lastTap=null; }
+        else lastTap={button,time:now};
+      }
+    });
+    track.addEventListener('dblclick', e => { const button=e.target.closest('[data-img]'); if(button && !c.suppress && !dialog.open)openPhoto(button); });
+    track.addEventListener('keydown', e => {
+      if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) {
+        e.preventDefault(); pause();
+        const left = e.key === 'Home' ? 0 : e.key === 'End' ? c.max : track.scrollLeft + (e.key === 'ArrowRight' ? 1 : -1) * track.clientWidth * .75;
+        track.scrollTo({left,behavior:reduced.matches?'instant':'smooth'});
+      }
+    });
+    $$('[data-direction]',root).forEach(b=>b.addEventListener('click',()=>{ pause(); track.scrollBy({left:Number(b.dataset.direction)*track.clientWidth*.8,behavior:reduced.matches?'instant':'smooth'}); }));
+    toggle.addEventListener('click', () => { c.paused = !c.paused; toggle.setAttribute('aria-pressed',String(c.paused)); toggle.textContent = c.paused?'Retomar':'Pausar'; toggle.setAttribute('aria-label',c.paused?'Retomar movimento automático':'Pausar movimento automático'); pause(); });
+    function reducedControl() { toggle.hidden = reduced.matches; }
+    reduced.addEventListener('change',reducedControl); reducedControl();
+    new ResizeObserver(measure).observe(track); galleryObserver.observe(track);
+  });
+  const videoObserver = new IntersectionObserver(entries=>entries.forEach(e=>{if(!e.isIntersecting)e.target.pause();}),{threshold:.05});
+  $$('video[controls]').forEach((v,i)=>{ v.setAttribute('aria-label',['Transformação principal','Make e penteado, look completo','Make de formanda'][i]); videoObserver.observe(v); v.addEventListener('play',()=>$$('video[controls]').forEach(other=>{if(other!==v)other.pause();})); });
+
+  document.addEventListener('click', e => {
+    if(reduced.matches || !e.target.closest('a,button') || e.target.closest('dialog')) return;
+    const r=e.target.closest('a,button').getBoundingClientRect();
+    const star=document.createElement('span'); star.className='micro-spark'; star.setAttribute('aria-hidden','true');
+    star.style.left=(e.detail?e.clientX:r.right-10)+'px';star.style.top=(e.detail?e.clientY:r.top+8)+'px';
+    document.body.append(star);star.addEventListener('animationend',()=>star.remove(),{once:true});
+  });
+
+  // A valid configured location replaces the contact fallback, never a guessed point.
+  const map = $('#studio-map'), mapLink = $('#map-link');
+  const lat=config.latitude, lng=config.longitude;
+  const exact = typeof lat==='number' && typeof lng==='number' && Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat)<=90 && Math.abs(lng)<=180;
+  function googleURL(value, embed=false) {
+    return window.FRAN_SAFETY.googleURL(value, embed);
+  }
+  const embed = exact ? `https://maps.google.com/maps?q=${lat},${lng}&z=17&output=embed` : googleURL(config.mapsEmbedUrl,true);
+  const mapsURL = googleURL(config.mapsUrl) || (exact ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : '');
+  if(mapsURL || embed) mapLink.href=mapsURL || embed;
+  const showMap = $('#show-map');
+  if (!embed) showMap.hidden = true;
+  showMap.addEventListener('click', () => {
+    const opening = map.hidden;
+    if (opening && !map.getAttribute('src')) map.src=embed;
+    map.hidden=!opening; mapLink.hidden=!opening;
+    showMap.setAttribute('aria-expanded',String(opening));
+    showMap.textContent=opening?'Fechar mapa':'Ver mapa nesta página';
+  });
+  if(localAsset(config.portraitImage) && config.portraitImage!==$('#hero-img').getAttribute('src')) {
+    const img=$('#hero-img');img.addEventListener('error',()=>{img.src='images/franciana.png';},{once:true});img.src=localAsset(config.portraitImage);
+  }
+  for(const [host,value] of [['wa.me',config.whatsappUrl],['instagram.com',config.instagramUrl]]) {
+    try { const url=new URL(value); if(url.protocol==='https:' && (url.hostname===host || url.hostname==='www.'+host)) $$('a[href*="'+host+'"]').forEach(a=>a.href=url.href); } catch { /* Keep original verified links. */ }
+  }
+
+  // Three.js uses one GPU draw call. Particle convergence runs in the vertex shader.
+  async function initThree() {
+    if(reduced.matches || sceneAPI || config.particles === false || navigator.connection?.saveData) return;
+    try {
+      const THREE = await import('./vendor/three.module.min.js');
+      if(sceneAPI || reduced.matches) return;
+      const canvas=$('#webgl-canvas');
+      const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:false,powerPreference:'low-power'});
+      const scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(38,1,.1,50);
+      camera.position.z=8;
+      const low=innerWidth<700 || (navigator.hardwareConcurrency || 8)<=4;
+      const count=low?60:260;
+      const positions=new Float32Array(count*3), targets=new Float32Array(count*3), seeds=new Float32Array(count);
+      // Stable seed makes the composition deterministic and avoids random flicker on resize.
+      let seed=31;const random=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
+      for(let i=0;i<count;i++) {
+        const j=i*3, angle=random()*Math.PI*2, radius=low ? .55+random()*.75 : .85+random()*.9;
+        positions[j]=(random()-.5)*12;positions[j+1]=(random()-.5)*7;positions[j+2]=(random()-.5)*3;
+        targets[j]=Math.cos(angle)*radius;targets[j+1]=Math.sin(angle)*radius*(low?.85:1.25);targets[j+2]=(random()-.5)*1.8;
+        seeds[i]=random();
+      }
+      const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('target',new THREE.BufferAttribute(targets,3));geometry.setAttribute('seed',new THREE.BufferAttribute(seeds,1));
+      const uniforms={uProgress:{value:0},uTime:{value:0},uMotion:{value:Math.min(.25,Math.max(.03,Number(config.particleMotion)||.12))},uDpr:{value:1},uCenter:{value:new THREE.Vector2(2,0)}};
+      const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms,
+        vertexShader:`attribute vec3 target; attribute float seed; uniform float uProgress; uniform float uTime; uniform float uMotion; uniform float uDpr; uniform vec2 uCenter; varying float vAlpha;
+          void main(){ float p=smoothstep(0.04,0.91,uProgress); vec3 end=target+vec3(uCenter,0.0); vec3 pos=mix(position,end,p);
+          pos.x+=sin(p*3.14159)*sin(seed*20.0)*0.65; pos.y+=sin(p*3.14159)*cos(seed*20.0)*0.4;
+          pos.xy+=vec2(sin(uTime*.32+seed*20.0),cos(uTime*.26+seed*15.0))*uMotion;
+          vec4 mv=modelViewMatrix*vec4(pos,1.0); gl_Position=projectionMatrix*mv; gl_PointSize=clamp((1.3+seed*1.8)*uDpr*(8.0/-mv.z),1.0,5.0*uDpr);
+          vAlpha=(.18+seed*.4)*(.8+p*.2); }`,
+        fragmentShader:`varying float vAlpha; void main(){float d=length(gl_PointCoord-.5);float a=(1.0-smoothstep(.08,.5,d))*vAlpha;gl_FragColor=vec4(${document.documentElement.dataset.theme === 'dark' ? '.94,.63,.63' : '.64,.29,.39'},a);}`});
+      const points=new THREE.Points(geometry,material);points.frustumCulled=false;scene.add(points);
+      let lost=false;
+      const resize=()=>{
+        const w=stage.clientWidth,h=stage.clientHeight;
+        camera.aspect=w/h;camera.updateProjectionMatrix();
+        const dpr=Math.min(devicePixelRatio||1,low?1.25:1.6);renderer.setPixelRatio(dpr);renderer.setSize(w,h,false);uniforms.uDpr.value=dpr;
+        const r=portrait.getBoundingClientRect(),s=stage.getBoundingClientRect();
+        const worldH=2*Math.tan(38*Math.PI/360)*8, worldW=worldH*w/h;
+        uniforms.uCenter.value.set(((r.left-s.left+r.width/2)/w-.5)*worldW,(.5-(r.top-s.top+r.height/2)/h)*worldH);
+      };
+      sceneAPI={resize,clear:()=>renderer.clear(),render:(t,p)=>{if(!lost){uniforms.uTime.value=t;uniforms.uProgress.value=p;renderer.render(scene,camera);}},dispose:()=>{geometry.dispose();material.dispose();renderer.dispose();}};
+      canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;});canvas.addEventListener('webglcontextrestored',()=>{lost=false;resize();schedule();});
+      resize();schedule();
+    } catch { /* Core page remains usable without WebGL or module support. */ $('#webgl-canvas').hidden=true; }
+  }
+  reduced.addEventListener('change',()=>{if(!reduced.matches)initThree();});
+  addEventListener('pagehide',e=>{cancelAnimationFrame(frame);frame=0;clearTimeout(resumeTimer);if(!e.persisted){videoRequest.abort();if(videoObjectURL)URL.revokeObjectURL(videoObjectURL);sceneAPI?.dispose();motion?.dispose();}});
+  addEventListener('pageshow',()=>{dirty=true;schedule();});
+  motion?.init();
+  if(tickerDriven) gsap.ticker.add(()=>tick(performance.now()));
+  motionPreference();initThree();
+})();

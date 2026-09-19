@@ -1,0 +1,27 @@
+{
+  "name": "fran-make-studio",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "biome lint . --error-on-warnings",
+    "contracts": "node quality/contracts.cjs",
+    "test:unit": "c8 --all --include safety.js --check-coverage --lines 95 --branches 90 --functions 100 --reporter=text --reporter=lcov node --test tests/unit/*.test.cjs",
+    "build": "node quality/build.cjs",
+    "preview": "node quality/server.cjs",
+    "test:e2e": "playwright test",
+    "quality": "npm run lint && npm run contracts && npm run test:unit && npm run build && npm run test:e2e",
+    "security": "npm audit --audit-level=high",
+    "commitlint": "commitlint"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@biomejs/biome": "2.5.14",
+    "@commitlint/cli": "21.2.2",
+    "@commitlint/config-conventional": "21.2.2",
+    "@playwright/test": "1.63.0",
+    "c8": "12.0.0"
+  }
+}

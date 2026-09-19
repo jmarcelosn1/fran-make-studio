@@ -1,0 +1,76 @@
+# Fran Make Studio
+
+Site estático nas cores da logo. Abra `guia.html` para a documentação interativa: demonstrações, catálogo de imagens, exemplos, busca, checklist e gerador de configuração.
+
+## Abrir e publicar
+
+Com Node 22 ou superior, execute `npm ci`, instale o navegador de testes com `npx playwright install chromium` e rode `npm run quality` e `npm run security`. Abra a prévia com `npm run preview` em http://127.0.0.1:4173. Publique somente a pasta `dist/`, gerada pelo build. A configuração Vercel já aponta para essa pasta. `index.html` e `index - Copia.html` contêm a mesma página. Nenhuma publicação foi realizada. Veja `QUALIDADE.md` para a esteira, proteção da branch e pendências externas.
+
+## Tipografia e identidade
+
+Versão preto e rosa: abra `index.html?theme=dark` pelo servidor. Remova o parâmetro ou use `?theme=light` para comparar com a versão clara. O tema padrão agora é preto sólido; `dark.css` reúne a paleta alternativa e `boot.js` a aplica antes do primeiro carregamento visual.
+
+DM Sans nos títulos e Manrope nos textos, via Google Fonts com pesos reais 400, 500, 600 e 700 e display swap. Títulos em 700, menu e botões em 600, textos importantes em 500 e secundários em 400. Sem itálico nos textos principais; font-synthesis:none impede negrito artificial. Animações de texto não usam skew ou rotação. Tamanhos e espaçamentos se adaptam ao celular.
+
+## Arquivos e recursos
+
+Ordem do conteúdo: apresentação, sobre Franciana, noivas, sociais, formandas, vídeos, serviços e valores, localização e agendamento. Os pedidos de agendamento foram retirados do meio das galerias. O botão Agendar fica na navegação após a intro, inclusive no celular; o contato final usa Agendar meu horário. O Instagram aparece na apresentação como link para conhecer o trabalho.
+
+- `style.css`: identidade, tipografia, camadas, textura e responsividade.
+- `script.js`: abertura vinculada ao scroll, partículas, galerias, menu, fotos ampliadas, vídeos e mapa.
+- `motion.js`: Lenis, GSAP, ScrollTrigger, SplitType, parallax, sequência reversível da formanda e Vanilla-Tilt somente nas imagens de destaque.
+- `config.js`: contatos, retrato, efeitos, autoplay e localização.
+- `guia.html`, `guia.css`, `guia.js`: documentação independente do site público.
+- `images`: originais, WebP e capas extraídas dos próprios vídeos.
+- `vendor`: Three.js 0.160.1 local e licença MIT.
+
+Lenis 1.3.26 e SplitType 0.3.4 vêm do Unpkg; GSAP/ScrollTrigger 3.13.0 e Vanilla-Tilt 1.8.1 do cdnjs. O guia contém links oficiais. Há fallback quando as bibliotecas não carregam. O ticker do GSAP coordena o movimento, com fallback requestAnimationFrame. A preferência por menos movimento simplifica a experiência.
+
+Galerias permitem arraste, toque nativo, teclado, avanço e pausa. Autoplay lento de ida e volta, sem duplicar imagens. Interação pausa por 4,5 segundos por padrão; foco e hover também suspendem o movimento. Vídeos usam controles nativos.
+
+## Imagens e transparência
+
+`images/franciana.png` e `images/logo-transparente.png` possuem alpha real, verificado de 0 a 255. O site usa suas versões WebP transparentes. Originais preservados.
+
+Os recortes tiveram assistência de edição por IA. Instruções utilizadas: remover somente o quadriculado da foto, preservando Franciana, pose, roupas, cabelo e pincel; remover somente o fundo marmorizado da logo, preservando FM, Fran Make Studio e cores. Revise detalhes finos antes de impressão ou grandes ampliações.
+
+As sete fotos adicionais estão separadas em sociais, noiva e três perspectivas do look de formanda com vestido verde. Não se trata de antes e depois. As capas poster-transformacao.webp, poster-cacheada.webp e poster-formanda.webp foram extraídas do segundo 3 dos respectivos vídeos.
+
+## Intro em vídeo e localização
+
+O vídeo original `images/francianavideo.mp4` foi preservado. A intro usa `images/franciana-scroll.mp4`, uma cópia sem áudio com quadros de referência a cada seis frames, adequada a avanço e retorno pelo scroll. A resolução original 854 × 480 foi mantida. No desktop, o clip otimizado é carregado em memória para permitir busca reversa mesmo em servidores sem suporte a Range. Se houver falha, a capa permanece e o site continua acessível.
+
+A navbar aparece depois da intro. As partículas continuam em movimento atrás do retrato enquanto a Hero está visível. Hair e penteados foram incluídos no conteúdo. Avaliações removidas. Não há contador de visitantes. As sete fotos fornecidas continuam no portfólio. O favicon FM é um SVG local.
+
+O link enviado pelo proprietário foi resolvido para Fran Make Studio. As coordenadas do marcador são `-2.5197988, -44.2177339`, extraídas de !3d e !4d do estabelecimento; o centro da câmera não foi usado. O botão mantém o link https://maps.app.goo.gl/gSEBqmsFhHYvpRUdA. Para alterações futuras em `config.js`:
+
+1. `latitude` e `longitude`: coordenadas decimais exatas.
+2. `mapsEmbedUrl`: URL do src fornecido pelo Google Maps em Compartilhar > Incorporar um mapa; `mapsUrl` pode conter o link compartilhável.
+3. Somente `mapsUrl`: mostra o link correto, sem presumir iframe a partir de link curto.
+
+O mapa está configurado. O guia permite editar seus campos, vídeo, retrato e partículas e baixar config.js. Consulte `SEGURANCA.md` para os cabeçalhos editáveis de `vercel.json`; não houve publicação.
+
+## Verificação
+
+A sequência da formanda voltou a acompanhar a rolagem vertical no celular: a foto atual desce e desaparece, a próxima surge e o movimento é reversível. A composição fica contida na altura útil da tela, com três controles de perspectiva. A preferência por menos movimento mantém a faixa de fotos sem essa animação.
+
+Atualização de serviços: preços removidos da página pública. Make Social, Make + Hair e Make Noiva têm descrições e um único botão Consulte. A localização mostra os dados e o link do Google Maps imediatamente; o iframe é carregado apenas ao selecionar Ver mapa nesta página. Assim, a informação principal não depende da resposta do Google. O rosé de destaque foi aproximado dos pixels predominantes da logo (#f0a0a0).
+
+### Revisão mobile
+
+No celular a rolagem é nativa, a intro ocupa uma tela e depois segue o fluxo normal e o vídeo toca sem som em loop com playsinline. A reprodução automática depende do navegador; se bloqueada, o botão Reproduzir vídeo permite iniciá-la por toque. Economia de dados também permite início manual. A cópia mobile recebe nitidez leve, sem inventar detalhes; a fonte continua em 854 × 480. Para ganho real de resolução é necessário o original em maior qualidade.
+
+Lenis, SplitType e parallax ficam reservados ao desktop com mouse. No celular, as três fotos da formanda se substituem com a rolagem vertical e as partículas são reduzidas a 60. A galeria permite rolagem vertical sobre as imagens, swipe horizontal e ampliação com dois toques ou dois cliques. Enter e Espaço continuam ampliando para acesso por teclado.
+
+Verificação com emulação de toque: vídeo avançando no tempo, swipe vertical e horizontal, clique simples sem abrir, toque duplo e clique duplo abrindo, rolagem de mouse sobre foto e ausência de overflow em 360, 390, 430 e 768 px. Não equivale a teste em aparelho físico.
+
+Revisão da intro em vídeo: tempo 0 → 2,51 → 5,02 segundos e retorno a 0 acompanhando o scroll. Navbar oculta e fora da navegação por teclado na abertura; visível depois da transição. Mapa Google carregado com as coordenadas confirmadas. Autoplay, pausa, ampliação e download da configuração testados. Cabeçalhos de segurança simulados no navegador sem bloqueio das bibliotecas ou do vídeo.
+
+Layout verificado em 1440, 1200, 1024, 768, 430, 390 e 360 px: sem overflow horizontal, IDs duplicados, imagens carregadas quebradas ou travessões visíveis. Menu, diálogo, redução de movimento, bibliotecas CDN e pesos tipográficos verificados. A sequência de fotos avança e reverte com o scroll. Guia testado com filtros, demonstração, pesos, busca, checklist e download, sem overflow de 360 a 1440 px. Sessões de teste sem erros JavaScript.
+
+Não houve teste em aparelhos físicos ou medição representativa de FPS nesses aparelhos. Contatos foram preservados e os preços removidos a pedido, com um único botão Consulte para os três serviços. Nenhuma mensagem foi enviada. Confira os dados comerciais antes de publicar usando a lista do guia.
+
+Spotlight: spotlight.css controla a luz rosé dos serviços, fotos e retrato. Ajuste os valores rgba(240,160,160,...) para mudar sua cor e transparência. A luz do retrato fica atrás do PNG transparente. No desktop acompanha o ponteiro; no celular ganha presença ao entrar na tela, sem capturar gestos. O script principal monta as camadas decorativas e respeita a preferência por menos movimento. A intro reúne as letras conforme o scroll no mesmo agendador existente. As duas referências React foram adaptadas para JavaScript e CSS nativos, sem acrescentar frameworks ou imagens externas.
+
+
+No mobile, a saída do vídeo dissolve suavemente no fundo e a apresentação aparece conforme o scroll. Títulos, imagens de destaque e informações ganham entradas curtas de 14px via IntersectionObserver, executadas uma vez. Não há captura do scroll nem novo loop de animação. A preferência por menos movimento desativa essas transições. Desktop mantém os efeitos anteriores.
