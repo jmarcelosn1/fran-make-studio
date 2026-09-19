@@ -38,3 +38,19 @@ html[data-theme="dark"]{
 [data-theme="dark"] .ft-bottom{padding-top:0}
 [data-theme="dark"] .nb-cta{color:#180d12;background:var(--rose);border-color:var(--rose)}
 @media(max-width:600px){[data-theme="dark"] .sobre-stats{gap:18px}[data-theme="dark"] .mp-card+.mp-card{border:0}}
+
+/* Liquid glass no tema escuro. A mecanica esta em style.css; aqui ficam as
+   cores translucidas. Alpha alto de proposito: o texto escuro sobre o rose
+   precisa manter contraste AA. Sem backdrop-filter o navegador cai nas
+   regras opacas acima e o botao continua legivel. */
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  [data-theme="dark"] .btn-pk,[data-theme="dark"] .nb-cta{
+    background:rgba(240,160,160,.9);border-color:rgba(255,206,206,.5)
+  }
+  [data-theme="dark"] .btn-pk:hover,[data-theme="dark"] .nb-cta:hover{
+    background:rgba(245,180,180,.96);border-color:rgba(255,222,222,.72);
+    box-shadow:0 1px 0 rgba(255,255,255,.38) inset,0 -1px 0 rgba(0,0,0,.18) inset,0 12px 28px -12px rgba(240,160,160,.55)
+  }
+  [data-theme="dark"] .btn-ol{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.2)}
+  [data-theme="dark"] .btn-ol:hover{background:rgba(255,255,255,.1);border-color:rgba(240,160,160,.58)}
+}
