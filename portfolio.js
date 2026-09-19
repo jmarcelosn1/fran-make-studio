@@ -1,0 +1,101 @@
+/* Portfolio: filtro por categoria e lightbox navegavel. Pagina independente
+   do script.js da home, que depende de elementos do hero inexistentes aqui. */
+(() => {
+  'use strict';
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+
+  const grid = $('#pf-grid');
+  if (!grid) return;
+  const items = $$('.pf-item', grid);
+  const count = $('#pf-count');
+  const empty = $('#pf-empty');
+
+  /* ---- filtro ---- */
+  let visible = items.slice();
+  function filter(category) {
+    visible = [];
+    for (const item of items) {
+      const match = category === 'todos' || item.dataset.category === category;
+      item.hidden = !match;
+      if (match) visible.push(item);
+    }
+    visible.forEach((item, i) => { item.dataset.index = String(i); });
+    count.textContent = `${visible.length} ${visible.length === 1 ? 'fotografia' : 'fotografias'}`;
+    empty.hidden = visible.length > 0;
+  }
+  $$('.pf-filters button').forEach(button => {
+    button.addEventListener('click', () => {
+      $$('.pf-filters button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+      filter(button.dataset.filter);
+    });
+  });
+  filter('todos');
+
+  /* ---- lightbox ---- */
+  const dialog = $('#lightbox'), image = $('#lb-img'), caption = $('#lb-caption');
+  const prev = $('#lb-prev'), next = $('#lb-next');
+  let current = 0, opener = null;
+
+  function show(index) {
+    if (!visible.length) return;
+    current = (index + visible.length) % visible.length;
+    const item = visible[current];
+    const thumb = $('img', item);
+    image.src = item.dataset.full || thumb.src;
+    image.alt = thumb.alt;
+    caption.textContent = thumb.alt;
+    const many = visible.length > 1;
+    prev.hidden = !many; next.hidden = !many;
+  }
+  function open(item) {
+    opener = item;
+    show(Number(item.dataset.index) || 0);
+    dialog.showModal();
+    document.body.classList.add('modal-open');
+  }
+  items.forEach(item => item.addEventListener('click', () => open(item)));
+  prev.addEventListener('click', () => show(current - 1));
+  next.addEventListener('click', () => show(current + 1));
+  $('#lb-close').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => {
+    document.body.classList.remove('modal-open');
+    image.removeAttribute('src');
+    opener?.focus({preventScroll:true});
+  });
+  dialog.addEventListener('keydown', event => {
+    if (event.key === 'ArrowRight') { event.preventDefault(); show(current + 1); }
+    if (event.key === 'ArrowLeft') { event.preventDefault(); show(current - 1); }
+  });
+  // Clique fora da imagem fecha, sem capturar o gesto sobre ela.
+  dialog.addEventListener('click', event => {
+    if (event.target === dialog) dialog.close();
+  });
+  let swipeX = 0;
+  dialog.addEventListener('touchstart', e => { swipeX = e.changedTouches[0].clientX; }, {passive:true});
+  dialog.addEventListener('touchend', e => {
+    const delta = e.changedTouches[0].clientX - swipeX;
+    if (Math.abs(delta) > 48) show(current + (delta < 0 ? 1 : -1));
+  }, {passive:true});
+
+  /* ---- menu mobile ---- */
+  const ham = $('#nb-ham'), menu = $('#nb-mob');
+  function closeMenu(restore = true) {
+    menu.hidden = true; menu.inert = true; menu.classList.remove('on');
+    ham.setAttribute('aria-expanded', 'false'); ham.setAttribute('aria-label', 'Abrir menu');
+    document.body.classList.remove('modal-open');
+    if (restore) ham.focus();
+  }
+  ham.addEventListener('click', () => {
+    if (!menu.hidden) return closeMenu();
+    menu.hidden = false; menu.inert = false; menu.classList.add('on');
+    ham.setAttribute('aria-expanded', 'true'); ham.setAttribute('aria-label', 'Fechar menu');
+    document.body.classList.add('modal-open');
+    $('a', menu).focus();
+  });
+  $$('a', menu).forEach(a => a.addEventListener('click', () => closeMenu(false)));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !menu.hidden) closeMenu();
+  });
+  matchMedia('(min-width:851px)').addEventListener('change', e => { if (e.matches && !menu.hidden) closeMenu(false); });
+})();

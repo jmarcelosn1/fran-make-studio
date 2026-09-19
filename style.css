@@ -208,6 +208,11 @@ html:not(.cinematic) .intro-media{display:none}
   .nb-ham{flex-shrink:0}
 }
 
+/* Chamada para o portfolio: a home mostra um recorte, nao a galeria inteira. */
+.pf-teaser{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;
+  padding:30px 0 6px;margin-top:8px;border-top:1px solid var(--line)}
+.pf-teaser p{margin:0;max-width:46ch;color:var(--muted)}
+
 /* ---- Cena do pincel ------------------------------------------------------
    Base = versao estatica (reducao de movimento / sem JS): secao curta com o
    poster. A altura alta e o sticky so entram com .motion-ready, para que

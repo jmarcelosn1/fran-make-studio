@@ -1,12 +1,21 @@
 const fs=require('node:fs'),assert=require('node:assert/strict'),{gzipSync}=require('node:zlib');
-const html=fs.readFileSync('index.html','utf8');
-assert.ok(!/\son\w+\s*=|javascript:/i.test(html),'Inline executable HTML is forbidden');
-const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
-assert.equal(ids.length,new Set(ids).size,'Duplicate IDs');
-for(const m of html.matchAll(/(?:src|href)="([^"#]+)"/g))if(!/^https?:/.test(m[1]))assert.ok(fs.existsSync(m[1]),`Missing asset: ${m[1]}`);
-for(const m of html.matchAll(/href="#([^"]+)"/g))assert.ok(ids.includes(m[1]),`Missing anchor ${m[1]}`);
-const scripts=[...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(m=>m[1]);
-assert.equal(scripts.length,new Set(scripts).size,'Duplicate scripts');
+for(const page of ['index.html','portfolio.html']){
+ const html=fs.readFileSync(page,'utf8');
+ assert.ok(!/\son\w+\s*=|javascript:/i.test(html),`Inline executable HTML is forbidden: ${page}`);
+ const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+ assert.equal(ids.length,new Set(ids).size,`Duplicate IDs in ${page}`);
+ for(const m of html.matchAll(/(?:src|href)="([^"#]+)"/g))if(!/^https?:/.test(m[1]))assert.ok(fs.existsSync(m[1]),`Missing asset in ${page}: ${m[1]}`);
+ for(const m of html.matchAll(/href="#([^"]+)"/g))assert.ok(ids.includes(m[1]),`Missing anchor in ${page}: ${m[1]}`);
+ const scripts=[...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(m=>m[1]);
+ assert.equal(scripts.length,new Set(scripts).size,`Duplicate scripts in ${page}`);
+ // Imagem sem dimensao declarada empurra o layout quando carrega (CLS).
+ // Imagem sem dimensao declarada empurra o layout quando carrega (CLS). As que
+ // nao trazem src no HTML recebem origem e tamanho por JS e nao deslocam nada.
+ for(const m of html.matchAll(/<img\b[^>]*>/g)){
+  if(!/\bsrc="/.test(m[0]))continue;
+  assert.ok(/\bwidth="\d+"/.test(m[0])&&/\bheight="\d+"/.test(m[0]),`Image without width/height in ${page}: ${m[0].slice(0,90)}`);
+ }
+}
 for(const file of fs.readdirSync('.').filter(f=>f.endsWith('.js'))){
  const source=fs.readFileSync(file,'utf8');
  assert.ok(!/\beval\s*\(|new Function\s*\(|\.innerHTML\s*=/.test(source),`Unsafe code in ${file}`);
