@@ -9,7 +9,7 @@ Use Node 22 ou superior. Execute `npm ci`, `npx playwright install chromium` e `
 | Camada | Verificação |
 | --- | --- |
 | Código | Biome: variáveis e parâmetros não utilizados, código inalcançável, chaves duplicadas, debugger, eval e igualdade ambígua |
-| Contratos | IDs, âncoras, assets, scripts duplicados, HTML sincronizado, ausência de HTML executável inline e políticas CSP |
+| Contratos | Em `index.html` e `portfolio.html`: IDs, âncoras, assets, scripts duplicados, ausência de HTML executável inline, políticas CSP e imagens com `src` sem `width`/`height` declarados (CLS) |
 | Unitários | Validação real de URLs usada pelo site; cobertura mínima de 95% de linhas, 90% de branches e 100% de funções nesse módulo |
 | Integração/E2E | Serviços, mapa, teclado, lightbox, intro reversível, falha de CDN, layout mobile e axe WCAG A/AA |
 | Segurança | npm audit bloqueia vulnerabilidades altas/críticas nas dependências de desenvolvimento |
@@ -18,11 +18,15 @@ Use Node 22 ou superior. Execute `npm ci`, `npx playwright install chromium` e `
 
 Os relatórios de cobertura, capturas de falha e traces são anexados à execução por 14 dias. A cobertura cobre a fronteira de URLs, não toda a interface. Revise também as bibliotecas CDN fixadas no HTML e Three.js local, que npm audit não examina.
 
-Validação local em 16/09/2026: lint e contratos aprovados, três testes unitários aprovados, 95,65% de linhas e 96% de branches em safety.js, 12 E2E aprovados em Edge desktop/mobile e seis em WebKit mobile. Axe não encontrou violações nos estados auditados. npm audit retornou zero vulnerabilidades. Foram corrigidos atributos ARIA inválidos na intro e foco por teclado na sequência de fotos. Emulação não substitui teste em aparelhos físicos; CI Linux e proteção remota ainda precisam de execução no repositório real.
+Validação local em 19/09/2026: lint e contratos aprovados, três testes unitários aprovados, 95,65% de linhas e 96% de branches em safety.js, 12 E2E aprovados em Chromium desktop e mobile, build gerando `dist/` e npm audit sem vulnerabilidades. Consumo de JS/CSS próprios: 32.832 de 45.000 bytes gzip.
+
+Auditoria da mesma data, fora da esteira: sem overflow horizontal em 1920, 1440, 1366, 1024, 768, 430, 390 e 360 px nas duas páginas após rolagem completa; zero erros de console, zero respostas 400 ou acima e zero imagens quebradas; axe WCAG 2.1 AA sem violações em `portfolio.html` a 1440 e 390 px; todos os links internos respondendo 200; foco visível nos CTAs.
+
+Emulação não substitui teste em aparelhos físicos; CI Linux e proteção remota ainda precisam de execução no repositório real.
 
 ## Ativação da proteção remota
 
-Esta pasta ainda não possui Git/remote configurado. Coloque o conteúdo desta pasta na raiz do repositório. No GitHub, crie uma regra para `main`: exigir pull request, uma aprovação independente, dismiss stale approvals, resolução de conversas, checks obrigatórios incluindo `quality-gate`, branch atualizada, bloquear force-push e exclusão, sem bypass de administradores. Com apenas um mantenedor, providencie revisor independente antes de exigir a aprovação. Depois confirme com um PR propositalmente falhando que o merge está bloqueado. O workflow sozinho NÃO proíbe push direto.
+Esta pasta já possui um repositório Git local na branch `main`, sem remote. Falta apenas publicar num remoto. No GitHub, crie uma regra para `main`: exigir pull request, uma aprovação independente, dismiss stale approvals, resolução de conversas, checks obrigatórios incluindo `quality-gate`, branch atualizada, bloquear force-push e exclusão, sem bypass de administradores. Com apenas um mantenedor, providencie revisor independente antes de exigir a aprovação. Depois confirme com um PR propositalmente falhando que o merge está bloqueado. O workflow sozinho NÃO proíbe push direto.
 
 Não há deploy automático nesta esteira. Se a Vercel estiver conectada ao GitHub, publicar produção somente da main protegida. Prévia de PR não deve ser confundida com publicação aprovada.
 

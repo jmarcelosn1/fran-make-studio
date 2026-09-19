@@ -18,6 +18,8 @@ Antes de integrar outro fornecedor, adicione somente seu domínio exato na diret
 
 O código aceita somente imagens e vídeos locais na configuração de mídia. O mapa e os contatos validam protocolo HTTPS e domínios conhecidos. A edição usa texto e propriedades do DOM, sem interpretar HTML fornecido pelo formulário.
 
+A cena do pincel busca o clipe com `fetch` na própria origem e o exibe por `blob:`. Isso já é permitido por `connect-src 'self'` e `media-src 'self' blob:`, então nenhuma diretiva precisou ser afrouxada. O mesmo vale para `portfolio.html`, que não carrega nenhum recurso externo além das fontes já autorizadas.
+
 As dependências CDN têm versões fixadas. Atualize uma por vez e confira a documentação oficial. As regras não substituem atualizações da hospedagem, controle de acesso da conta ou revisão de código; não representam garantia absoluta de segurança.
 
 Não há contador de visitantes, avaliações ou rastreador de analytics adicionado. O mapa Google e os CDNs fazem requisições externas quando carregados.

@@ -4,7 +4,9 @@ Site estático nas cores da logo. Abra `guia.html` para a documentação interat
 
 ## Abrir e publicar
 
-Com Node 22 ou superior, execute `npm ci`, instale o navegador de testes com `npx playwright install chromium` e rode `npm run quality` e `npm run security`. Abra a prévia com `npm run preview` em http://127.0.0.1:4173. Publique somente a pasta `dist/`, gerada pelo build. A configuração Vercel já aponta para essa pasta. `index.html` e `index - Copia.html` contêm a mesma página. Nenhuma publicação foi realizada. Veja `QUALIDADE.md` para a esteira, proteção da branch e pendências externas.
+Com Node 22 ou superior, execute `npm ci`, instale o navegador de testes com `npx playwright install chromium` e rode `npm run quality` e `npm run security`. Abra a prévia com `npm run preview` em http://127.0.0.1:4173. Publique somente a pasta `dist/`, gerada pelo build. A configuração Vercel já aponta para essa pasta. O site tem duas páginas: `index.html` e `portfolio.html`. Nenhuma publicação foi realizada. Veja `QUALIDADE.md` para a esteira, proteção da branch e pendências externas.
+
+O arquivo principal já se chamou `index (5).html`. Esse nome quebrava o build, a esteira e a hospedagem, porque a Vercel serve a raiz a partir de `index.html`. Não renomeie.
 
 ## Tipografia e identidade
 
@@ -14,15 +16,26 @@ DM Sans nos títulos e Manrope nos textos, via Google Fonts com pesos reais 400,
 
 ## Arquivos e recursos
 
-Ordem do conteúdo: apresentação, sobre Franciana, noivas, sociais, formandas, vídeos, serviços e valores, localização e agendamento. Os pedidos de agendamento foram retirados do meio das galerias. O botão Agendar fica na navegação após a intro, inclusive no celular; o contato final usa Agendar meu horário. O Instagram aparece na apresentação como link para conhecer o trabalho.
+Ordem do conteúdo da home: apresentação, cena do pincel, sobre Franciana, noivas, prévia de sociais, formandas, vídeos, serviços, localização e agendamento. O portfólio completo não fica mais na home: vive em `portfolio.html`, alcançável pelo item Portfólio do menu e por chamadas ao longo da página. A home guarda apenas três prévias. O botão Agendar fica na navegação após a intro, inclusive no celular; o contato final usa Agendar meu horário. O Instagram aparece na apresentação como link para conhecer o trabalho.
 
-- `style.css`: identidade, tipografia, camadas, textura e responsividade.
-- `script.js`: abertura vinculada ao scroll, partículas, galerias, menu, fotos ampliadas, vídeos e mapa.
-- `motion.js`: Lenis, GSAP, ScrollTrigger, SplitType, parallax, sequência reversível da formanda e Vanilla-Tilt somente nas imagens de destaque.
+A intro abre com a assinatura Fran Make sendo escrita da esquerda para a direita conforme o scroll. A arte real é revelada por uma máscara que avança na direção da escrita; o `h1` mantém o texto da marca oculto para buscadores e leitores de tela. Vetorizar o logo e animar `stroke-dashoffset` não serve aqui, porque a caligrafia tem espessura variável e o traçado resultante é o contorno das letras, não a linha da caneta.
+
+- `style.css`: identidade, tipografia, camadas, textura, liquid glass dos CTAs e responsividade.
+- `dark.css`: paleta preta padrão e as cores translúcidas do liquid glass. Carrega depois de `style.css`, então regras de tema precisam morar aqui.
+- `script.js`: abertura vinculada ao scroll, assinatura, partículas, galerias, menu, fotos ampliadas, vídeos e mapa. Depende de elementos do hero e não serve a outras páginas.
+- `motion.js`: Lenis, GSAP, ScrollTrigger, SplitType, parallax, sequência reversível da formanda, cena do pincel e Vanilla-Tilt somente nas imagens de destaque.
+- `portfolio.html`, `portfolio.css`, `portfolio.js`: página de portfólio, com filtro por categoria e lightbox navegável. JS próprio, independente do `script.js`.
+- `boot.js`: tema antes da primeira pintura. Só a página que declara `data-intro` no `<html>` recebe as classes da abertura; sem isso a navbar ficaria oculta para sempre em páginas sem `script.js`.
 - `config.js`: contatos, retrato, efeitos, autoplay e localização.
 - `guia.html`, `guia.css`, `guia.js`: documentação independente do site público.
 - `images`: originais, WebP e capas extraídas dos próprios vídeos.
 - `vendor`: Three.js 0.160.1 local e licença MIT.
+
+## Cena do pincel
+
+`images/pincel-scroll.mp4` e `images/pincel-scroll-mobile.mp4` são cópias sem áudio do clipe original, reencodadas com quadro de referência a cada seis frames. O original trazia keyframe apenas no primeiro quadro, o que faria cada busca redecodificar desde o início e travar o scroll. As bordas receberam corte de 12% de cada lado para remover um brilho parado na extremidade direita; a versão mobile tem corte mais estreito porque o enquadramento paisagem deixa o pincel pequeno demais em tela retrato.
+
+O scroll controla apenas o tempo do vídeo. Nenhum transform, escala ou rotação é aplicado ao pincel, porque o movimento já está gravado. O clipe é carregado como blob em memória: hospedagem estática sem HTTP Range não permite busca, e o scrub depende de avançar e retroceder. A altura alta da seção só é aplicada pela classe `brush-ready`, adicionada quando tudo inicializa; se o GSAP falhar, a seção fica curta e estática com o poster em vez de um vazio de 170vh.
 
 Lenis 1.3.26 e SplitType 0.3.4 vêm do Unpkg; GSAP/ScrollTrigger 3.13.0 e Vanilla-Tilt 1.8.1 do cdnjs. O guia contém links oficiais. Há fallback quando as bibliotecas não carregam. O ticker do GSAP coordena o movimento, com fallback requestAnimationFrame. A preferência por menos movimento simplifica a experiência.
 
