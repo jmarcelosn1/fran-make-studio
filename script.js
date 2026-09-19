@@ -19,20 +19,7 @@
   const tickerDriven = !!window.gsap;
   const introVideo = $('#intro-video'), introMedia = $('.intro-media'), navbar = $('#navbar');
   const playIntro = $('#intro-play');
-  // Preserve a single accessible heading while letters converge with scroll.
-  const introCharacters = [];
-  heading.setAttribute('aria-label', 'FRAN MAKE STUDIO');
-  $$('h1 > span', title).forEach(line => {
-    const text = line.textContent;
-    line.setAttribute('aria-hidden', 'true');
-    line.textContent = '';
-    [...text].forEach((character, index) => {
-      const span = document.createElement('span');
-      span.className = 'intro-character'; span.textContent = character;
-      span.setAttribute('aria-hidden', 'true'); line.append(span);
-      introCharacters.push({span, distance:index - (text.length - 1) / 2});
-    });
-  });
+  const introMark = $('.intro-mark');
   const lookPhotos = $('.look-photos');
   lookPhotos.tabIndex = 0;
   lookPhotos.setAttribute('role', 'region');
@@ -130,13 +117,10 @@
   }
   function updateIntro() {
     progress = reduced.matches ? 1 : clamp((scrollY - start) / range);
-    const letterReveal = reduced.matches ? 1 : smooth(0, mobile.matches ? .2 : .28, progress);
-    introCharacters.forEach(({span,distance}) => {
-      const spread = (1-letterReveal) * (mobile.matches ? 1.4 : 4);
-      span.style.transform = `translate3d(${distance * spread}px,${Math.abs(distance) * spread * .45}px,0)`;
-    });
-    const reveal = reduced.matches ? 1 : mobile.matches ? smooth(.2, .68, progress) : smooth(.73, .94, progress);
-    const fade = reduced.matches ? 1 : mobile.matches ? smooth(.08, .62, progress) : smooth(.62, .76, progress);
+    const drawn = reduced.matches ? 1 : smooth(0, mobile.matches ? .44 : .58, progress);
+    introMark.style.setProperty('--draw', drawn.toFixed(4));
+    const reveal = reduced.matches ? 1 : mobile.matches ? smooth(.54, .9, progress) : smooth(.73, .94, progress);
+    const fade = reduced.matches ? 1 : mobile.matches ? smooth(.46, .78, progress) : smooth(.62, .76, progress);
     const navigationVisible = reduced.matches || progress >= .94;
     document.documentElement.classList.toggle('intro-pending', !navigationVisible);
     navbar.inert = !navigationVisible;
