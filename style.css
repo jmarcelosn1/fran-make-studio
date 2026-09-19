@@ -207,3 +207,23 @@ html:not(.cinematic) .intro-media{display:none}
   .brand-name>span{font-size:7px;letter-spacing:2px}
   .nb-ham{flex-shrink:0}
 }
+
+/* ---- Cena do pincel ------------------------------------------------------
+   Base = versao estatica (reducao de movimento / sem JS): secao curta com o
+   poster. A altura alta e o sticky so entram com .motion-ready, para que
+   ninguem fique preso rolando uma cena longa sem animacao.
+   O pincel nunca recebe scale ou rotacao: o video ja traz o movimento. */
+.brush-scene{position:relative;background:#000}
+.brush-sticky{position:relative;display:grid;place-items:center;overflow:hidden;background:#000}
+.brush-inner{width:100%;display:grid;place-items:center}
+.brush-video{display:block;width:100%;height:auto;max-height:66svh;object-fit:contain;background:#000}
+.brush-edge{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 82% 72% at 50% 50%,transparent 54%,#000 100%)}
+.brush-scene.brush-ready{height:170vh}
+.brush-scene.brush-ready .brush-sticky{position:sticky;top:0;height:100svh}
+.brush-scene.brush-ready .brush-inner{height:100%;opacity:var(--brush-in,0)}
+.brush-scene.brush-ready .brush-video{height:100%;max-height:none}
+@media(max-width:850px){
+  .brush-scene.brush-ready{height:134vh}
+  .brush-video{max-height:56svh}
+  .brush-edge{background:radial-gradient(ellipse 94% 64% at 50% 50%,transparent 58%,#000 100%)}
+}
