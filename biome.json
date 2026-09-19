@@ -5,6 +5,7 @@
 			"**/*.cjs",
 			"!vendor/**",
 			"!images/**",
+			"!_backup-pincel/**",
 			"!dist/**",
 			"!node_modules/**",
 			"!coverage/**",
