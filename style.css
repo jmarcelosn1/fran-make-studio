@@ -265,7 +265,7 @@ html:not(.cinematic) .intro-media{display:none}
    O laco existe para mostrar trabalho real em rotacao, nao como enfeite: ele
    para fora da tela e para com reducao de movimento. */
 .corridor{position:relative;overflow:hidden;container-type:inline-size;background:#000;
-  min-height:clamp(430px,60svh,640px);display:grid;place-items:center}
+  display:block}
 .corridor-rails{position:absolute;inset:0;pointer-events:none;perspective:62cqw;perspective-origin:50% 52%}
 .corridor-stage{position:absolute;inset:0;transform-style:preserve-3d}
 .corridor-card{position:absolute;left:50%;top:52%;width:18cqw;height:25cqw;margin:-12.5cqw 0 0 -9cqw;
@@ -274,22 +274,21 @@ html:not(.cinematic) .intro-media{display:none}
 .corridor-card img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 26%}
 .corridor-veil{position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(ellipse 70% 62% at 50% 52%,transparent 34%,rgba(0,0,0,.82) 78%,#000 100%)}
-.corridor-copy{position:relative;z-index:1;text-align:center;padding:0 24px;isolation:isolate}
+.corridor-copy{position:relative;z-index:1;text-align:center;padding:clamp(52px,7vw,92px) 24px clamp(26px,3.4vw,42px)}
+.corridor-band{position:relative;height:clamp(300px,44svh,470px);
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 11%,#000 89%,transparent);
+  mask-image:linear-gradient(to bottom,transparent,#000 11%,#000 89%,transparent)}
 /* Sem este escurecimento o texto cai em cima dos cartoes e some. */
-.corridor-copy::before{content:'';position:absolute;inset:-14% -10%;z-index:-1;pointer-events:none;
-  background:radial-gradient(ellipse at center,rgba(0,0,0,.94) 0 42%,rgba(0,0,0,.78) 64%,transparent 82%)}
 .corridor-copy h2{font:700 clamp(30px,4.1vw,56px)/1.1 var(--serif);margin:0 0 14px}
 .corridor-copy p{color:var(--muted);max-width:42ch;margin:0 auto 26px}
 .corridor.fora-de-vista .corridor-card{animation-play-state:paused}
 @media(max-width:850px){
   /* Trilhos de 44cqw jogam os cartoes para fora num viewport estreito, mas
      fecha-los demais empilha tudo atras do texto. 38cqw e o meio termo. */
-  .corridor{min-height:clamp(430px,58svh,560px)}
+  .corridor-band{height:clamp(250px,38svh,340px)}
   .corridor-card{width:26cqw;height:36cqw;margin:-18cqw 0 0 -13cqw;animation-name:rail-dir-mob}
   .corridor-card.esq{animation-name:rail-esq-mob}
-  .corridor-veil{background:radial-gradient(ellipse 104% 68% at 50% 52%,transparent 74%,rgba(0,0,0,.5) 92%,#000 100%)}
-  .corridor-copy::before{inset:-12% -6%;
-    background:radial-gradient(ellipse at center,rgba(0,0,0,.95) 0 46%,rgba(0,0,0,.84) 68%,transparent 88%)}
+  .corridor-veil{background:radial-gradient(ellipse 108% 96% at 50% 50%,transparent 72%,rgba(0,0,0,.45) 92%,#000 100%)}
 }
 @media(prefers-reduced-motion:reduce){.corridor-card{animation-play-state:paused}}
 @keyframes rail-dir{0.0%{transform:translate3d(-11.0cqw,0,-258.5cqw) rotateY(-6.0deg)}5.6%{transform:translate3d(-1.5cqw,0,-215.9cqw) rotateY(-7.2deg)}11.1%{transform:translate3d(6.7cqw,0,-179.6cqw) rotateY(-8.4deg)}16.7%{transform:translate3d(13.9cqw,0,-148.7cqw) rotateY(-9.7deg)}22.2%{transform:translate3d(20.0cqw,0,-122.3cqw) rotateY(-10.9deg)}27.8%{transform:translate3d(25.2cqw,0,-99.9cqw) rotateY(-12.1deg)}33.3%{transform:translate3d(29.6cqw,0,-80.7cqw) rotateY(-13.3deg)}38.9%{transform:translate3d(33.2cqw,0,-64.4cqw) rotateY(-14.6deg)}44.4%{transform:translate3d(36.1cqw,0,-50.4cqw) rotateY(-15.8deg)}50.0%{transform:translate3d(38.4cqw,0,-38.6cqw) rotateY(-17.0deg)}55.6%{transform:translate3d(40.2cqw,0,-28.5cqw) rotateY(-18.2deg)}61.1%{transform:translate3d(41.6cqw,0,-19.8cqw) rotateY(-19.4deg)}66.7%{transform:translate3d(42.5cqw,0,-12.5cqw) rotateY(-20.7deg)}72.2%{transform:translate3d(43.2cqw,0,-6.2cqw) rotateY(-21.9deg)}77.8%{transform:translate3d(43.6cqw,0,-0.9cqw) rotateY(-23.1deg)}83.3%{transform:translate3d(43.9cqw,0,3.7cqw) rotateY(-24.3deg)}88.9%{transform:translate3d(44.0cqw,0,7.6cqw) rotateY(-25.6deg)}94.4%{transform:translate3d(44.0cqw,0,10.9cqw) rotateY(-26.8deg)}100.0%{transform:translate3d(44.0cqw,0,13.7cqw) rotateY(-28.0deg)}}
