@@ -321,7 +321,7 @@
     if (emCena && !document.hidden) { if (brushVideo.paused) brushVideo.play().catch(() => {}); }
     else if (!brushVideo.paused) brushVideo.pause();
   }
-  document.addEventListener('visibilitychange', () => { dirty = true; schedule(); });
+  document.addEventListener('visibilitychange', () => { dirty = true; acordarLuz(); schedule(); });
   // Alguns WebKit recusam video em blob: (erro 4) e tocam o mesmo arquivo pelo
   // endereco. Tenta o endereco uma vez antes de desistir do video.
   const tentarEndereco = (video, blobURL, endereco) => {
@@ -502,12 +502,13 @@
     carousels.forEach(c => { c.position = c.track.scrollLeft; });
     measure();
     if (secao) scrollBy({top: secao.getBoundingClientRect().top - topo, behavior: 'instant'});
+    acordarLuz();
   }
   addEventListener('scroll', () => { dirty = true; schedule(); }, { passive: true });
   new ResizeObserver(measure).observe(stage);
   new IntersectionObserver(entries => {
     heroVisible = entries[0].isIntersecting;
-    stage.classList.toggle('fora-de-vista', !heroVisible);   // pausa o giro da luz
+    acordarLuz();
     schedule();
   }, { threshold: 0 }).observe(stage);
   reduced.addEventListener('change', motionPreference);
@@ -689,43 +690,128 @@
     try { const url=new URL(value); if(url.protocol==='https:' && (url.hostname===host || url.hostname==='www.'+host)) $$('a[href*="'+host+'"]').forEach(a=>a.href=url.href); } catch { /* Keep original verified links. */ }
   }
 
-  /* Contorno de luz em volta da Franciana, no lugar das particulas. A mascara
-     sai do proprio PNG: a silhueta desenhada pequena e ampliada vira um borrao
-     que passa um pouco da borda (reducao em vez de ctx.filter, que o Safari nao
-     aceita). Atras da foto so esse halo aparece, e dentro dele gira um gradiente
-     conico, entao o brilho corre pelo contorno. A mascara e feita uma vez; o giro
-     e transform, que o compositor anima sem repintar. */
-  function contornoDeLuz() {
-    const img = $('#hero-img');
-    if (config.lightContour === false || !img || $('.hero-luz')) return;
-    if (!img.complete || !img.naturalWidth) { img.addEventListener('load', contornoDeLuz, {once:true}); return; }
-    const L = 300, A = Math.round(L * img.naturalHeight / img.naturalWidth), F = 24;
-    const tela = n => Object.assign(document.createElement('canvas'), {width: Math.round((L + 2 * F) / n), height: Math.round((A + 2 * F) / n)});
-    const mini = tela(10), meio = tela(3), fim = tela(1);
-    try {
-      mini.getContext('2d').drawImage(img, F / 10, F / 10, L / 10, A / 10);
-      meio.getContext('2d').drawImage(mini, 0, 0, meio.width, meio.height);
-      const f = fim.getContext('2d');
-      f.drawImage(meio, 0, 0, fim.width, fim.height);
-      // Somar a mascara com ela mesma dobra a opacidade perto da borda: o
-      // contorno acende mais sem ficar mais largo.
-      f.globalCompositeOperation = 'lighter';
-      f.drawImage(fim, 0, 0);
-      fim.toBlob(blob => {
-        if (!blob || $('.hero-luz')) return;
-        const luz = Object.assign(document.createElement('span'), {className: 'hero-luz'});
-        luz.setAttribute('aria-hidden', 'true');
-        const mascara = `url(${URL.createObjectURL(blob)})`;
-        luz.style.webkitMaskImage = mascara;
-        luz.style.maskImage = mascara;
-        luz.style.inset = `${(-F / A * 100).toFixed(2)}% ${(-F / L * 100).toFixed(2)}%`;
-        img.before(luz);
-      });
-    } catch { /* Sem canvas utilizavel, a foto fica sem o contorno. */ }
+  /* Contorno de luz: o Next.js Flare (vgpu.sh) refeito em WebGL 1, para rodar
+     tambem sem WebGPU. Mesmo algoritmo e parametros; o traco aceso, la o N do
+     logo, aqui e a borda da foto e do logo, com o canvas atras de cada um.
+     Borda e desfoque saem uma vez; por quadro, so a composicao, a 30 quadros. */
+  const luzes = [];
+  const acordarLuz = () => luzes.forEach(acordar => acordar());
+  function acenderLuz(img, o) {
+    if (config.lightContour === false || !img) return;
+    if (!img.complete || !img.naturalWidth) { img.addEventListener('load', () => acenderLuz(img, o), {once:true}); return; }
+    const tela = Object.assign(document.createElement('canvas'), {className: o.classe});
+    const gl = tela.getContext('webgl', {antialias: false, powerPreference: 'low-power'});
+    if (!gl) return;
+    // Sem GPU cada quadro pesaria na CPU: fica um quadro so, parado.
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    const parado = !!info && /swiftshader|llvmpipe|software/i.test(gl.getParameter(info.UNMASKED_RENDERER_WEBGL));
+    const W = o.N, H = Math.round(W * img.naturalHeight / img.naturalWidth), f = o.folga / (1 + 2 * o.folga);
+    const m = Math.min(W, H), ox = Math.round(W * f), oy = Math.round(H * f);
+    Object.assign(tela, {width: W, height: H});
+    tela.setAttribute('aria-hidden', 'true');
+    const ctx = Object.assign(document.createElement('canvas'), {width: W, height: H}).getContext('2d');
+    ctx.drawImage(img, ox, oy, W - 2 * ox, H - 2 * oy);
+    // Estica a ultima linha: o corte reto da cintura nao vira borda.
+    ctx.drawImage(img, 0, img.naturalHeight - 1, img.naturalWidth, 1, ox, H - oy - 1, W - 2 * ox, oy + 1);
+    const px = ctx.getImageData(0, 0, W, H).data;
+    const cena0 = new Float32Array(W * H).map((_, i) => px[i * 4 + 3] / 255);
+    const vizinho = (de, i, dx, dy, k) => de[Math.min(H - 1, Math.max(0, ((i / W) | 0) + dy * k)) * W + Math.min(W - 1, Math.max(0, i % W + dx * k))];
+    // Borda: o que o desenho ganha dilatado em 2px.
+    const dilata = (de, dx, dy) => de.map((v, i) => Math.max(v, vizinho(de, i, dx, dy, 1), vizinho(de, i, dx, dy, -1), vizinho(de, i, dx, dy, 2), vizinho(de, i, dx, dy, -2)));
+    const a = cena0, d = dilata(dilata(a, 1, 0), 0, 1);
+    const cena = d.map((v, i) => v - a[i]);
+    const traco = cena.map(v => v * v);
+    const sigma = m / o.borrao, raio = Math.ceil(sigma * 3), g = [];
+    for (let k = 0; k <= raio; k++) g.push(Math.exp(-k * k / (2 * sigma * sigma)));
+    const total = g.reduce((t, v, k) => t + (k ? 2 * v : v), 0);
+    const borra = (de, dx, dy) => de.map((v, i) => {
+      let t = v * g[0];
+      for (let k = 1; k <= raio; k++) t += (vizinho(de, i, dx, dy, k) + vizinho(de, i, dx, dy, -k)) * g[k];
+      return t / total;
+    });
+    const borrado = borra(borra(traco, 1, 0), 0, 1);
+    let pico = 1e-6;
+    for (const v of borrado) if (v > pico) pico = v;
+    const dados = new Uint8Array(W * H * 4);
+    for (let i = 0; i < traco.length; i++) { dados[i * 4] = traco[i] * 255; dados[i * 4 + 1] = borrado[i] / pico * 255; }
+    gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, dados);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const prog = gl.createProgram();
+    const shader = (tipo, fonte) => { const sh = gl.createShader(tipo); gl.shaderSource(sh, fonte); gl.compileShader(sh); gl.attachShader(prog, sh); };
+    shader(gl.VERTEX_SHADER, 'attribute vec2 p;varying vec2 u;void main(){u=vec2(p.x,-p.y)*.5+.5;gl_Position=vec4(p,0.,1.);}');
+    // Constantes do composite.wgsl e do rim.wgsl originais.
+    shader(gl.FRAGMENT_SHADER, `precision highp float;uniform sampler2D t;uniform vec2 L,A;uniform float f,q,e;varying vec2 u;
+float k(vec2 c){vec2 d=(L-c)*A;return 1./(1.+dot(d,d)*4.7);}
+void main(){vec2 r=texture2D(t,u).rg;float K=k(u),s=r.x*K,b=r.y*K,w=1.,W=0.,z=0.;
+vec2 d=(u-L)*(${o.densidade}/${o.passos}.),c=u-d*fract(sin(dot(u,vec2(12.9898,78.233))+q)*43758.5453);
+for(int i=0;i<${o.passos};i++){c-=d;z+=texture2D(t,c).g*k(c)*w;W+=w;w*=${o.decai};}
+vec2 h=(u-L)*A;float H=exp(-dot(h,h)/.0088),S=max(s,b*.85)*(1.+H*1.5);
+vec3 C=vec3(.94,.64,.68),R=C*H*max(r.x,b*.65)*f*1.1+vec3(r.x)*e+(mix(vec3(1.),C,.5)+C*.4)*S*f+C*z/W*3.3*f;
+vec2 g=smoothstep(0.,.2,u)*smoothstep(0.,.2,1.-u);
+vec3 o=(1.-exp(-R*smoothstep(1.35,.25,length((u-.5)*A))*1.3))*g.x*g.y;
+gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
+    gl.bindAttribLocation(prog, 0, 'p');
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+    // O contexto nasceu com o canvas em 300x150.
+    gl.viewport(0, 0, W, H);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    const [uL, uF, uQ] = ['L', 'f', 'q'].map(n => gl.getUniformLocation(prog, n));
+    gl.uniform2f(gl.getUniformLocation(prog, 'A'), W / m, H / m);
+    gl.uniform1f(gl.getUniformLocation(prog, 'e'), o.cena);
+    const noCanvas = (x, y) => [f + x * (1 - 2 * f), f + y * (1 - 2 * f)];
+    let luz = noCanvas(...o.centro), alvo = null, segura = 0, quadro = 0, ultimo = 0, antes = 0, vivo = false;
+    const desenhar = forca => {
+      gl.uniform2f(uL, luz[0], luz[1]); gl.uniform1f(uF, forca); gl.uniform1f(uQ, quadro++ * .618 % 1 * 100);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+    // Respiracao do original: 6s acesa, 2s apagando ate 20%.
+    const suave = v => v * v * (3 - 2 * v);
+    const pulso = x => { x %= 12; return x < 6 ? 1 : x < 8 ? 1 - .8 * suave((x - 6) / 2) : x < 10 ? .2 : .2 + .8 * suave((x - 10) / 2); };
+    const laco = agora => {
+      if (!heroVisible || document.hidden || reduced.matches) { vivo = false; return; }
+      requestAnimationFrame(laco);
+      if (agora - ultimo < 33 || portrait.classList.contains('apagado')) return;
+      ultimo = agora;
+      const t = agora / 1000, dt = Math.min(Math.max(t - antes, 0), .05), fase = t * .32, r = .34 + .09 * Math.sin(fase * .83);
+      antes = t;
+      const destino = alvo || noCanvas(o.centro[0] + Math.cos(fase) * r * 1.1, o.centro[1] - Math.sin(fase) * r * .85), e = 1 - Math.exp(-dt / .3);
+      luz = [luz[0] + (destino[0] - luz[0]) * e, luz[1] + (destino[1] - luz[1]) * e];
+      segura += ((alvo ? 1 : 0) - segura) * (1 - Math.exp(-dt / .35));
+      const p = pulso(t);
+      desenhar(p + (1 - p) * segura);
+    };
+    stage.addEventListener('pointermove', ev => {
+      if (ev.pointerType !== 'mouse') return;
+      const b = tela.getBoundingClientRect();
+      alvo = [Math.min(1, Math.max(0, (ev.clientX - b.left) / b.width)), Math.min(1, Math.max(0, (ev.clientY - b.top) / b.height))];
+    }, {passive: true});
+    stage.addEventListener('pointerleave', () => { alvo = null; });
+    const acordar = () => {
+      if (!tela.isConnected) return;
+      if (reduced.matches || parado) { luz = noCanvas(o.centro[0] - .2, o.centro[1] - .25); desenhar(1); return; }
+      if (!vivo && heroVisible && !document.hidden) { vivo = true; requestAnimationFrame(laco); }
+    };
+    tela.addEventListener('webglcontextlost', ev => { ev.preventDefault(); tela.remove(); });
+    img.before(tela);
+    luzes.push(acordar);
+    acordar();
   }
   addEventListener('pagehide',e=>{cancelAnimationFrame(frame);frame=0;clearTimeout(resumeTimer);if(!e.persisted){videoRequest.abort();if(videoObjectURL)URL.revokeObjectURL(videoObjectURL);motion?.dispose();}});
   addEventListener('pageshow',()=>{dirty=true;schedule();});
   motion?.init();
   if(tickerDriven) gsap.ticker.add(()=>tick(performance.now()));
-  motionPreference();contornoDeLuz();
+  motionPreference();
+  addEventListener('load', () => setTimeout(() => {
+    const m = mobile.matches;
+    acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .14, cena: .22, centro: [.5, .45], N: m ? 360 : 640, passos: m ? 24 : 48, densidade: .83, decai: .925, borrao: 160});
+    acenderLuz($('.hero-logo'), {classe: 'logo-flare', folga: .35, cena: .22, centro: [.5, .5], N: m ? 320 : 560, passos: m ? 20 : 32, densidade: .83, decai: .925, borrao: 160});
+  }, 200), {once:true});
 })();

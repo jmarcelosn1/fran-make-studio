@@ -182,6 +182,8 @@ test('English version translates, survives a motion remount, returns to identica
  // Remontar as animacoes desfaz a quebra dos titulos; a traducao tem que voltar.
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.emulateMedia({reducedMotion:'no-preference'});
+ // Espera a pagina voltar ao modo animado: sob carga o aviso chega depois.
+ await expect(page.locator('html')).toHaveClass(/cinematic/);
  await page.waitForTimeout(150);
  expect(await tituloServicos()).toBe('Three ways to work together.');
  await alternar();
@@ -208,9 +210,9 @@ test('English version translates, survives a motion remount, returns to identica
 test('light contour hugs the portrait, appears only with it, and particles are gone',async({page})=>{
  await page.goto('/');
  await expect(page.locator('#webgl-canvas')).toHaveCount(0);
- const luz=page.locator('.hero-photo .hero-luz');
- await expect(luz).toHaveCount(1);
- expect(await luz.evaluate(el=>{const s=getComputedStyle(el);return s.maskImage||s.webkitMaskImage;})).toContain('blob:');
+ // O flare precisa de WebGL; sem ele a foto fica sem contorno, e so.
+ if(await page.evaluate(()=>!!document.createElement('canvas').getContext('webgl')))
+  {await expect(page.locator('.hero-photo canvas.hero-flare')).toHaveCount(1);await expect(page.locator('.hero-marca canvas.logo-flare')).toHaveCount(1);}
  const opacidade=async fracao=>{
   await page.evaluate(f=>{const h=document.getElementById('hero');window.scrollTo(0,h.offsetTop+(h.offsetHeight-innerHeight)*f);},fracao);
   await page.waitForTimeout(250);
