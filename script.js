@@ -7,7 +7,7 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const mobile = matchMedia('(max-width:850px), (pointer:coarse)');
   const hero = $('#hero'), stage = $('.hero-stage'), title = $('.intro-title');
-  const kicker = $('#intro-kicker'), heading = $('.intro-title h1');
+  const kicker = $('#intro-kicker'), assinatura = $('.intro-signature');
   const content = $('.hero-content'), portrait = $('.hero-photo');
   const clamp = n => Math.min(1, Math.max(0, n));
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
@@ -319,7 +319,6 @@
      assinatura -> pincel com Beleza e Sofisticacao -> Franciana em PNG.
      Um driver unico controla tudo, entao nao ha animacoes concorrentes. */
   const PHASE = {
-    draw:     [0,   .20],
     titleOut: [.23, .33],
     brushIn:  [.26, .36],
     scrub:    [.29, .87],
@@ -334,8 +333,6 @@
   function updateIntro() {
     progress = reduced.matches ? 1 : clamp((scrollY - start) / range);
     const still = reduced.matches;
-    const drawn = still ? 1 : at('draw', progress);
-    introMark.style.setProperty('--draw', drawn.toFixed(4));
     const reveal = still ? 1 : at('reveal', progress);
     const fade = still ? 1 : at('titleOut', progress);
 
@@ -360,10 +357,6 @@
     seekVideo();
     title.style.opacity = reduced.matches ? 1 : 1 - fade;
     title.style.transform = `translate3d(0,${-45 * fade}px,0)`;
-    kicker.style.opacity = .8 + .2 * smooth(0, .15, progress);
-    kicker.style.transform = `translateY(${12 * (1 - smooth(0, .15, progress))}px)`;
-    heading.style.opacity = .75 + .25 * smooth(.06, .29, progress);
-    heading.style.transform = `translateY(${20 * (1 - smooth(.06, .29, progress))}px)`;
     content.style.opacity = reveal;
     content.style.visibility = reveal > .01 ? 'visible' : 'hidden';
     content.style.transform = `translate3d(0,${28 * (1 - reveal)}px,0)`;
@@ -371,6 +364,46 @@
     portrait.style.opacity = reveal;
     portrait.style.visibility = reveal > .01 ? 'visible' : 'hidden';
     portrait.style.transform = `translate3d(${20 * (1 - reveal)}px,${14 * (1 - reveal)}px,0)`;
+  }
+  /* Entrada da abertura: CONHECA, a assinatura e a legenda sobem juntas, uma
+     vez, no carregamento. A assinatura continua sendo escrita pela mascara, so
+     que pelo tempo e nao mais pelo scroll: antes as legendas ja estavam na tela
+     enquanto o nome ainda nao tinha sido escrito, e ficavam soltas. */
+  function aplicarEntrada(e) {
+    // Tudo sai do quanto o nome ja foi escrito: o CONHECA acende na mesma medida
+    // e nunca fica na tela antes do nome; a legenda fecha o movimento.
+    const t = clamp(e / .75);
+    const escrito = 1 - (1 - t) * (1 - t);
+    introMark.style.setProperty('--draw', escrito.toFixed(4));
+    const k = smooth(0, .7, escrito);
+    kicker.style.opacity = k;
+    kicker.style.transform = `translateY(${8 * (1 - k)}px)`;
+    const a = smooth(.66, 1, e);
+    assinatura.style.opacity = a;
+    assinatura.style.transform = `translateY(${8 * (1 - a)}px)`;
+  }
+  if (reduced.matches) aplicarEntrada(1);
+  else {
+    aplicarEntrada(0);
+    let comecou = false;
+    const comecar = () => {
+      if (comecou) return;
+      comecou = true;
+      const t0 = performance.now() + 180;
+      const passo = t => {
+        const e = clamp((t - t0) / 1600);
+        aplicarEntrada(e);
+        if (e < 1) requestAnimationFrame(passo);
+      };
+      requestAnimationFrame(passo);
+    };
+    const arte = $('.intro-mark-draw img');
+    if (!arte || arte.complete) comecar();
+    else {
+      arte.addEventListener('load', comecar, {once:true});
+      arte.addEventListener('error', comecar, {once:true});
+      setTimeout(comecar, 1500);
+    }
   }
   function tick(time) {
     if(document.hidden) return;

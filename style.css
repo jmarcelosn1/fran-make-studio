@@ -385,3 +385,17 @@ html:not(.cinematic) .brush-scene{display:none}
   .sq-slide{transition-duration:1ms}
 }
 html.salto-ancora #hero{visibility:hidden}
+/* Abertura em bloco: CONHECA, a assinatura e a legenda centradas no terco de
+   baixo. No canto esquerdo o texto caia sobre a mao e o cabelo, e o vao entre as
+   legendas denunciava que o nome no meio ainda nao existia. */
+.cinematic .intro-title{align-items:center;justify-content:flex-end;text-align:center;
+  padding:40px 24px clamp(72px,12vh,128px)}
+.cinematic .intro-mark{width:min(48vw,540px)}
+.cinematic #intro-kicker{margin-bottom:14px;opacity:0}
+.cinematic .intro-signature{margin-top:16px;opacity:0}
+.intro-shade{background:linear-gradient(0deg,rgba(12,9,11,.88),rgba(12,9,11,.3) 42%,transparent 72%)}
+@media(max-width:850px){
+  .cinematic .intro-title{padding:28px 24px 96px}
+  .cinematic .intro-mark{width:min(82vw,360px)}
+}
+.mobile-layout.cinematic .intro-title{padding:30px 24px 88px}
