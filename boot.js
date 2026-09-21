@@ -28,3 +28,12 @@ if (document.documentElement.hasAttribute('data-intro') && !matchMedia('(prefers
   // Quem chega direto numa secao ja passou da abertura: a navbar nao some.
   if (!saltaParaAncora) document.documentElement.classList.add('intro-pending');
 }
+
+// Estado de clique dos botoes com brilho por 200ms, como no glow-button de
+// referencia. So o :active some rapido demais num toque curto.
+document.addEventListener('pointerdown', e => {
+  const botao = e.target instanceof Element ? e.target.closest('.glow-btn') : null;
+  if (!botao) return;
+  botao.dataset.state = 'clicked';
+  setTimeout(() => { if (botao.dataset.state === 'clicked') delete botao.dataset.state; }, 200);
+}, {passive:true});

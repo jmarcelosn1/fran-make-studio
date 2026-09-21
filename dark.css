@@ -17,7 +17,7 @@ html[data-theme="dark"]{
 [data-theme="dark"] .sobre-stats{border:0;justify-content:flex-start;gap:60px}
 [data-theme="dark"] .ss-div{display:none}
 [data-theme="dark"] .btn-pk{background:var(--rose);color:#180d12;border-color:var(--rose)}
-[data-theme="dark"] .btn-pk:hover{background:#f0b0b0;border-color:#f0b0b0}
+[data-theme="dark"] .btn-pk:hover{background:#f4b6be;border-color:#f4b6be}
 [data-theme="dark"] .btn-ol:hover,[data-theme="dark"] .portfolio-controls button:hover{background:#171717}
 [data-theme="dark"] .image-note,[data-theme="dark"] .look-frame figcaption{background:rgba(19,16,21,.93);color:#f6ebef;border:1px solid var(--line)}
 [data-theme="dark"] .map-placeholder,[data-theme="dark"] .map-link{background:#000}
@@ -45,12 +45,12 @@ html[data-theme="dark"]{
    regras opacas acima e o botao continua legivel. */
 @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   [data-theme="dark"] .btn-pk,[data-theme="dark"] .nb-cta{
-    background:rgba(240,160,160,.9);border-color:rgba(255,206,206,.5)
+    background:rgba(239,163,173,.9);border-color:rgba(255,212,218,.5)
   }
   [data-theme="dark"] .btn-pk:hover,[data-theme="dark"] .nb-cta:hover{
-    background:rgba(245,180,180,.96);border-color:rgba(255,222,222,.72);
-    box-shadow:0 1px 0 rgba(255,255,255,.38) inset,0 -1px 0 rgba(0,0,0,.18) inset,0 12px 28px -12px rgba(240,160,160,.55)
+    background:rgba(244,182,190,.96);border-color:rgba(255,226,230,.72);
+    box-shadow:0 1px 0 rgba(255,255,255,.38) inset,0 -1px 0 rgba(0,0,0,.18) inset,0 12px 28px -12px rgba(239,163,173,.55)
   }
   [data-theme="dark"] .btn-ol{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.2)}
-  [data-theme="dark"] .btn-ol:hover{background:rgba(255,255,255,.1);border-color:rgba(240,160,160,.58)}
+  [data-theme="dark"] .btn-ol:hover{background:rgba(255,255,255,.1);border-color:rgba(239,163,173,.58)}
 }
