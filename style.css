@@ -369,11 +369,6 @@ html:not(.cinematic) .brush-scene{display:none}
    movimento, e a imagem e reamostrada a cada quadro. */
 .sq-panel img{position:absolute;inset:0 auto;top:0;left:50%;translate:-50% 0;height:100%;
   width:var(--sq-hero);min-width:100%;max-width:none;object-fit:cover;object-position:50% 28%}
-.sq-mark{position:absolute;inset:auto 0 0;padding:44px 16px 14px;text-align:left;
-  font:600 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#fff;
-  background:linear-gradient(transparent,rgba(0,0,0,.6));opacity:0;
-  transition:opacity .9s var(--ease);pointer-events:none}
-.sq-panel[data-aberto] .sq-mark{opacity:1}
 
 .sq-copy{display:grid;margin-top:clamp(22px,2.6vw,32px)}
 .sq-slide{grid-area:1/1;display:flex;flex-direction:column;align-items:flex-start;gap:18px;
@@ -388,6 +383,6 @@ html:not(.cinematic) .brush-scene{display:none}
   .sq-slide .btn-pk{flex:0 0 auto}
 }
 @media(prefers-reduced-motion:reduce){
-  .sq-panel,.sq-slide,.sq-mark{transition-duration:1ms}
+  .sq-panel,.sq-slide{transition-duration:1ms}
 }
 .sq-strip.sq-quieto .sq-panel,.sq-strip.sq-quieto~*  .sq-slide{transition:none}
