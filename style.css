@@ -49,7 +49,7 @@ html:not(.cinematic) .intro-title{width:1px;height:1px;padding:0;overflow:hidden
 #sobre{background:var(--paper);color:var(--ink)}#sobre .slabel{color:#975266}#sobre em{color:#975266}#sobre .ssub{color:#80606a}
 .portfolio{min-width:0}.portfolio-track{display:flex;gap:22px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#8c7067 transparent;padding:5px 1px 16px;cursor:grab;touch-action:pan-x pan-y;outline-offset:8px}.portfolio-track.dragging{cursor:grabbing;user-select:none}.portfolio-card{position:relative;flex:0 0 calc((100% - 44px)/2.75);border:0;padding:0;background:#352a27;overflow:hidden;aspect-ratio:4/5;text-align:left;touch-action:pan-x pan-y}.portfolio-card img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;transition:transform .5s var(--ease);pointer-events:none}.portfolio-card:hover img{transform:scale(1.025)}.photo-caption{position:absolute;inset:auto 0 0;display:flex;justify-content:space-between;gap:12px;padding:40px 20px 18px;background:linear-gradient(transparent,rgba(20,13,12,.8));color:#fff;font-size:11px;pointer-events:none}.photo-caption>span:last-child{font-size:20px}.makes-prices{display:grid;grid-template-columns:repeat(3,1fr);margin-top:65px;border-block:1px solid var(--line)}.mp-card{padding:36px 30px;display:flex;flex-direction:column;align-items:flex-start;gap:20px}.mp-card+.mp-card{border-left:1px solid var(--line)}.mp-card p{color:var(--muted);font-size:12px}.mp-featured{background:rgba(195,134,153,.09)}
 .map-box{border:1px solid var(--line);overflow:hidden}.map-placeholder{text-align:center;padding:55px 25px;background:radial-gradient(ellipse at center,#f0d9dc,#fff9f6)}.map-placeholder h3{font:700 42px/1.2 var(--serif)}.map-placeholder p{margin:15px auto 26px;max-width:390px;color:var(--muted);font-size:13px}.ctc-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;max-width:980px;margin:auto}.ctc-card{border-top:1px solid var(--line);padding:34px 20px 10px;display:flex;flex-direction:column;align-items:flex-start;gap:20px}.ctc-ico{color:var(--rose)}.ctc-card h3{font:700 32px/1.2 var(--serif)}.ctc-card p{font-size:13px;color:var(--muted);max-width:390px;flex:1}
-#footer{padding:65px 0 28px;border-top:1px solid var(--line)}.ft-top{display:flex;justify-content:space-between;gap:40px;padding-bottom:45px}.ft-logo{width:82px;height:82px;object-fit:contain;margin-bottom:20px}.ft-brand p{font:500 20px var(--serif);color:var(--muted)}.ft-nav{display:grid;grid-template-columns:1fr 1fr;gap:12px 35px;align-content:start;font-size:11px;color:var(--muted)}.ft-social{display:flex;gap:12px}.ft-social a{width:44px;height:44px;border:1px solid var(--line);display:grid;place-items:center}.ft-bottom{border-top:1px solid var(--line);padding-top:24px;display:flex;justify-content:space-between;gap:20px;font-size:10px;color:var(--muted)}
+#footer{padding:65px 0 28px;border-top:1px solid var(--line)}.ft-top{display:flex;justify-content:space-between;gap:40px;padding-bottom:45px}.ft-logo{width:82px;height:82px;object-fit:contain;margin-bottom:20px}.ft-brand p{font:500 20px var(--serif);color:var(--muted)}.ft-nav{display:grid;grid-template-columns:1fr 1fr;gap:12px 35px;align-content:start;font-size:11px;color:var(--muted)}.ft-bottom{border-top:1px solid var(--line);padding-top:24px;display:flex;justify-content:space-between;gap:20px;font-size:10px;color:var(--muted)}
 .motion-ready .rv{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}.motion-ready .rv.show{opacity:1;transform:none}
 #lightbox{border:1px solid var(--line);background:#fff9f6;color:var(--ink);padding:16px;max-width:94vw;max-height:94svh;overflow:auto}#lightbox::backdrop{background:rgba(12,9,9,.93)}#lb-img{max-height:76svh;max-width:85vw;object-fit:contain;margin:auto}#lb-close{position:sticky;top:0;display:block;margin:0 0 10px auto;width:44px;height:44px;border:1px solid var(--line);background:#fff9f6;font-size:28px}#lb-caption{text-align:center;font-size:12px;margin-top:12px}
 .micro-spark{position:fixed;width:9px;height:9px;background:#a65770;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);pointer-events:none;z-index:80;animation:spark .32s ease-out forwards}@keyframes spark{0%{opacity:0;transform:scale(.4)}35%{opacity:.9}100%{opacity:0;transform:translateY(-4px) scale(.6)}}
@@ -346,19 +346,12 @@ html.salto-ancora #hero{visibility:hidden}
   .brush-right{top:68%;right:max(5vw,18px)}
 }
 @media(prefers-reduced-motion:reduce){.brush-inner{transform:none}}
-/* Slogan do logo como texto. Dentro da imagem ele tinha 31px de altura em 1254,
-   o que no hero virava uns 6px: ilegivel. O logo do hero usa um recorte sem a
-   linha e o slogan vem em serifada italica, a mesma das palavras do pincel. A
-   cor e a media do slogan original dentro do PNG, amostrada, nao escolhida.
-   width:0 com min-width:100% faz o slogan ocupar a largura do logo sem alarga-lo. */
+/* Logo do hero sem o slogan e sem os fios ao lado de STUDIO, apagados na
+   propria imagem, sem perda. */
 .hero-marca{display:inline-grid;justify-items:center;margin-bottom:25px}
 .hero-marca .hero-logo,.mobile-layout.cinematic .hero-marca .hero-logo{margin:0}
-.hero-tagline{width:0;min-width:100%;display:flex;justify-content:center;gap:.72em;margin:10px 0 0;
-  font:italic 500 clamp(12.5px,1vw,15px)/1.2 'Cormorant Garamond',Georgia,serif;letter-spacing:.02em;
-  color:#bd525c;white-space:nowrap}
 @media(max-width:850px){
   .hero-marca{margin:0 auto 14px}
-  .hero-tagline{width:auto;min-width:0;font-size:13.5px;margin-top:8px}
 }
 .mobile-layout.cinematic .hero-marca{margin:0 auto 14px}
 /* CTA do carrossel centrado e com mais ar acima, em vez de colado a legenda. */
@@ -425,18 +418,18 @@ html[data-theme] .glow-icone::after{display:none}
 #mapa .mapa-quadro iframe{display:block;width:100%;height:100%;border:0}
 [data-theme="dark"] #mapa .mapa-quadro iframe{filter:invert(.9) hue-rotate(180deg) saturate(.6) brightness(.95) contrast(.92)}
 #mapa .location-actions{margin-top:20px}
+/* No desktop: titulo em cima, mapa largo no meio e o botao centrado embaixo. */
 @media(min-width:900px){
-  #mapa .container{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:center;
-    column-gap:clamp(40px,5vw,80px)}
-  #mapa .sh{margin-bottom:0}
+  #mapa .mapa-quadro{aspect-ratio:21/9}
+  #mapa .location-actions{align-items:center;margin-top:28px}
 }
 @media(max-width:899px){
   #mapa .map-box{margin-top:26px}
   #mapa .location-actions,#mapa .location-actions .btn-pk{width:100%}
 }
 
-/* Preferencias na navbar: tema (e idioma, a seguir). No celular os botoes moram
-   dentro do menu, porque a barra ja leva o logo, o Agendar e o menu. */
+/* Idioma na navbar. No celular o botao mora dentro do menu, porque a barra ja
+   leva o logo, o Agendar e o menu. */
 .nb-acoes{display:flex;align-items:center;gap:14px}
 .nb-prefs{display:flex;align-items:center;gap:8px}
 .pref-btn{display:inline-grid;place-items:center;min-width:40px;height:40px;padding:0 10px;border-radius:999px;
@@ -444,23 +437,41 @@ html[data-theme] .glow-icone::after{display:none}
   font:600 11px/1 var(--sans);letter-spacing:.12em;transition:border-color .25s var(--ease)}
 .pref-btn:hover{border-color:var(--rose)}
 .pref-btn:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
-/* sol no escuro, para ir ao claro; lua no claro */
-.pref-tema::before{content:'';width:17px;height:17px;background:currentColor;
-  -webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Ccircle%20cx%3D%2712%27%20cy%3D%2712%27%20r%3D%274%27%2F%3E%3Cpath%20d%3D%27M12%202v2M12%2020v2m-7.07-17.07%201.41%201.41m11.32%2011.32%201.41%201.41M2%2012h2m16%200h2M6.34%2017.66l-1.41%201.41M19.07%204.93l-1.41%201.41%27%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Ccircle%20cx%3D%2712%27%20cy%3D%2712%27%20r%3D%274%27%2F%3E%3Cpath%20d%3D%27M12%202v2M12%2020v2m-7.07-17.07%201.41%201.41m11.32%2011.32%201.41%201.41M2%2012h2m16%200h2M6.34%2017.66l-1.41%201.41M19.07%204.93l-1.41%201.41%27%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
-[data-theme="light"] .pref-tema::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%203a6%206%200%200%200%209%209%209%209%200%201%201-9-9Z%27%2F%3E%3C%2Fsvg%3E");mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%203a6%206%200%200%200%209%209%209%209%200%201%201-9-9Z%27%2F%3E%3C%2Fsvg%3E")}
 .nb-prefs-mob{justify-content:center}
 @media(max-width:850px){.nb-acoes>.nb-prefs{display:none}}
 .mobile-layout .nb-acoes>.nb-prefs{display:none}
 @media(min-width:851px){html:not(.mobile-layout) .nb-prefs-mob{display:none}}
 
-/* Tema claro. A abertura continua escura nos dois temas: o video do pincel tem o
-   fundo preto gravado na imagem. O rose segue a familia do logo, com azul acima
-   do verde, e tem contraste 5,72:1 sobre o creme. */
-html[data-theme="light"]{color-scheme:light;--rose:#a4444f;--line:rgba(164,68,79,.22)}
-[data-theme="light"] .squeeze{background:var(--paper)}
-[data-theme="light"] .sq-panel{background:#efe3e5}
-html[data-theme="light"] .glow-contorno{color:var(--rose);border-color:rgba(164,68,79,.55)}
-[data-theme="light"] #mapa .mapa-quadro{background:#f3e9eb;border-color:rgba(164,68,79,.2)}
 
 /* Ingles salvo: esconde a pagina ate o dicionario chegar (no maximo 1,5s). */
 html.carrega-idioma body{visibility:hidden}
+
+/* Retrato maior e apoiado na base do palco: o corte do tronco coincide com a
+   borda do hero, em vez de flutuar no meio da tela com a base reta a mostra. */
+html:not(.mobile-layout) .hero-layout{grid-template-columns:52% 48%}
+html:not(.mobile-layout) .hero-photo{align-self:end;max-width:640px;margin-bottom:-98px}
+/* No celular a foto passa da coluna; as laterais da imagem sao transparentes,
+   entao o que sai da tela e so o vazio em volta dela. */
+.mobile-layout .hero-photo{width:min(118%,460px);max-width:none}
+.mobile-layout.cinematic .hero-layout{grid-template-rows:auto 1fr;padding-bottom:0;row-gap:4px}
+.mobile-layout.cinematic .hero-photo{align-self:end}
+
+/* Texto do hero: mais leve e com mais ar entre as linhas. */
+.hero-description{font-weight:400;font-size:15px;line-height:1.85;letter-spacing:.005em;max-width:480px;text-wrap:pretty}
+.mobile-layout .hero-description,.mobile-layout.cinematic .hero-description{font-size:14px;line-height:1.75;max-width:370px;margin-bottom:8px}
+
+/* Contato em cartoes, no mesmo desenho dos servicos, com os botoes alinhados na base. */
+#contato .ctc-grid{max-width:none;gap:20px}
+#contato .ctc-card{padding:36px 34px;gap:18px;border:1px solid rgba(239,163,173,.22);border-radius:18px;
+  background:linear-gradient(145deg,rgba(239,163,173,.075),transparent 62%)}
+#contato .ctc-ico{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;
+  border:1px solid rgba(239,163,173,.3);background:rgba(239,163,173,.06)}
+#contato .ctc-ico svg{width:20px;height:20px}
+#contato .ctc-card p{flex:1;text-wrap:pretty}
+@media(max-width:850px){#contato .ctc-grid{gap:16px}#contato .ctc-card{padding:28px 24px}}
+
+/* Carrossel: rosto centrado nas fotos em que o corte padrao pegava a testa e
+   deixava o queixo de fora. */
+.sq-panel .foco-flores{object-position:55% 45%}
+.sq-panel .foco-joia{object-position:50% 56%}
+.sq-panel .foco-cachos{object-position:50% 42%}

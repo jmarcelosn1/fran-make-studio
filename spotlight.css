@@ -10,7 +10,5 @@
 #servicos .service-eyebrow{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--rose)}
 #servicos .service-name{font-size:clamp(25px,2.5vw,36px);line-height:1.15;letter-spacing:-.8px;font-weight:700}
 #servicos .mp-card p{color:var(--muted);line-height:1.85;max-width:34ch}
-#servicos .service-bridal{border-color:rgba(239,163,173,.6);background:linear-gradient(145deg,rgba(239,163,173,.17),rgba(239,163,173,.025) 75%)}
-#servicos .service-bridal .service-name{color:var(--rose)}
 @media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px}#servicos .mp-card{min-height:230px;padding:26px;gap:18px}#servicos .service-name{font-size:30px}.spotlight-surface.spotlight-visible{--spot-strength:.65}}
 @media(prefers-reduced-motion:reduce){.spotlight-light{transition:none;opacity:.25}}

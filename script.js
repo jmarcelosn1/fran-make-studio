@@ -51,11 +51,11 @@
      e dos vaos; o que passa da coluna 3 vira ripa. As larguras saem em pixel do
      JS, e nao de cqi no CSS, porque a fatia de cada coluna muda com o ponteiro.
 
-     A fita leva os sete paineis mais uma copia de cada, so para encher a cauda.
+     A fita leva os paineis mais tres copias de cada, so para encher a cauda.
      Sem essa folga, dois cliques seguidos esgotam os paineis a direita e abre
      um vao na borda; medido em 668px antes das copias existirem. As copias
      ficam fora da arvore de acessibilidade e nunca sao o painel aberto, porque
-     a cada assentamento os originais voltam para as sete posicoes da frente. */
+     a cada assentamento os originais voltam para as posicoes da frente. */
   const sqStrip = $('.sq-strip');
   if (sqStrip) {
     const originais = $$('.sq-panel', sqStrip);
@@ -355,6 +355,7 @@
   /* Fases da abertura, em fracao do curso do hero. A narrativa e uma so:
      assinatura -> pincel com Beleza e Sofisticacao -> Franciana em PNG.
      Um driver unico controla tudo, entao nao ha animacoes concorrentes. */
+  const particulas = $('#webgl-canvas');
   const PHASE = {
     draw:     [0,   .17],
     titleOut: [.21, .29],
@@ -375,6 +376,10 @@
     const still = reduced.matches;
     aplicarEntrada(still ? 1 : at('draw', progress));
     const reveal = still ? 1 : at('reveal', progress);
+    // As particulas entram junto com o retrato. Antes elas ficavam na tela
+    // durante toda a intro e, entre a saida do pincel e a revelacao, sobravam
+    // sozinhas no palco escuro.
+    particulas.style.opacity = reveal.toFixed(3);
     const fade = still ? 1 : at('titleOut', progress);
 
     // Pincel: entra por fade, o scroll conduz o tempo do video, e sai erguido,

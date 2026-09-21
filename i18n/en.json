@@ -21,13 +21,10 @@
     "A arte de": "The art of",
     "realçar": "enhancing",
     "sua beleza única": "your unique beauty",
-    "Sou Franciana, maquiadora profissional com mais de 10 anos de experiência e especialista em olhos. Também trabalho com Hair e penteados para completar a sua produção. Cada produção começa entendendo o formato do seu olho, o tom da sua pele e o que a ocasião pede.": "I'm Franciana, a professional makeup artist with more than 10 years of experience and a specialist in eye makeup. I also do hair and updos to complete your look. Every look starts with understanding the shape of your eyes, your skin tone and what the occasion calls for.",
     "Conheça nosso portfólio": "Explore our portfolio",
     "A make que atravessa o dia inteiro.": "Makeup that lasts the whole day.",
     "Prova marcada antes, kit de retoque na bolsa, e nada de correr ao espelho entre a cerimônia e a festa.": "A trial booked in advance, a touch-up kit in your bag, and no running to the mirror between the ceremony and the party.",
     "Ver o portfólio": "View the portfolio",
-    "Do grau à festa, sem repasse.": "From graduation to the party, no touch-ups.",
-    "Esfumado que aguenta foto com flash, choro de diploma e pista até o fim.": "A smoky eye that holds up to flash photos, graduation tears and the dance floor until the very end.",
     "Para a festa que não é sua.": "For the party that isn't yours.",
     "Madrinha, convidada, aniversário de amiga. A make certa é a que conversa com o vestido e continua sendo a sua cara.": "Bridesmaid, guest, a friend's birthday. The right makeup goes with the dress and still looks like you.",
     "Especialidade é olho.": "Eyes are the specialty.",
@@ -54,7 +51,6 @@
     "Atendimento rápido e exclusivo para consultar disponibilidade de agenda e valores de pacotes.": "Quick, personal replies to check availability and package prices.",
     "Agendar meu horário": "Book my appointment",
     "Siga no Instagram": "Follow on Instagram",
-    "Acompanhe nossos trabalhos diários, dicas de beleza e inspire-se com o portfólio completo.": "Follow our daily work and beauty tips, and get inspired by the full portfolio.",
     "Acessar @fran_make": "Visit @fran_make",
     "Maquiagem e Hair em São Luís, MA.": "Makeup and hair in São Luís, MA.",
     "© 2026 Fran Make Studio. Todos os direitos reservados.": "© 2026 Fran Make Studio. All rights reserved.",
@@ -73,12 +69,16 @@
     "fotografias": "photos",
     "Abrir menu": "Open menu",
     "Fechar menu": "Close menu",
-    "Tema claro": "Light theme"
+    "Sou Franciana, maquiadora há mais de dez anos e especialista em olhos. Cada produção começa por você: o desenho do seu olhar, o tom da sua pele e o que a ocasião pede. Também assino o cabelo e o penteado, para que tudo conte a mesma história.": "I'm Franciana, a makeup artist for more than ten years and an eye specialist. Every look starts with you: the shape of your eyes, the tone of your skin and what the occasion calls for. I also style the hair, so everything tells the same story.",
+    "Os trabalhos do dia a dia, dicas de beleza e ideias para a sua próxima produção.": "Our day-to-day work, beauty tips and ideas for your next look.",
+    "O brilho que combina com a joia.": "Shine that matches the jewelry.",
+    "Sombra metalizada e ponto de luz no canto do olho, pensados junto com os brincos da noite.": "Metallic shadow and a touch of light in the inner corner, planned together with the night's earrings.",
+    "Tons que conversam com você.": "Tones that speak to you.",
+    "Esfumado em bronze pensado para o dourado dos cachos e o calor da pele, sem disputar atenção.": "A bronze smoky eye chosen for the gold in the curls and the warmth of the skin, never competing for attention."
   },
   "a": {
     "Navegação principal": "Main navigation",
     "Fran Make Studio, início": "Fran Make Studio, home",
-    "Tema claro": "Light theme",
     "Abrir menu": "Open menu",
     "Fechar menu": "Close menu",
     "Conheça Fran Make Studio": "Meet Fran Make Studio",
@@ -87,11 +87,9 @@
     "Próximo trabalho": "Next work",
     "Trabalhos do estúdio": "Studio work",
     "Noiva com make natural e cabelo preso": "Bride with natural makeup and hair pulled back",
-    "Formanda com coroa e make em tons nude": "Graduate with a crown and nude-toned makeup",
     "Convidada com esfumado dourado": "Guest with a golden smoky eye",
     "Esfumado rosé em detalhe": "Close-up of a rosé smoky eye",
     "Penteado em cabelo loiro com ondas": "Wavy hairstyle on blonde hair",
-    "Noiva em ensaio com luz natural": "Bride in a natural-light photo shoot",
     "Make com glitter sob luzes de festa": "Glitter makeup under party lights",
     "Onde nos encontrar": "Where to find us",
     "Mapa do Fran Make Studio em São Luís, MA": "Map of Fran Make Studio in São Luís, MA",
@@ -137,6 +135,9 @@
     "Olhar aberto com esfumado dourado, glitter e pedrarias no canto do olho": "Open eyes with a golden smoky eye, glitter and gems at the corner of the eye",
     "Produção com coque, brincos de pérola e maquiagem em tons rosados": "Look with a bun, pearl earrings and rosy-toned makeup",
     "Produção com ondas escuras trabalhadas e maquiagem em tons neutros": "Look with styled dark waves and neutral-toned makeup",
-    "Esfumado rosé com acabamento acetinado e boca em tom marsala": "Rosé smoky eye with a satin finish and burgundy lips"
+    "Esfumado rosé com acabamento acetinado e boca em tom marsala": "Rosé smoky eye with a satin finish and burgundy lips",
+    "Retrato em estúdio com batom frutado e cabelo em ondas": "Studio portrait with a berry lip and wavy hair",
+    "Sombra metalizada com brincos de cristal": "Metallic eyeshadow with crystal earrings",
+    "Esfumado em bronze com cachos dourados": "Bronze smoky eye with golden curls"
   }
 }

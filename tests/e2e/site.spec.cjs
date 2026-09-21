@@ -148,21 +148,6 @@ test('mobile brush loops on its own while on screen and stops on the way out',as
 });
 
 // Tema claro opcional: alterna, fica salvo, e ao recarregar ja pinta claro.
-test('light theme toggles, persists, and loads without a dark flash',async({page})=>{
- await page.goto('/portfolio.html');
- await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
- const botao=page.locator('[data-tema]:visible').first();
- if(!(await botao.count())){ await page.click('#nb-ham'); }
- await page.locator('[data-tema]:visible').first().click();
- await expect(page.locator('html')).toHaveAttribute('data-theme','light');
- await expect(page.locator('[data-tema]:visible').first()).toHaveAttribute('aria-pressed','true');
- expect(await page.evaluate(()=>document.querySelector('meta[name="theme-color"]').content)).toBe('#fff9f6');
- await page.addInitScript(()=>{requestAnimationFrame(()=>{window.__primeiro=document.documentElement.dataset.theme;});});
- await page.reload();
- await page.waitForFunction(()=>window.__primeiro!==undefined);
- expect(await page.evaluate(()=>window.__primeiro)).toBe('light');
-});
-
 test('English version translates, survives a motion remount, returns to identical Portuguese and loads without a Portuguese flash',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/#contato');
@@ -211,4 +196,24 @@ test('English version translates, survives a motion remount, returns to identica
  await expect(page.locator('html')).not.toHaveClass(/carrega-idioma/);
  expect(await tituloServicos()).toBe('Three ways to work together.');
  expect(errors).toEqual([]);
+});
+test('particles only appear together with the portrait, never alone on the dark stage',async({page})=>{
+ await page.goto('/');
+ const opacidade=async fracao=>{
+  await page.evaluate(f=>{const h=document.getElementById('hero');window.scrollTo(0,h.offsetTop+(h.offsetHeight-innerHeight)*f);},fracao);
+  await page.waitForTimeout(250);
+  return page.evaluate(()=>Number(getComputedStyle(document.getElementById('webgl-canvas')).opacity));
+ };
+ // entre a saida do pincel e a entrada do retrato o palco fica vazio
+ expect(await opacidade(.5)).toBe(0);
+ expect(await opacidade(.83)).toBe(0);
+ expect(await opacidade(1)).toBe(1);
+});
+test('page keeps only the dark theme and the footer has no loose social icons',async({page})=>{
+ await page.goto('/#contato');
+ await expect(page.locator('[data-tema]')).toHaveCount(0);
+ await expect(page.locator('.ft-social')).toHaveCount(0);
+ await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+ await expect(page.locator('.sq-panel:not([aria-hidden])')).toHaveCount(8);
+ await expect(page.locator('.sq-slide')).toHaveCount(8);
 });

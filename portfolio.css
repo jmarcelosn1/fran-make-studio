@@ -107,9 +107,3 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
   .pf-anima .pf-item{opacity:1;transform:none;filter:none;transition:none}
 }
 
-/* Tema claro: a prata perde a borda sobre o creme, entao ganha contorno e sombra
-   escuros; o anel do selecionado tambem escurece. */
-html[data-theme="light"] .pf-filters .glow-prata{border-color:rgba(28,22,24,.2);
-  box-shadow:0 1px 0 #fff inset,0 -1px 0 rgba(0,0,0,.14) inset,0 6px 16px -8px rgba(28,22,24,.35)}
-html[data-theme="light"] .pf-filters .glow-prata[aria-pressed="true"]{
-  box-shadow:0 1px 0 #fff inset,0 0 0 2px rgba(28,22,24,.6),0 8px 20px -8px rgba(28,22,24,.4)}

@@ -1,6 +1,5 @@
-/* Preferencias de quem visita: tema claro ou escuro, e idioma. O boot.js ja
-   aplicou as escolhas salvas antes da primeira pintura; aqui ficam os botoes e a
-   traducao. */
+/* Idioma de quem visita. O boot.js ja aplicou a escolha salva antes da
+   primeira pintura; aqui ficam os botoes e a traducao. */
 (() => {
   'use strict';
   const raiz = document.documentElement;
@@ -38,7 +37,7 @@
   const originaisTexto = new Map();
   const originaisAtributo = [];
   const ATRIBUTOS = ['alt', 'aria-label', 'title', 'placeholder'];
-  const DINAMICOS = '#nb-ham,[data-tema],[data-idioma]';
+  const DINAMICOS = '#nb-ham,[data-idioma]';
   const normal = s => s.replace(/\s+/g, ' ').trim();
   const descricao = document.querySelector('meta[name="description"]');
   const tituloOriginal = document.title;
@@ -120,7 +119,6 @@
   }
 
   const botoesIdioma = [...document.querySelectorAll('[data-idioma]')];
-  const botoesTema = [...document.querySelectorAll('[data-tema]')];
   function rotular() {
     const vaiParaIngles = idioma === 'pt';
     botoesIdioma.forEach(botao => {
@@ -128,7 +126,6 @@
       botao.lang = vaiParaIngles ? 'en' : 'pt-BR';
       botao.setAttribute('aria-label', vaiParaIngles ? 'English version' : 'Versão em português');
     });
-    botoesTema.forEach(botao => botao.setAttribute('aria-label', t('Tema claro')));
   }
 
   async function mudarIdioma(novo) {
@@ -165,18 +162,4 @@
     mudarIdioma('en').finally(() => raiz.classList.remove('carrega-idioma'));
   }
 
-  /* ---- tema ---- */
-  const corDoTema = document.querySelector('meta[name="theme-color"]');
-  function aplicarTema(tema) {
-    raiz.dataset.theme = tema;
-    if (corDoTema) corDoTema.content = tema === 'light' ? '#fff9f6' : '#000000';
-    // Rotulo fixo, "Tema claro", com aria-pressed dizendo se esta ligado.
-    botoesTema.forEach(botao => botao.setAttribute('aria-pressed', String(tema === 'light')));
-  }
-  aplicarTema(raiz.dataset.theme === 'light' ? 'light' : 'dark');
-  botoesTema.forEach(botao => botao.addEventListener('click', () => {
-    const novo = raiz.dataset.theme === 'light' ? 'dark' : 'light';
-    aplicarTema(novo);
-    guardar('fm-tema', novo);
-  }));
 })();
