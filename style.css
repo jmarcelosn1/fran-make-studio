@@ -373,3 +373,4 @@ html:not(.cinematic) .brush-scene{display:none}
 .portfolio-card:nth-child(3n) img{animation-duration:23s;animation-delay:-13s}
 .portfolio-card:hover img,.portfolio-card:focus-visible img{scale:1.03}
 @media(prefers-reduced-motion:reduce){.portfolio-card img{animation:none}}
+[data-carousel].sem-curso .portfolio-controls{display:none}

@@ -146,7 +146,7 @@
   function measure() {
     start = hero.offsetTop;
     range = Math.max(1, hero.offsetHeight - stage.offsetHeight);
-    carousels.forEach(c => { c.max = c.track.scrollWidth - c.track.clientWidth; c.position = c.track.scrollLeft; });
+    carousels.forEach(c => { c.max = c.track.scrollWidth - c.track.clientWidth; c.position = c.track.scrollLeft; c.root?.classList.toggle('sem-curso', c.max < 8); });
     sceneAPI?.resize(); dirty = true; schedule();
   }
   /* Fases da abertura, em fracao do curso do hero. A narrativa e uma so:
@@ -335,7 +335,7 @@
   const galleryObserver = new IntersectionObserver(entries => { for(const e of entries) { const c=carousels.find(c=>c.track===e.target); if(c) c.visible=e.isIntersecting; } schedule(); }, {threshold:.05});
   $$('[data-carousel]').forEach(root => {
     const track = $('.portfolio-track',root), toggle = $('[data-autoplay]',root);
-    const c = {track, position:0, max:0, direction:1, resumeAt:0, visible:false, paused:false, hover:false, focus:false, touch:false, drag:null, suppress:false};
+    const c = {root, track, position:0, max:0, direction:1, resumeAt:0, visible:false, paused:false, hover:false, focus:false, touch:false, drag:null, suppress:false};
     let lastTap = null, pointerType = 'mouse';
     carousels.push(c);
     function pause() { c.resumeAt = performance.now() + Math.max(1500,Number(config.autoplayPause) || 4500); c.position = track.scrollLeft; armResume(); }
