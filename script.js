@@ -319,14 +319,16 @@
      assinatura -> pincel com Beleza e Sofisticacao -> Franciana em PNG.
      Um driver unico controla tudo, entao nao ha animacoes concorrentes. */
   const PHASE = {
-    titleOut: [.23, .33],
-    brushIn:  [.26, .36],
-    scrub:    [.29, .87],
-    wordA:    [.38, .48],
-    wordB:    [.52, .62],
-    wordOut:  [.68, .78],
-    brushOut: [.76, .87],
-    reveal:   [.85, .97]
+    titleOut: [.20, .29],
+    brushIn:  [.24, .33],
+    scrub:    [.27, .80],
+    wordA:    [.35, .44],
+    wordB:    [.47, .56],
+    wordOut:  [.61, .69],
+    brushOut: [.69, .80],
+    // Respiro entre o pincel sair e a Franciana entrar. Antes a revelacao
+    // comecava com o pincel ainda na tela.
+    reveal:   [.855, .97]
   };
   const at = (name, p) => smooth(PHASE[name][0], PHASE[name][1], p);
 
@@ -336,9 +338,12 @@
     const reveal = still ? 1 : at('reveal', progress);
     const fade = still ? 1 : at('titleOut', progress);
 
-    // Pincel: entra, o scroll conduz o tempo do video, sai antes da Franciana.
-    const brushOn = still ? 0 : at('brushIn', progress) * (1 - at('brushOut', progress));
+    // Pincel: entra por fade, o scroll conduz o tempo do video, e sai erguido,
+    // acelerando para cima, como quem tira o pincel do rosto no fim do traco.
+    const saida = still ? 0 : at('brushOut', progress);
+    const brushOn = still ? 0 : at('brushIn', progress) * (1 - smooth(.72, 1, saida));
     brushScene.style.setProperty('--brush-in', brushOn.toFixed(4));
+    brushScene.style.setProperty('--brush-out', (saida * saida).toFixed(4));
     if (brushOn > .008) loadBrushVideo();
     const wordsGone = still ? 1 : at('wordOut', progress);
     brushScene.style.setProperty('--word-a', (still ? 0 : at('wordA', progress) * (1 - wordsGone)).toFixed(4));

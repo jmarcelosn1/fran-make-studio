@@ -278,7 +278,8 @@ html:not(.cinematic) .intro-media{display:none}
    Base = versao estatica (reducao de movimento / sem JS): secao curta com o
    poster. A altura alta e o sticky so entram com .motion-ready, para que
    ninguem fique preso rolando uma cena longa sem animacao.
-   O pincel nunca recebe scale ou rotacao: o video ja traz o movimento. */
+   Enquanto esta em cena o pincel nao recebe scale nem rotacao: o video ja
+   traz o movimento. So a saida o transforma. */
 .brush-scene{position:absolute;inset:0;z-index:0;pointer-events:none;background:#000;opacity:var(--brush-in,0)}
 .brush-inner{position:absolute;inset:0;display:grid;place-items:center}
 .brush-video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
@@ -399,3 +400,20 @@ html.salto-ancora #hero{visibility:hidden}
   .cinematic .intro-mark{width:min(82vw,360px)}
 }
 .mobile-layout.cinematic .intro-title{padding:30px 24px 88px}
+/* Saida do pincel: sobe e inclina a partir da ponta do cabo. O valor chega ao
+   quadrado, entao o movimento comeca lento e acelera para fora de quadro. */
+.brush-inner{transform:translate3d(0,calc(var(--brush-out,0) * -58%),0) rotate(calc(var(--brush-out,0) * -7deg));
+  transform-origin:50% 82%;will-change:transform}
+/* Palavras da cena em serifada italica, que conversa com o MAKE do logo e com a
+   assinatura manuscrita da abertura. Escalonadas: Beleza le primeiro, acima. */
+.brush-word{font:italic 500 clamp(40px,5.4vw,84px)/1 'Cormorant Garamond',Georgia,serif;letter-spacing:0}
+.brush-left{top:45%}
+.brush-right{top:57%}
+@media(max-width:850px){
+  /* Ao lado do cabo, onde o pincel e estreito; Sofisticacao sai da borda de
+     baixo, onde ficava colada, e as duas se escalonam em vez de se espalhar. */
+  .brush-word{font-size:clamp(30px,8.6vw,38px)}
+  .brush-left{top:55%;left:max(5vw,18px)}
+  .brush-right{top:68%;right:max(5vw,18px)}
+}
+@media(prefers-reduced-motion:reduce){.brush-inner{transform:none}}
