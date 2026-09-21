@@ -359,7 +359,7 @@ html:not(.cinematic) .brush-scene{display:none}
 .sq-arrow:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
 
 .sq-viewport{overflow:hidden;height:var(--sq-h,clamp(200px,32cqi,340px))}
-.sq-strip{display:flex;height:100%;width:max-content}
+.sq-strip{display:flex;height:100%;width:max-content;transition:transform .9s var(--ease)}
 .sq-panel{position:relative;flex:0 0 auto;height:100%;padding:0;border:0;overflow:hidden;
   background:#171114;cursor:pointer;border-radius:6px;
   transition:width .9s var(--ease),margin-left .9s var(--ease)}
@@ -385,4 +385,4 @@ html:not(.cinematic) .brush-scene{display:none}
 @media(prefers-reduced-motion:reduce){
   .sq-panel,.sq-slide{transition-duration:1ms}
 }
-.sq-strip.sq-quieto .sq-panel,.sq-strip.sq-quieto~*  .sq-slide{transition:none}
+.sq-strip.sq-quieto,.sq-strip.sq-quieto .sq-panel,.sq-strip.sq-quieto~*  .sq-slide{transition:none}

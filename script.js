@@ -105,6 +105,10 @@
         p.tabIndex = aberto ? 0 : -1;
       });
 
+      // O painel que sai vira ripa a esquerda do aberto. Sem deslizar a fita
+      // ele encolheria parado ali, que e o que se via como um corte seco.
+      sqStrip.style.transform = pos ? 'translateX(' + (-pos * (RIPA + VAO)) + 'px)' : '';
+
       const atual = ordem[pos];
       copias.forEach(c => {
         const seu = +c.dataset.i === atual;
@@ -121,19 +125,36 @@
       requestAnimationFrame(() => { sqStrip.classList.remove('sq-quieto'); quieto = false; });
     }
 
+    const girar = n => { ordem = ordem.slice(n).concat(ordem.slice(0, n)); };
+
     function andar(passos) {
       if (!passos || total < 2) return;
       clearTimeout(relogio);
-      pos = ((pos + passos) % total + total) % total;
-      desenhar();
-      // Terminado o movimento, a ordem gira para que o aberto volte a ser o
-      // primeiro. O desenho e identico, entao nada pode animar nessa troca.
-      relogio = setTimeout(() => {
-        ordem = ordem.slice(pos).concat(ordem.slice(0, pos));
-        pos = 0;
+
+      // Um passo que ainda estivesse correndo termina agora, sem animar: o
+      // desenho e o mesmo, so a numeracao muda.
+      if (pos !== 0) { girar(pos); pos = 0; semTransicao(desenhar); }
+
+      const n = ((Math.abs(passos) % total) + total) % total;
+      if (!n) return;
+
+      if (passos > 0) {
+        pos = n;
+        desenhar();
+      } else {
+        // Para voltar, os anteriores entram na frente ja como ripas fora da
+        // tela; so entao a fita desliza de volta ao lugar.
+        girar(total - n);
+        pos = n;
         semTransicao(desenhar);
+        requestAnimationFrame(() => { pos = 0; desenhar(); });
+      }
+
+      relogio = setTimeout(() => {
+        girar(pos); pos = 0; semTransicao(desenhar);
       }, reduced.matches ? 1 : DUR + 30);
     }
+
 
     paineis.forEach(p => {
       p.addEventListener('click', () => {
