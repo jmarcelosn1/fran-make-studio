@@ -384,3 +384,4 @@ html:not(.cinematic) .brush-scene{display:none}
 @media(prefers-reduced-motion:reduce){
   .sq-slide{transition-duration:1ms}
 }
+html.salto-ancora #hero{visibility:hidden}

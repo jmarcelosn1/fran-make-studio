@@ -88,3 +88,23 @@ test('carousel survives a burst of clicks without gaps or jumps',async({page})=>
  expect(fim.painel).toBe(fim.copia);
  expect(fim.sombra).toBe(false);
 });
+
+// Vindo do portfolio para uma secao, o navegador pintava o topo antes de rolar
+// ate a ancora e a intro aparecia por um quadro.
+test('arriving at a section by anchor never flashes the intro',async({page})=>{
+ await page.addInitScript(()=>{window.__vis=0;const t0=performance.now();
+  const reg=()=>{const hero=document.querySelector('#hero'),im=document.querySelector('.intro-media');
+   if(hero&&im){const r=im.getBoundingClientRect();
+    if(getComputedStyle(hero).visibility!=='hidden'&&getComputedStyle(im).visibility!=='hidden'&&+getComputedStyle(im).opacity>.05&&r.bottom>0&&r.top<innerHeight) window.__vis++;}
+   if(performance.now()-t0<2000) requestAnimationFrame(reg);};
+  requestAnimationFrame(reg);});
+ await page.goto('/portfolio.html');
+ await page.evaluate(()=>{location.href='index.html#servicos';});
+ await page.waitForURL(/#servicos$/);
+ await page.waitForTimeout(2200);
+ expect(await page.evaluate(()=>window.__vis)).toBe(0);
+ const topo=await page.evaluate(()=>document.getElementById('servicos').getBoundingClientRect().top);
+ expect(topo).toBeGreaterThanOrEqual(0);
+ expect(topo).toBeLessThan(260);
+});
+
