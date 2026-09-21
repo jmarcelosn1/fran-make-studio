@@ -13,31 +13,25 @@ html[data-theme="dark"]{
 [data-theme="dark"] .nb-links a:hover,[data-theme="dark"] .nb-links a[aria-current]{color:var(--rose)}
 [data-theme="dark"] .hero-halo{background:#000;opacity:1}
 [data-theme="dark"] .hero-content h2 em,[data-theme="dark"] #sobre em,[data-theme="dark"] #sobre .slabel{color:var(--rose)}
-[data-theme="dark"] #sobre .ssub,[data-theme="dark"] #sobre .prod-c p,[data-theme="dark"] #sobre .ss-item>span{color:var(--muted)}
-[data-theme="dark"] .sobre-stats{border:0;justify-content:flex-start;gap:60px}
-[data-theme="dark"] .ss-div{display:none}
+[data-theme="dark"] #sobre .ssub{color:var(--muted)}
 [data-theme="dark"] .btn-pk{background:var(--rose);color:#180d12;border-color:var(--rose)}
 [data-theme="dark"] .btn-pk:hover{background:#f4b6be;border-color:#f4b6be}
-[data-theme="dark"] .btn-ol:hover,[data-theme="dark"] .portfolio-controls button:hover{background:#171717}
-[data-theme="dark"] .image-note,[data-theme="dark"] .look-frame figcaption{background:rgba(19,16,21,.93);color:#f6ebef;border:1px solid var(--line)}
-[data-theme="dark"] .map-placeholder,[data-theme="dark"] .map-link{background:#000}
+[data-theme="dark"] .btn-ol:hover{background:#171717}
+[data-theme="dark"] .look-frame figcaption{background:rgba(19,16,21,.93);color:#f6ebef;border:1px solid var(--line)}
+[data-theme="dark"] .map-placeholder{background:#000}
 [data-theme="dark"] #lightbox,[data-theme="dark"] #lb-close{background:#000;color:var(--ink)}
 [data-theme="dark"] .intro-play{background:#19151a;color:#f6ebef;border-color:var(--rose)}
 [data-theme="dark"] .micro-spark{background:#e49ab6}
 [data-theme="dark"] ::selection{background:#e49ab6;color:#21101a}
 [data-theme="dark"] body::after{display:none}
-[data-theme="dark"] .section-line,[data-theme="dark"] .formanda-cta,[data-theme="dark"] .makes-prices,[data-theme="dark"] .ctc-card,[data-theme="dark"] #footer,[data-theme="dark"] .ft-bottom{border:0}
+[data-theme="dark"] .makes-prices,[data-theme="dark"] .ctc-card,[data-theme="dark"] #footer,[data-theme="dark"] .ft-bottom{border:0}
 [data-theme="dark"] .mp-featured{background:transparent}
 [data-theme="dark"] .map-box{border:0}
-[data-theme="dark"] .image-note{display:none}
-[data-theme="dark"] .bridal-details>span{border:0;padding-bottom:4px}
 [data-theme="dark"] .sh{margin-left:0;text-align:left}
 [data-theme="dark"] .sh .ssub{margin-left:0}
-[data-theme="dark"] .bridal-feature{margin-bottom:64px}
-[data-theme="dark"] .section-line{padding-top:0}
 [data-theme="dark"] .ft-bottom{padding-top:0}
 [data-theme="dark"] .nb-cta{color:#180d12;background:var(--rose);border-color:var(--rose)}
-@media(max-width:600px){[data-theme="dark"] .sobre-stats{gap:18px}[data-theme="dark"] .mp-card+.mp-card{border:0}}
+@media(max-width:600px){[data-theme="dark"] .mp-card+.mp-card{border:0}}
 
 /* Liquid glass no tema escuro. A mecanica esta em style.css; aqui ficam as
    cores translucidas. Alpha alto de proposito: o texto escuro sobre o rose
