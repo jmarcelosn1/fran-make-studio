@@ -47,126 +47,167 @@
   });
   /* Carrossel de painel aberto.
      Quatro colunas dividem a sala que sobra depois do painel aberto, das ripas
-     e dos vaos; o que passa da coluna 3 vira ripa. As larguras sao calculadas
-     em pixel a partir da largura medida, e nao em cqi, porque a fatia de cada
-     coluna muda com o ponteiro e precisa ser recalculada a cada evento. */
+     e dos vaos; o que passa da coluna 3 vira ripa. As larguras saem em pixel do
+     JS, e nao de cqi no CSS, porque a fatia de cada coluna muda com o ponteiro.
+
+     A fita leva os sete paineis mais uma copia de cada, so para encher a cauda.
+     Sem essa folga, dois cliques seguidos esgotam os paineis a direita e abre
+     um vao na borda; medido em 668px antes das copias existirem. As copias
+     ficam fora da arvore de acessibilidade e nunca sao o painel aberto, porque
+     a cada assentamento os originais voltam para as sete posicoes da frente. */
   const sqStrip = $('.sq-strip');
   if (sqStrip) {
-    const paineis = $$('.sq-panel', sqStrip);
+    const originais = $$('.sq-panel', sqStrip);
     const copias = $$('.sq-slide');
-    const total = paineis.length;
+    const total = originais.length;
     const FATIAS    = [-0.06, 0.61, 0.30, 0.15];
     const ESTICADA  = [ 0.00, 0.71, 0.40, 0.25];
     const ESPREMIDA = [-0.12, 0.59, 0.28, 0.13];
     const RIPA = 8, VAO_RIPA = 8, VAO = 16;
-    const DUR = 900;
+    const LIMITE = total - 1;   // alem disso o aberto cairia numa copia
 
-    let ordem = paineis.map((_, i) => i);
-    let pos = 0;            // posicao do painel aberto dentro de ordem
-    let apontado = -1;      // coluna sob o ponteiro
-    let quieto = false;     // um quadro sem transicao, para reassentar
-    let relogio = 0;
+    const COPIAS = 3;
+    const sombras = [];
+    for (let v = 0; v < COPIAS; v++) for (const p of originais) {
+      const c = p.cloneNode(true);
+      c.removeAttribute('id');
+      c.setAttribute('aria-hidden', 'true');
+      c.tabIndex = -1;
+      c.dataset.sombra = '';
+      sqStrip.appendChild(c);
+      sombras.push(c);
+    }
+
+    let giro = 0;           // quantos passos os originais ja rodaram
+    let atual = 0, alvo = 0, vel = 0, anim = 0, tAnt = 0;
+    let apontado = -1;
+    // Mola criticamente amortecida, com teto de velocidade em paineis por
+    // segundo. Um passo fica visualmente pronto em uns 0,9s; uma rajada de cliques desliza no teto em
+    // vez de dar tranco, que era o que acontecia com uma curva de duracao fixa
+    // comecando rapido sobre cinco ou seis paineis de distancia.
+    const OMEGA = 8, VMAX = 7;
+
+    const roda = (lista, n) => lista.slice(n).concat(lista.slice(0, n));
+    // Originais na frente, copias atras: o aberto e sempre um original.
+    const fila = () => {
+      const frente = roda(originais, giro);
+      const cauda = [];
+      for (let v = 0; v < COPIAS; v++) cauda.push(...roda(sombras.slice(v * total, (v + 1) * total), giro));
+      return frente.concat(cauda);
+    };
 
     const fatia = col => {
       if (apontado < 1 || apontado > 3 || reduced.matches) return FATIAS[col];
       return apontado === col ? ESTICADA[col] : ESPREMIDA[col];
     };
 
+    /* Tudo sai de um unico valor animado, 'atual'. Antes cada painel tinha a
+       sua transicao CSS; cliques seguidos as reiniciavam em pontos diferentes,
+       a soma das larguras deixava de se conservar e a fita dava saltos. Com uma
+       so fonte, interromper e apenas mirar outro alvo a partir de onde esta. */
     function desenhar() {
       const largura = sqStrip.parentElement.clientWidth;
       if (!largura) return;
       const estreito = largura < 720;
-      const alturaCss = getComputedStyle(sqStrip.parentElement).height;
-      const altura = parseFloat(alturaCss) || 240;
+      const altura = parseFloat(getComputedStyle(sqStrip.parentElement).height) || 240;
       const colunas = estreito ? 2 : 4;
-      // O bloco 16:9 fixa a escala de desenho de toda foto, entao ela nao e
-      // reamostrada enquanto o painel muda de largura.
       let heroi = estreito ? largura * 0.58 : altura * 16 / 9;
-      const ripasReais = total - colunas;
-      const fixo = ripasReais * (RIPA + VAO_RIPA) + (colunas - 1) * VAO;
+      // So as ripas visiveis entram na conta; o resto da cauda passa da borda.
+      const fixo = 3 * (RIPA + VAO_RIPA) + (colunas - 1) * VAO;
       let sala = largura - heroi - fixo;
       if (sala < 0) { heroi = Math.max(120, largura - fixo - 40); sala = largura - heroi - fixo; }
       sqStrip.style.setProperty('--sq-hero', heroi.toFixed(1) + 'px');
 
-      paineis.forEach(p => {
-        const lugar = ordem.indexOf(+p.dataset.i);
-        const col = lugar - pos;
-        const aberto = col === 0;
-        let w;
-        if (col < 0 || col >= colunas) w = RIPA;
-        else if (col === 0) w = heroi + sala * (estreito ? 0 : fatia(0));
-        else w = estreito ? sala : sala * fatia(col);
+      const larguraEm = i => {
+        if (i < 0 || i >= colunas) return RIPA;
+        if (i === 0) return heroi + sala * (estreito ? 0 : fatia(0));
+        return estreito ? sala : sala * fatia(i);
+      };
+      const margemEm = i => (i < colunas ? VAO : VAO_RIPA);
+      const entre = (f, c) => { const a = Math.floor(c); return f(a) + (f(a + 1) - f(a)) * (c - a); };
+
+      const ordem = fila();
+      ordem.forEach((p, lugar) => {
+        const col = lugar - atual;
+        const w = entre(larguraEm, col);
         p.style.order = lugar;
         p.style.width = Math.max(RIPA, w).toFixed(1) + 'px';
-        p.style.marginLeft = lugar === 0 ? '0px' : (col < colunas ? VAO : VAO_RIPA) + 'px';
+        p.style.marginLeft = lugar === 0 ? '0px' : entre(margemEm, col).toFixed(1) + 'px';
         p.style.borderRadius = Math.min(6, w / 2).toFixed(1) + 'px';
+        const aberto = Math.abs(col) < .5;
         p.toggleAttribute('data-aberto', aberto);
-        p.setAttribute('aria-selected', String(aberto));
-        p.tabIndex = aberto ? 0 : -1;
+        if (!p.dataset.sombra) { p.setAttribute('aria-selected', String(aberto)); p.tabIndex = aberto ? 0 : -1; }
       });
+      sqStrip.style.transform = atual ? 'translateX(' + (-atual * (RIPA + VAO)).toFixed(1) + 'px)' : '';
 
-      // O painel que sai vira ripa a esquerda do aberto. Sem deslizar a fita
-      // ele encolheria parado ali, que e o que se via como um corte seco.
-      sqStrip.style.transform = pos ? 'translateX(' + (-pos * (RIPA + VAO)) + 'px)' : '';
-
-      const atual = ordem[pos];
+      const abertoEl = ordem[Math.round(atual)];
+      const qual = abertoEl?.dataset.i;
       copias.forEach(c => {
-        const seu = +c.dataset.i === atual;
+        const seu = c.dataset.i === qual;
         c.toggleAttribute('data-aberto', seu);
         if (seu) c.removeAttribute('aria-hidden'); else c.setAttribute('aria-hidden', 'true');
         const link = $('a', c); if (link) link.tabIndex = seu ? 0 : -1;
       });
     }
 
-    function semTransicao(fn) {
-      quieto = true;
-      sqStrip.classList.add('sq-quieto');
-      fn();
-      requestAnimationFrame(() => { sqStrip.classList.remove('sq-quieto'); quieto = false; });
+    /* Reancora sem mudar a imagem: gira os originais m passos e desconta m de
+       'atual' e de 'alvo'. A fila e periodica, originais e copias na mesma
+       ordem, entao a foto em cada coluna continua a mesma; e os m paineis que
+       saem da frente sao ripas inteiras, cujo espaco o deslize devolve exato. */
+    function reancorar() {
+      const m = Math.floor(Math.min(atual, alvo));
+      if (m < 1) return;
+      giro = (giro + m) % total;
+      atual -= m; alvo -= m;
     }
 
-    const girar = n => { ordem = ordem.slice(n).concat(ordem.slice(0, n)); };
+    function quadro(t) {
+      const dt = Math.min(1 / 30, (t - tAnt) / 1000 || 1 / 60);
+      tAnt = t;
+      const acc = OMEGA * OMEGA * (alvo - atual) - 2 * OMEGA * vel;
+      vel = Math.max(-VMAX, Math.min(VMAX, vel + acc * dt));
+      atual += vel * dt;
+      const parado = Math.abs(alvo - atual) < 0.002 && Math.abs(vel) < 0.01;
+      if (parado) { atual = alvo; vel = 0; }
+      reancorar();
+      desenhar();
+      anim = parado ? 0 : requestAnimationFrame(quadro);
+    }
+
+    function mover() {
+      if (reduced.matches) { atual = alvo; vel = 0; reancorar(); desenhar(); return; }
+      if (!anim) { tAnt = performance.now(); anim = requestAnimationFrame(quadro); }
+    }
 
     function andar(passos) {
       if (!passos || total < 2) return;
-      clearTimeout(relogio);
-
-      // Um passo que ainda estivesse correndo termina agora, sem animar: o
-      // desenho e o mesmo, so a numeracao muda.
-      if (pos !== 0) { girar(pos); pos = 0; semTransicao(desenhar); }
-
-      const n = ((Math.abs(passos) % total) + total) % total;
-      if (!n) return;
-
       if (passos > 0) {
-        pos = n;
-        desenhar();
+        alvo = Math.min(alvo + passos, Math.floor(atual) + LIMITE);
       } else {
-        // Para voltar, os anteriores entram na frente ja como ripas fora da
-        // tela; so entao a fita desliza de volta ao lugar.
-        girar(total - n);
-        pos = n;
-        semTransicao(desenhar);
-        requestAnimationFrame(() => { pos = 0; desenhar(); });
+        // Voltar: os anteriores entram na frente ja como ripas fora da tela.
+        // Girar para tras e somar o mesmo a 'atual' nao muda a imagem; o alvo
+        // fica onde estava, e por isso passa a ficar n paineis atras.
+        const n = Math.max(0, Math.min(-passos, Math.floor(LIMITE - (atual - alvo))));
+        if (!n) return;
+        giro = ((giro - n) % total + total) % total;
+        atual += n;
       }
-
-      relogio = setTimeout(() => {
-        girar(pos); pos = 0; semTransicao(desenhar);
-      }, reduced.matches ? 1 : DUR + 30);
+      mover();
     }
 
-
-    paineis.forEach(p => {
+    [...originais, ...sombras].forEach(p => {
       p.addEventListener('click', () => {
-        const col = ordem.indexOf(+p.dataset.i) - pos;
-        if (col > 0) andar(col);
+        const lugar = fila().indexOf(p);
+        if (Math.abs(lugar - atual) < .5) return;
+        alvo = Math.min(lugar, Math.floor(atual) + LIMITE);
+        mover();
       });
       p.addEventListener('pointerenter', e => {
-        if (e.pointerType !== 'mouse' || quieto) return;
-        apontado = ordem.indexOf(+p.dataset.i) - pos; desenhar();
+        if (e.pointerType !== 'mouse' || anim) return;
+        apontado = Math.round(fila().indexOf(p) - atual); desenhar();
       });
     });
-    sqStrip.addEventListener('pointerleave', () => { apontado = -1; desenhar(); });
+    sqStrip.addEventListener('pointerleave', () => { apontado = -1; if (!anim) desenhar(); });
     sqStrip.addEventListener('keydown', e => {
       const passo = {ArrowRight:1, ArrowLeft:-1}[e.key];
       if (!passo) return;
@@ -175,7 +216,7 @@
     $$('.sq-arrow').forEach(b => b.addEventListener('click', () => andar(+b.dataset.sq)));
 
     desenhar();
-    addEventListener('resize', () => semTransicao(desenhar), {passive:true});
+    addEventListener('resize', desenhar, {passive:true});
     if (document.fonts?.ready) document.fonts.ready.then(desenhar);
   }
   let introInView = true;

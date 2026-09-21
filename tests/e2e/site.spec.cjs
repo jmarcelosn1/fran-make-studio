@@ -63,3 +63,28 @@ test('carousel opens a panel and the caption follows',async({page})=>{
  const fim=await aberto();
  expect(fim.painel).toBe(fim.copia);
 });
+
+// Com a animacao ligada: o teste acima usa reducedMotion e nunca pegaria isto.
+// Uma rajada de cliques abria vao preto na direita e fazia o painel dar tranco.
+test('carousel survives a burst of clicks without gaps or jumps',async({page})=>{
+ await page.goto('/');
+ await page.locator('.sq-strip').scrollIntoViewIfNeeded();
+ await page.evaluate(()=>{window.__q=[];const vp=document.querySelector('.sq-viewport');
+  (function l(){const r=vp.getBoundingClientRect();
+   const bs=[...document.querySelectorAll('.sq-panel')].map(e=>e.getBoundingClientRect());
+   window.__q.push({vao:r.right-Math.max(...bs.map(x=>x.right)),maior:Math.max(...bs.map(x=>x.width))});
+   requestAnimationFrame(l);})();});
+ for(let i=0;i<8;i++) await page.click('.sq-arrow[data-sq="1"]');
+ await page.waitForTimeout(2600);
+ const q=await page.evaluate(()=>window.__q);
+ expect(q.filter(x=>x.vao>2).length).toBe(0);
+ let saltos=0; for(let k=1;k<q.length;k++) if(Math.abs(q[k].maior-q[k-1].maior)>200) saltos++;
+ expect(saltos).toBe(0);
+ const fim=await page.evaluate(()=>{const vp=document.querySelector('.sq-viewport').getBoundingClientRect();
+  const ab=document.querySelector('.sq-panel[data-aberto]');
+  return {x:Math.round(ab.getBoundingClientRect().x-vp.x),copia:document.querySelector('.sq-slide[data-aberto]').dataset.i,
+   painel:ab.dataset.i,sombra:'sombra' in ab.dataset};});
+ expect(fim.x).toBe(0);
+ expect(fim.painel).toBe(fim.copia);
+ expect(fim.sombra).toBe(false);
+});
