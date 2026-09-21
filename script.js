@@ -634,11 +634,20 @@
     document.body.append(star);star.addEventListener('animationend',()=>star.remove(),{once:true});
   });
 
-  // O mapa embutido saiu; resta o link externo, validado contra dominios Google.
+  // Link externo do mapa, validado contra dominios Google.
   const lat=config.latitude, lng=config.longitude;
   const exact = typeof lat==='number' && typeof lng==='number' && Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat)<=90 && Math.abs(lng)<=180;
   const mapsURL = window.FRAN_SAFETY.googleURL(config.mapsUrl) || (exact ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : '');
   if (mapsURL) $$('a[href*="maps.app.goo.gl"],a[href*="google.com/maps"]').forEach(a => { a.href = mapsURL; });
+  // Mapa embutido: um src de embed proprio no config vence; senao, as coordenadas.
+  // O validador so aceita o caminho /maps/embed, entao a URL por coordenadas e
+  // montada aqui, com lat e lng ja conferidos como numeros validos.
+  const quadroMapa = $('#map-placeholder iframe');
+  if (quadroMapa) {
+    const embed = window.FRAN_SAFETY.googleURL(config.mapsEmbedUrl, true)
+      || (exact ? `https://maps.google.com/maps?q=${lat},${lng}&z=17&hl=pt-BR&output=embed` : '');
+    if (embed && quadroMapa.getAttribute('src') !== embed) quadroMapa.src = embed;
+  }
   if(localAsset(config.portraitImage) && config.portraitImage!==$('#hero-img').getAttribute('src')) {
     const img=$('#hero-img');img.addEventListener('error',()=>{img.src='images/franciana.png';},{once:true});img.src=localAsset(config.portraitImage);
   }
