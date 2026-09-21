@@ -419,13 +419,14 @@ html.salto-ancora #hero{visibility:hidden}
 @media(prefers-reduced-motion:reduce){.brush-inner{transform:none}}
 /* Slogan do logo como texto. Dentro da imagem ele tinha 31px de altura em 1254,
    o que no hero virava uns 6px: ilegivel. O logo do hero usa um recorte sem a
-   linha e o slogan vem em serifada italica, a mesma das palavras do pincel.
+   linha e o slogan vem em serifada italica, a mesma das palavras do pincel. A
+   cor e a media do slogan original dentro do PNG, amostrada, nao escolhida.
    width:0 com min-width:100% faz o slogan ocupar a largura do logo sem alarga-lo. */
 .hero-marca{display:inline-grid;justify-items:center;margin-bottom:25px}
 .hero-marca .hero-logo,.mobile-layout.cinematic .hero-marca .hero-logo{margin:0}
 .hero-tagline{width:0;min-width:100%;display:flex;justify-content:center;gap:.72em;margin:10px 0 0;
   font:italic 500 clamp(12.5px,1vw,15px)/1.2 'Cormorant Garamond',Georgia,serif;letter-spacing:.02em;
-  color:#e7b3ba;white-space:nowrap}
+  color:#bd525c;white-space:nowrap}
 @media(max-width:850px){
   .hero-marca{margin:0 auto 14px}
   .hero-tagline{width:auto;min-width:0;font-size:13.5px;margin-top:8px}
