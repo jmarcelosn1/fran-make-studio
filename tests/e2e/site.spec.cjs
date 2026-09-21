@@ -11,7 +11,7 @@ test('services, map, accessibility and responsive layout',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');
  await expect(page.locator('#servicos h3')).toHaveCount(3);
- await expect(page.locator('#servicos a')).toHaveCount(1);
+ await expect(page.locator('#contato a[href*="wa.me"]')).toHaveCount(1);
  await expect(page.locator('#servicos')).not.toContainText('R$');
  await page.locator('#servicos').scrollIntoViewIfNeeded();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
@@ -32,8 +32,9 @@ test('portfolio lightbox opens, Escape closes and focus returns',async({page})=>
 test('CDN failure leaves content and booking usable',async({page})=>{
  await page.route(/https:\/\/(unpkg.com|cdnjs.cloudflare.com)\//,r=>r.abort());
  await page.goto('/');await page.locator('#servicos').scrollIntoViewIfNeeded();
- await expect(page.locator('#servicos a')).toBeVisible();
- await expect(page.locator('#servicos a')).toHaveAttribute('href','https://wa.me/message/2SNOKRBPREBYH1');
+ await page.locator('#contato').scrollIntoViewIfNeeded();
+ await expect(page.locator('#contato a[href*="wa.me"]')).toBeVisible();
+ await expect(page.locator('#contato a[href*="wa.me"]')).toHaveAttribute('href','https://wa.me/message/2SNOKRBPREBYH1');
 });
 test('intro is reversible and never flashes the portrait initially',async({page})=>{
  await page.goto('/');
