@@ -299,13 +299,24 @@
     }
   }
   function seekBrush() {
-    if (brushBroken || brushVideo.readyState < 1 || brushVideo.seeking) return;
+    if (mobile.matches || brushBroken || brushVideo.readyState < 1 || brushVideo.seeking) return;
     if (!Number.isFinite(brushVideo.duration)) return;
     const target = Math.min(brushTarget, Math.max(0, brushVideo.duration - .05));
     if (Math.abs(brushVideo.currentTime - target) > .025) brushVideo.currentTime = target;
   }
   brushVideo.addEventListener('loadedmetadata', () => { dirty = true; schedule(); });
-  brushVideo.addEventListener('loadeddata', seekBrush);
+  brushVideo.addEventListener('loadeddata', () => { seekBrush(); dirty = true; schedule(); });
+  /* No celular o pincel gira sozinho, em laco, enquanto esta em cena, e para
+     quando ja subiu e esta quase sumindo. Conduzido pelo scroll ele travava: o
+     seek de video no celular e lento e a rolagem por toque vem em trancos. Sob
+     movimento reduzido a cena nem existe, entao o laco nunca toca. */
+  function pilotarPincel(emCena) {
+    if (!mobile.matches || brushBroken || brushVideo.readyState < 2) return;
+    brushVideo.loop = true;
+    if (emCena && !document.hidden) { if (brushVideo.paused) brushVideo.play().catch(() => {}); }
+    else if (!brushVideo.paused) brushVideo.pause();
+  }
+  document.addEventListener('visibilitychange', () => { dirty = true; schedule(); });
   brushVideo.addEventListener('error', () => { brushBroken = true; });
   function seekVideo() {
     if (mobile.matches || reduced.matches || introVideo.readyState < 1 || introVideo.seeking || !Number.isFinite(introVideo.duration)) return;
@@ -378,6 +389,7 @@
     const [s0, s1] = PHASE.scrub;
     brushTarget = clamp((progress - s0) / (s1 - s0)) * (Number.isFinite(brushVideo.duration) ? brushVideo.duration : 0);
     if (brushOn > .008) seekBrush();
+    pilotarPincel(brushOn > .008 && saida < .7);
 
     const navigationVisible = still || progress >= .97;
     document.documentElement.classList.toggle('intro-pending', !navigationVisible);
@@ -401,6 +413,21 @@
      medida. Antes as legendas ja estavam na tela enquanto o nome ainda nao tinha
      sido escrito, e ficavam soltas. No topo, antes do primeiro scroll, aparece so
      o video: e o preco de o nome ser escrito pela mao de quem rola. */
+  /* Beleza e Sofisticacao acendem letra a letra. As letras ficam em linha, nao
+     em caixas, para manter o ajuste entre elas, e o "fi" anda junto para a
+     ligadura da Cormorant nao quebrar. */
+  $$('.brush-word').forEach(palavra => {
+    const unidades = palavra.textContent.match(/fi|fl|./gu) || [];
+    palavra.style.setProperty('--n', unidades.length);
+    palavra.textContent = '';
+    unidades.forEach((u, i) => {
+      const letra = document.createElement('span');
+      letra.className = 'letra';
+      letra.style.setProperty('--i', i);
+      letra.textContent = u;
+      palavra.appendChild(letra);
+    });
+  });
   function aplicarEntrada(e) {
     // Tudo sai do quanto o nome ja foi escrito: o CONHECA acende na mesma medida
     // e nunca fica na tela antes do nome; a legenda fecha o movimento.

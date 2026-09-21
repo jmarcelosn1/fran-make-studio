@@ -497,3 +497,11 @@ html[data-theme] .glow-icone::after{display:none}
   #mapa .map-box{margin-top:26px}
   #mapa .location-actions,#mapa .location-actions .btn-pk{width:100%}
 }
+/* Beleza e Sofisticacao: a palavra sobe de leve e as letras acendem em
+   sequencia, da esquerda para a direita; na saida, a ordem se inverte. So
+   opacidade e transform. Substitui o deslize pelas laterais. */
+.brush-left,.brush-right{opacity:1}
+.brush-left{--w:var(--word-a,0)}
+.brush-right{--w:var(--word-b,0)}
+.brush-left,.brush-right{translate:0 calc(-50% + (1 - var(--w)) * .34em)}
+.brush-word .letra{opacity:clamp(0,calc(var(--w) * 2 - var(--i) / (var(--n) - 1)),1)}

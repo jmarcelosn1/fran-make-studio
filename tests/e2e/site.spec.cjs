@@ -131,3 +131,19 @@ test('hovering a carousel panel opens it gradually, not in one jump',async({page
  expect(maior).toBeLessThan((fim-inicio)*.5);
 });
 
+// No celular o pincel gira sozinho em cena e para quando sobe para sair.
+test('mobile brush loops on its own while on screen and stops on the way out',async({page},info)=>{
+ test.skip(info.project.name!=='mobile','comportamento so do celular');
+ await page.goto('/');
+ const g=await page.evaluate(()=>{const H=document.querySelector('#hero'),s=document.querySelector('.hero-stage');return {a:H.offsetTop,r:H.offsetHeight-s.offsetHeight};});
+ const tempoAnda=async(pr)=>{
+  await page.evaluate(v=>scrollTo(0,v),Math.round(g.a+g.r*pr));
+  await page.waitForTimeout(1800);
+  const t1=await page.evaluate(()=>document.querySelector('.brush-video').currentTime);
+  await page.waitForTimeout(700);
+  return page.evaluate(t1=>{const v=document.querySelector('.brush-video');return !v.paused&&Math.abs(v.currentTime-t1)>.15;},t1);
+ };
+ expect(await tempoAnda(.5)).toBe(true);
+ expect(await tempoAnda(.785)).toBe(false);
+});
+
