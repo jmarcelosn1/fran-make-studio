@@ -598,7 +598,8 @@
      tambem sem WebGPU. Mesmo algoritmo; o traco aceso, la o N do logo, aqui e a
      borda da silhueta, com o canvas atras da foto. Luz menor e de alcance menor
      que o original, a pedido: queda 6.85 (spotReach .25), halo .07, extension
-     .2 (decaimento .875, densidade .51) e raios a 80%.
+     .2 (decaimento .875, densidade .51) e raios a 80%. So a borda borrada entra:
+     a linha nitida e o contorno fixo deixavam a foto com cara de recorte.
      Borda e desfoque saem uma vez; por quadro, so a composicao, a 30 quadros. */
   const luzes = [];
   const acordarLuz = () => luzes.forEach(acordar => acordar());
@@ -639,7 +640,7 @@
     let pico = 1e-6;
     for (const v of borrado) if (v > pico) pico = v;
     const dados = new Uint8Array(W * H * 4);
-    for (let i = 0; i < traco.length; i++) { dados[i * 4] = traco[i] * 255; dados[i * 4 + 1] = borrado[i] / pico * 255; }
+    for (let i = 0; i < traco.length; i++) dados[i * 4 + 1] = borrado[i] / pico * 255;
     gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, dados);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -649,13 +650,13 @@
     const shader = (tipo, fonte) => { const sh = gl.createShader(tipo); gl.shaderSource(sh, fonte); gl.compileShader(sh); gl.attachShader(prog, sh); };
     shader(gl.VERTEX_SHADER, 'attribute vec2 p;varying vec2 u;void main(){u=vec2(p.x,-p.y)*.5+.5;gl_Position=vec4(p,0.,1.);}');
     // Composicao do composite.wgsl e do rim.wgsl, com a luz reduzida acima.
-    shader(gl.FRAGMENT_SHADER, `precision highp float;uniform sampler2D t;uniform vec2 L,A;uniform float f,q,e;varying vec2 u;
+    shader(gl.FRAGMENT_SHADER, `precision highp float;uniform sampler2D t;uniform vec2 L,A;uniform float f,q;varying vec2 u;
 float k(vec2 c){vec2 d=(L-c)*A;return 1./(1.+dot(d,d)*6.85);}
-void main(){vec2 r=texture2D(t,u).rg;float K=k(u),s=r.x*K,b=r.y*K,w=1.,W=0.,z=0.;
+void main(){float b=texture2D(t,u).g*k(u),w=1.,W=0.,z=0.;
 vec2 d=(u-L)*(${o.densidade}/${o.passos}.),c=u-d*fract(sin(dot(u,vec2(12.9898,78.233))+q)*43758.5453);
 for(int i=0;i<${o.passos};i++){c-=d;z+=texture2D(t,c).g*k(c)*w;W+=w;w*=${o.decai};}
-vec2 h=(u-L)*A;float H=exp(-dot(h,h)/.0049),S=max(s,b*.85)*(1.+H*1.5);
-vec3 C=vec3(.94,.64,.68),R=C*H*max(r.x,b*.65)*f*1.1+vec3(r.x)*e+(mix(vec3(1.),C,.5)+C*.4)*S*f+C*z/W*2.6*f;
+vec2 h=(u-L)*A;float H=exp(-dot(h,h)/.0049),S=b*.85*(1.+H*1.5);
+vec3 C=vec3(.94,.64,.68),R=(C*H*b*.7+(mix(vec3(1.),C,.7)+C*.3)*S+C*z/W*2.6)*f*.8;
 vec2 g=smoothstep(0.,.2,u)*smoothstep(0.,.2,1.-u);
 vec3 o=(1.-exp(-R*smoothstep(1.35,.25,length((u-.5)*A))*1.3))*g.x*g.y;
 gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
@@ -671,7 +672,6 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     const [uL, uF, uQ] = ['L', 'f', 'q'].map(n => gl.getUniformLocation(prog, n));
     gl.uniform2f(gl.getUniformLocation(prog, 'A'), W / m, H / m);
-    gl.uniform1f(gl.getUniformLocation(prog, 'e'), o.cena);
     const noCanvas = (x, y) => [f + x * (1 - 2 * f), f + y * (1 - 2 * f)];
     let luz = noCanvas(...o.centro), alvo = null, segura = 0, quadro = 0, ultimo = 0, antes = 0, vivo = false;
     const desenhar = forca => {
@@ -717,6 +717,6 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
   motionPreference();
   addEventListener('load', () => setTimeout(() => {
     const m = mobile.matches;
-    acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .1, cena: .18, centro: [.5, .45], N: m ? 320 : 512, passos: m ? 16 : 32, densidade: .51, decai: .875, borrao: 160});
+    acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .1, centro: [.5, .45], N: m ? 320 : 512, passos: m ? 16 : 32, densidade: .51, decai: .875, borrao: 90});
   }, 200), {once:true});
 })();

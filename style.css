@@ -429,12 +429,13 @@ html[data-theme] .glow-icone::after{display:none}
 /* Ingles salvo: esconde a pagina ate o dicionario chegar (no maximo 1,5s). */
 html.carrega-idioma body{visibility:hidden}
 
-/* Retrato maior e apoiado na base do palco: o corte do tronco coincide com a
-   borda do hero, em vez de flutuar no meio da tela com a base reta a mostra. */
-html:not(.mobile-layout) .hero-layout{grid-template-columns:46% 54%}
-html:not(.mobile-layout) .hero-photo{align-self:end;max-width:none;margin-bottom:-98px;
-  width:min(820px,calc(100% + 60px),calc(100vh - var(--nav) - 40px));
-  width:min(820px,calc(100% + 60px),calc(100svh - var(--nav) - 40px))}
+/* Retrato inteiro na tela, centrado na altura do texto. O corte reto da
+   cintura, que e da propria foto, se desfaz no preto em vez de aparecer. */
+html:not(.mobile-layout) .hero-layout{grid-template-columns:46% 54%;padding-bottom:60px}
+html:not(.mobile-layout) .hero-photo{align-self:center;max-width:none;
+  width:min(780px,calc(100% + 60px),calc(100vh - var(--nav) - 100px));
+  width:min(780px,calc(100% + 60px),calc(100svh - var(--nav) - 100px))}
+.hero-photo img{-webkit-mask-image:linear-gradient(#000 76%,transparent 99%);mask-image:linear-gradient(#000 76%,transparent 99%)}
 /* No celular a foto passa da coluna; as laterais da imagem sao transparentes,
    entao o que sai da tela e so o vazio em volta dela. */
 .mobile-layout .hero-photo{width:min(104%,380px);max-width:none}
@@ -464,7 +465,8 @@ html:not(.mobile-layout) .hero-photo{align-self:end;max-width:none;margin-bottom
 /* Contorno de luz (acenderLuz, no script.js): canvas atras da foto, 10% maior
    em cada lado, o bastante para os raios curtos. */
 .hero-photo img{display:block}
-.hero-flare{position:absolute;left:-10%;top:-10%;width:120%;height:120%;z-index:-1;pointer-events:none}
+.hero-flare{position:absolute;left:-10%;top:-10%;width:120%;height:120%;z-index:-1;pointer-events:none;
+  -webkit-mask-image:linear-gradient(#000 68%,transparent 88%);mask-image:linear-gradient(#000 68%,transparent 88%)}
 
 /* Precos e WhatsApp nos tres servicos, empurrados para o pe do cartao. */
 #servicos .mp-card .service-preco{margin:auto 0 0;font:700 clamp(26px,2.3vw,32px)/1.1 var(--serif);
