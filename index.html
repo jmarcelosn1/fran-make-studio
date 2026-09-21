@@ -10,17 +10,16 @@
 <meta property="og:image" content="images/franciana.webp"/><meta property="og:locale" content="pt_BR"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/><link rel="alternate icon" href="images/logo-icon.png" type="image/png"/><script src="boot.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="preload" href="fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin/><link rel="preload" href="fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin/>
+
 <link rel="stylesheet" href="style.css"/>
 <link rel="stylesheet" href="dark.css"/>
 <link rel="stylesheet" href="spotlight.css"/>
-<link rel="stylesheet" href="https://unpkg.com/lenis@1.3.26/dist/lenis.css" integrity="sha384-gvLq/iOMNnPchdosgVym5huSVkKipHCQaqSw2Eg0V52Mzmlf169ZOsXcNc2cNu8x" crossorigin="anonymous"/>
-<script defer src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js" integrity="sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU+erWDH3k8fQQg0xH2ySjnw" crossorigin="anonymous"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js" integrity="sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc" crossorigin="anonymous"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js" integrity="sha384-P8VzCVnT9NBUkMrpcIZrJbA7EBjJvh/fJS6PmP+4nLIM284DtsImIv8D0fFjIkeh" crossorigin="anonymous"></script>
-<script defer src="https://unpkg.com/split-type@0.3.4/umd/index.min.js" integrity="sha384-wQImCCD/id1jPTwSloatzKlEpnEAQ5aH8H2Ud27FnNcJ1lf2+hB75ctoWnWxyD8X" crossorigin="anonymous"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" integrity="sha384-0k1dj5tm+KUH/4vkNk/i90XsjDA8Ltmt+ybcrFoH4t0dgv/WZsPpVBnkhcroX8UL" crossorigin="anonymous"></script>
+
+<script defer src="vendor/lenis.min.js"></script>
+<script defer src="vendor/gsap.min.js"></script>
+<script defer src="vendor/ScrollTrigger.min.js"></script>
+<script defer src="vendor/split-type.min.js"></script>
 <script defer src="preferencias.js"></script><script defer src="config.js"></script><script defer src="safety.js"></script><script defer src="motion.js"></script><script defer src="script.js"></script>
 </head><body><a class="skip-link" href="#conteudo">Pular para o conteúdo</a><nav id="navbar" aria-label="Navegação principal">
   <div class="nb-inner">
@@ -55,14 +54,14 @@
       <p class="brush-word brush-right">Sofisticação</p>
       <div class="brush-edge"></div>
     </div>
-    <div class="intro-title"><p id="intro-kicker">CONHEÇA</p><h1 class="intro-mark"><span class="sr-only">Fran Make Studio</span><span class="intro-mark-draw" aria-hidden="true"><img src="images/fran-make-assinatura.webp" alt="" width="1637" height="521" fetchpriority="high" decoding="async"/></span></h1><p class="intro-signature">Maquiagem e Hair em São Luís, MA</p></div>
+    <div class="intro-title"><p id="intro-kicker">CONHEÇA</p><h1 class="intro-mark"><span class="sr-only">Fran Make Studio</span><span class="intro-mark-draw" aria-hidden="true"><img src="images/fran-make-assinatura-m.webp" srcset="images/fran-make-assinatura-m.webp 1000w, images/fran-make-assinatura.webp 1637w" sizes="(max-width:850px) 88vw, 540px" alt="" width="1637" height="521" fetchpriority="high" decoding="async"/></span></h1><p class="intro-signature">Maquiagem e Hair em São Luís, MA</p></div>
     <div class="hero-layout container">
       <div class="hero-content">
         <p class="hero-credit"><span class="hc-nome" translate="no">Franciana</span><span class="hc-papel">Especialista em olhos</span></p>
         <div class="hero-marca"><img src="images/logo-hero.webp" alt="Fran Make Studio" class="hero-logo" width="560" height="488" fetchpriority="high"/></div>
         <h2>A arte de <em>realçar</em><br/>sua beleza única</h2><p class="hero-description">Sou Franciana, maquiadora há mais de dez anos e especialista em olhos. Cada produção começa por você: o desenho do seu olhar, o tom da sua pele e o que a ocasião pede. Também assino o cabelo e o penteado, para que tudo conte a mesma história.</p>
       </div>
-      <figure class="hero-photo"><img src="images/franciana.webp" alt="Franciana, maquiadora do Fran Make Studio" id="hero-img" width="1254" height="1254" fetchpriority="high"/></figure>
+      <figure class="hero-photo"><img src="images/franciana.webp" srcset="images/franciana-m.webp 800w, images/franciana.webp 1254w" sizes="(max-width:850px) 380px, 780px" alt="Franciana, maquiadora do Fran Make Studio" id="hero-img" width="1254" height="1254"/></figure>
     </div>
   </div>
 </section>

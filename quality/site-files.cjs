@@ -1,1 +1,1 @@
-module.exports = ['index.html','portfolio.html','style.css','dark.css','spotlight.css','portfolio.css','boot.js','config.js','safety.js','motion.js','script.js','portfolio.js','preferencias.js','favicon.svg','robots.txt','i18n','images'];
+module.exports = ['index.html','portfolio.html','style.css','dark.css','spotlight.css','portfolio.css','boot.js','config.js','safety.js','motion.js','script.js','portfolio.js','preferencias.js','favicon.svg','robots.txt','i18n','images','fonts','vendor'];

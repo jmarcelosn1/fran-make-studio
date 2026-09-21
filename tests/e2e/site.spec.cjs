@@ -11,6 +11,8 @@ test('public build omits internal files and sends security headers',async({reque
  // Scripts sem inline nem eval; o unico inline liberado e o atributo style (SplitType).
  const csp=response.headers()['content-security-policy'];
  expect(csp).not.toContain('unsafe-eval');
+ // Tudo da propria origem: sem CDN e sem Google Fonts.
+ expect(csp).not.toMatch(/unpkg|cdnjs|googleapis|gstatic/);
  expect(csp.replace("style-src-attr 'unsafe-inline'",'')).not.toContain('unsafe');
  for(const file of ['package.json','QUALIDADE.md','.env','tests/unit/safety.test.cjs','guia.html','guia.js','config.js.bak','.git/config','_fontes/franciana.jpg','.claude/settings.local.json'])expect((await request.get('/'+file)).status()).toBe(404);
 });
@@ -46,8 +48,8 @@ test('portfolio lightbox opens, Escape closes and focus returns',async({page})=>
  await page.keyboard.press('Escape');await expect(page.locator('#lightbox')).not.toBeVisible();
  await expect(card).toBeFocused();
 });
-test('CDN failure leaves content and booking usable',async({page})=>{
- await page.route(/https:\/\/(unpkg.com|cdnjs.cloudflare.com)\//,r=>r.abort());
+test('animation libraries failing leaves content and booking usable',async({page})=>{
+ await page.route('**/vendor/**',r=>r.abort());
  await page.goto('/');await page.locator('#servicos').scrollIntoViewIfNeeded();
  await page.locator('#contato').scrollIntoViewIfNeeded();
  await expect(page.locator('#contato a[href*="wa.me"]')).toBeVisible();

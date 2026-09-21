@@ -15,7 +15,6 @@
       if (label === null) heading.removeAttribute('aria-label'); else heading.setAttribute('aria-label',label);
     });
     splits = [];
-    document.querySelectorAll('.tilt-visual').forEach(el => el.vanillaTilt?.destroy());
   }
 
   function setup() {
@@ -67,12 +66,6 @@
         }
       });
       document.fonts.ready.then(()=>ScrollTrigger.refresh());
-    }
-    if(window.VanillaTilt && config.tilt !== false && pointer.matches) {
-      VanillaTilt.init(document.querySelectorAll('.tilt-visual'),{
-        max:number(config.tiltMax,3,0,6),speed:600,perspective:1400,scale:1,
-        glare:false,gyroscope:false,reset:true
-      });
     }
   }
   window.FRAN_MOTION = {

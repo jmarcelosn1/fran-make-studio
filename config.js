@@ -11,8 +11,6 @@ window.FRAN_CONFIG = Object.freeze({
   scrollLerp: 0.09,
   titleReveals: true,
   parallax: true,
-  tilt: true,
-  tiltMax: 3,
   noise: true,
   // Coordenadas exatas, em números decimais. Ambos precisam ser preenchidos.
   latitude: -2.5197988,

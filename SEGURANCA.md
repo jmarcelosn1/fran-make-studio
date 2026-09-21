@@ -22,14 +22,14 @@ A fonte é o `vercel.json`. O build gera a partir dele o `dist/_headers`, format
 
 ### Content-Security-Policy
 
-- **Scripts:** só os arquivos do próprio site, unpkg.com e cdnjs.cloudflare.com. Nada de script inline nem `eval`: mesmo que alguém conseguisse injetar texto na página, ele não rodaria.
-- **Estilos:** arquivos do site, Google Fonts e unpkg. O único inline liberado é o atributo `style` (`style-src-attr`), exigido pelo SplitType para montar as palavras dos títulos; tags `<style>` inline continuam bloqueadas.
+- **Scripts:** só os arquivos do próprio site. Nada de script inline nem `eval`: mesmo que alguém conseguisse injetar texto na página, ele não rodaria.
+- **Estilos e fontes:** só os arquivos do próprio site. O único inline liberado é o atributo `style` (`style-src-attr`), exigido pelo SplitType para montar as palavras dos títulos; tags `<style>` inline continuam bloqueadas.
 - **Mapa:** iframes só dos domínios do Google Maps. O iframe tem `sandbox` (só scripts, a própria origem dele e abrir o Maps em nova aba) e envia apenas o domínio como referência.
 - **Demais:** imagens e vídeo só locais (`blob:` para os vídeos da abertura), conexões só com o próprio site, sem workers, sem plugins (`object-src 'none'`), `base-uri` e `form-action` travados.
 
-## Bibliotecas externas (SRI)
+## Bibliotecas e fontes
 
-Lenis, GSAP, ScrollTrigger, SplitType e Vanilla-Tilt vêm de CDN com versão fixa **e** hash de integridade (`integrity="sha384-…"`). Se a CDN for invadida e o arquivo mudar, o navegador recusa o arquivo em vez de executá-lo; o site continua funcionando sem as animações. Ao atualizar uma biblioteca, troque a versão e recalcule o hash:
+GSAP, ScrollTrigger, Lenis e SplitType ficam em `vendor/`, e DM Sans e Manrope em `fonts/`, servidos pelo próprio site. As bibliotecas são cópias idênticas às das CDNs oficiais, conferidas por hash SHA-384 antes de copiar (licenças em `vendor/LICENCAS.md`). Sem CDN nem Google Fonts, não há terceiro que possa trocar um arquivo, e a política de conteúdo aceita só a própria origem (além do mapa). Para atualizar uma biblioteca, baixe a nova versão da fonte oficial, confira o hash publicado e substitua o arquivo em `vendor/`:
 
 ```bash
 curl -sL URL_DO_ARQUIVO | openssl dgst -sha384 -binary | openssl base64 -A

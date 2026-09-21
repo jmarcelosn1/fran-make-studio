@@ -12,7 +12,7 @@ O arquivo principal já se chamou `index (5).html`. Esse nome quebrava o build, 
 
 Versão preto e rosa: abra `index.html?theme=dark` pelo servidor. Remova o parâmetro ou use `?theme=light` para comparar com a versão clara. O tema padrão agora é preto sólido; `dark.css` reúne a paleta alternativa e `boot.js` a aplica antes do primeiro carregamento visual.
 
-DM Sans nos títulos e Manrope nos textos, via Google Fonts com pesos reais 400, 500, 600 e 700 e display swap. Títulos em 700, menu e botões em 600, textos importantes em 500 e secundários em 400. Sem itálico nos textos principais; font-synthesis:none impede negrito artificial. Animações de texto não usam skew ou rotação. Tamanhos e espaçamentos se adaptam ao celular.
+DM Sans nos títulos e Manrope nos textos, servidas pelo próprio site (pasta fonts, fontes variáveis, subconjunto latino), com pesos 400 a 700 e display swap. Títulos em 700, menu e botões em 600, textos importantes em 500 e secundários em 400. Sem itálico nos textos principais; font-synthesis:none impede negrito artificial. Animações de texto não usam skew ou rotação. Tamanhos e espaçamentos se adaptam ao celular.
 
 ## Arquivos e recursos
 
@@ -23,7 +23,7 @@ A intro abre com a assinatura Fran Make sendo escrita da esquerda para a direita
 - `style.css`: identidade, tipografia, camadas, textura, liquid glass dos CTAs e responsividade.
 - `dark.css`: paleta preta padrão e as cores translúcidas do liquid glass. Carrega depois de `style.css`, então regras de tema precisam morar aqui.
 - `script.js`: abertura vinculada ao scroll, assinatura, contorno de luz do retrato (WebGL), carrossel, menu, fotos ampliadas, vídeos e mapa. Depende de elementos do hero e não serve a outras páginas.
-- `motion.js`: Lenis, GSAP, ScrollTrigger, SplitType, parallax, sequência reversível da formanda, cena do pincel e Vanilla-Tilt somente nas imagens de destaque.
+- `motion.js`: Lenis, GSAP, ScrollTrigger, SplitType, parallax, sequência reversível da formanda e cena do pincel.
 - `portfolio.html`, `portfolio.css`, `portfolio.js`: página de portfólio, com filtro por categoria e lightbox navegável. JS próprio, independente do `script.js`.
 - `boot.js`: tema antes da primeira pintura. Só a página que declara `data-intro` no `<html>` recebe as classes da abertura; sem isso a navbar ficaria oculta para sempre em páginas sem `script.js`.
 - `config.js`: contatos, retrato, efeitos, autoplay e localização.
@@ -36,7 +36,7 @@ A intro abre com a assinatura Fran Make sendo escrita da esquerda para a direita
 
 O scroll controla apenas o tempo do vídeo. Nenhum transform, escala ou rotação é aplicado ao pincel, porque o movimento já está gravado. O clipe é carregado como blob em memória: hospedagem estática sem HTTP Range não permite busca, e o scrub depende de avançar e retroceder. A altura alta da seção só é aplicada pela classe `brush-ready`, adicionada quando tudo inicializa; se o GSAP falhar, a seção fica curta e estática com o poster em vez de um vazio de 170vh.
 
-Lenis 1.3.26 e SplitType 0.3.4 vêm do Unpkg; GSAP/ScrollTrigger 3.13.0 e Vanilla-Tilt 1.8.1 do cdnjs. O guia contém links oficiais. Há fallback quando as bibliotecas não carregam. O ticker do GSAP coordena o movimento, com fallback requestAnimationFrame. A preferência por menos movimento simplifica a experiência.
+Lenis 1.3.26, SplitType 0.3.4 e GSAP/ScrollTrigger 3.13.0 ficam na pasta vendor, servidos pelo próprio site (licenças em vendor/LICENCAS.md); o site não depende de nenhum servidor externo além do mapa. O guia contém links oficiais. Há fallback quando as bibliotecas não carregam. O ticker do GSAP coordena o movimento, com fallback requestAnimationFrame. A preferência por menos movimento simplifica a experiência.
 
 Galerias permitem arraste, toque nativo, teclado, avanço e pausa. Autoplay lento de ida e volta, sem duplicar imagens. Interação pausa por 4,5 segundos por padrão; foco e hover também suspendem o movimento. Vídeos usam controles nativos.
 
@@ -78,7 +78,7 @@ Verificação com emulação de toque: vídeo avançando no tempo, swipe vertica
 
 Revisão da intro em vídeo: tempo 0 → 2,51 → 5,02 segundos e retorno a 0 acompanhando o scroll. Navbar oculta e fora da navegação por teclado na abertura; visível depois da transição. Mapa Google carregado com as coordenadas confirmadas. Autoplay, pausa, ampliação e download da configuração testados. Cabeçalhos de segurança simulados no navegador sem bloqueio das bibliotecas ou do vídeo.
 
-Layout verificado em 1440, 1200, 1024, 768, 430, 390 e 360 px: sem overflow horizontal, IDs duplicados, imagens carregadas quebradas ou travessões visíveis. Menu, diálogo, redução de movimento, bibliotecas CDN e pesos tipográficos verificados. A sequência de fotos avança e reverte com o scroll. Guia testado com filtros, demonstração, pesos, busca, checklist e download, sem overflow de 360 a 1440 px. Sessões de teste sem erros JavaScript.
+Layout verificado em 1440, 1200, 1024, 768, 430, 390 e 360 px: sem overflow horizontal, IDs duplicados, imagens carregadas quebradas ou travessões visíveis. Menu, diálogo, redução de movimento, falha das bibliotecas e pesos tipográficos verificados. A sequência de fotos avança e reverte com o scroll. Guia testado com filtros, demonstração, pesos, busca, checklist e download, sem overflow de 360 a 1440 px. Sessões de teste sem erros JavaScript.
 
 Não houve teste em aparelhos físicos ou medição representativa de FPS nesses aparelhos. Serviços com preço (Make Social R$ 119,90, Make + Hair R$ 219,90) e orçamento (Make Noiva), cada um com botão Consulte para o WhatsApp. Nenhuma mensagem foi enviada. Confira os dados comerciais antes de publicar usando a lista do guia.
 

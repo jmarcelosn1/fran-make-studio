@@ -1,0 +1,3 @@
+# Bibliotecas de terceiros ficam byte a byte iguais as oficiais (conferidas por hash).
+vendor/*.js -text
+fonts/* binary

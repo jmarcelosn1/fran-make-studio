@@ -615,36 +615,52 @@
     const info = gl.getExtension('WEBGL_debug_renderer_info');
     const parado = !!info && /swiftshader|llvmpipe|software/i.test(gl.getParameter(info.UNMASKED_RENDERER_WEBGL));
     const W = o.N, H = Math.round(W * img.naturalHeight / img.naturalWidth), f = o.folga / (1 + 2 * o.folga);
-    const m = Math.min(W, H), ox = Math.round(W * f), oy = Math.round(H * f);
+    const m = Math.min(W, H);
     Object.assign(tela, {width: W, height: H});
     tela.setAttribute('aria-hidden', 'true');
-    const ctx = Object.assign(document.createElement('canvas'), {width: W, height: H}).getContext('2d');
-    ctx.drawImage(img, ox, oy, W - 2 * ox, H - 2 * oy);
+    // A textura so leva o brilho borrado: calculada em meia resolucao, que a GPU
+    // amplia com interpolacao sem diferenca visivel, e em lacos diretos. Era um
+    // bloco de ~400ms numa CPU de celular; assim fica em poucas dezenas.
+    const w = Math.round(W / 2), h = Math.round(H / 2), n = w * h, mt = Math.min(w, h);
+    const ctx = Object.assign(document.createElement('canvas'), {width: w, height: h}).getContext('2d');
+    const bx = Math.round(w * f), by = Math.round(h * f);
+    ctx.drawImage(img, bx, by, w - 2 * bx, h - 2 * by);
     // Estica a ultima linha: o corte reto da cintura nao vira borda.
-    ctx.drawImage(img, 0, img.naturalHeight - 1, img.naturalWidth, 1, ox, H - oy - 1, W - 2 * ox, oy + 1);
-    const px = ctx.getImageData(0, 0, W, H).data;
-    const cena0 = new Float32Array(W * H).map((_, i) => px[i * 4 + 3] / 255);
-    const vizinho = (de, i, dx, dy, k) => de[Math.min(H - 1, Math.max(0, ((i / W) | 0) + dy * k)) * W + Math.min(W - 1, Math.max(0, i % W + dx * k))];
-    // Borda: o que o desenho ganha dilatado em 2px.
-    const dilata = (de, dx, dy) => de.map((v, i) => Math.max(v, vizinho(de, i, dx, dy, 1), vizinho(de, i, dx, dy, -1), vizinho(de, i, dx, dy, 2), vizinho(de, i, dx, dy, -2)));
-    const a = cena0, d = dilata(dilata(a, 1, 0), 0, 1);
-    const cena = d.map((v, i) => v - a[i]);
-    const traco = cena.map(v => v * v);
-    const sigma = m / o.borrao, raio = Math.ceil(sigma * 3), g = [];
+    ctx.drawImage(img, 0, img.naturalHeight - 1, img.naturalWidth, 1, bx, h - by - 1, w - 2 * bx, by + 1);
+    const px = ctx.getImageData(0, 0, w, h).data;
+    const a = new Float32Array(n);
+    for (let i = 0; i < n; i++) a[i] = px[i * 4 + 3] / 255;
+    // Passada separavel: em cada pixel, reduz os vizinhos a +-r na horizontal ou
+    // na vertical, com borda repetida. Serve a dilatacao (max) e ao desfoque (soma).
+    const passada = (de, horiz, r, junta, peso) => {
+      const s = new Float32Array(n);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        let t = junta ? de[y * w + x] * peso[0] : de[y * w + x];
+        for (let k = 1; k <= r; k++) {
+          const p1 = horiz ? y * w + Math.min(w - 1, x + k) : Math.min(h - 1, y + k) * w + x;
+          const p2 = horiz ? y * w + Math.max(0, x - k) : Math.max(0, y - k) * w + x;
+          if (junta) t += (de[p1] + de[p2]) * peso[k];
+          else t = Math.max(t, de[p1], de[p2]);
+        }
+        s[y * w + x] = t;
+      }
+      return s;
+    };
+    // Borda: o que o desenho ganha dilatado em 1px aqui (2px no tamanho final).
+    const d = passada(passada(a, true, 1), false, 1);
+    const traco = new Float32Array(n);
+    for (let i = 0; i < n; i++) traco[i] = (d[i] - a[i]) ** 2;
+    const sigma = mt / o.borrao, raio = Math.ceil(sigma * 3), g = [];
     for (let k = 0; k <= raio; k++) g.push(Math.exp(-k * k / (2 * sigma * sigma)));
     const total = g.reduce((t, v, k) => t + (k ? 2 * v : v), 0);
-    const borra = (de, dx, dy) => de.map((v, i) => {
-      let t = v * g[0];
-      for (let k = 1; k <= raio; k++) t += (vizinho(de, i, dx, dy, k) + vizinho(de, i, dx, dy, -k)) * g[k];
-      return t / total;
-    });
-    const borrado = borra(borra(traco, 1, 0), 0, 1);
+    const pesos = g.map(v => v / total);
+    const borrado = passada(passada(traco, true, raio, true, pesos), false, raio, true, pesos);
     let pico = 1e-6;
-    for (const v of borrado) if (v > pico) pico = v;
-    const dados = new Uint8Array(W * H * 4);
-    for (let i = 0; i < traco.length; i++) dados[i * 4 + 1] = borrado[i] / pico * 255;
+    for (let i = 0; i < n; i++) if (borrado[i] > pico) pico = borrado[i];
+    const dados = new Uint8Array(n * 4);
+    for (let i = 0; i < n; i++) dados[i * 4 + 1] = borrado[i] / pico * 255;
     gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, dados);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, dados);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -717,8 +733,11 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
   motion?.init();
   if(tickerDriven) gsap.ticker.add(()=>tick(performance.now()));
   motionPreference();
-  addEventListener('load', () => setTimeout(() => {
+  // O calculo da borda e pesado para CPU de celular e o retrato so aparece depois
+  // da abertura: roda quando o navegador esta ocioso, fora do carregamento.
+  const ocioso = fn => (window.requestIdleCallback ? requestIdleCallback(fn, {timeout: 4000}) : setTimeout(fn, 1500));
+  addEventListener('load', () => ocioso(() => {
     const m = mobile.matches;
     acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .1, centro: [.5, .45], N: m ? 320 : 512, passos: m ? 16 : 32, densidade: .51, decai: .875, borrao: 90});
-  }, 200), {once:true});
+  }), {once:true});
 })();
