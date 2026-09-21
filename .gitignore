@@ -9,3 +9,14 @@ playwright-report/
 !.env.example
 *.log
 _backup-pincel/
+
+# Ferramentas locais do editor/assistente: caminhos da maquina e historico de comandos
+.claude/
+.agents/
+skills-lock.json
+# Originais das fotos e videos (clientes). Guardar em backup, fora do GitHub.
+_fontes/
+# Sistema operacional
+Thumbs.db
+desktop.ini
+.DS_Store

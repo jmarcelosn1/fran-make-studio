@@ -1,6 +1,6 @@
 # Fran Make Studio
 
-Site estático nas cores da logo. Abra `guia.html` para a documentação interativa: demonstrações, catálogo de imagens, exemplos, busca, checklist e gerador de configuração.
+Site estático nas cores da logo. Abra `guia.html` localmente para a documentação interativa (ele não é publicado no site): demonstrações, catálogo de imagens, exemplos, busca, checklist e gerador de configuração.
 
 ## Abrir e publicar
 
@@ -22,14 +22,13 @@ A intro abre com a assinatura Fran Make sendo escrita da esquerda para a direita
 
 - `style.css`: identidade, tipografia, camadas, textura, liquid glass dos CTAs e responsividade.
 - `dark.css`: paleta preta padrão e as cores translúcidas do liquid glass. Carrega depois de `style.css`, então regras de tema precisam morar aqui.
-- `script.js`: abertura vinculada ao scroll, assinatura, partículas, galerias, menu, fotos ampliadas, vídeos e mapa. Depende de elementos do hero e não serve a outras páginas.
+- `script.js`: abertura vinculada ao scroll, assinatura, contorno de luz do retrato (WebGL), carrossel, menu, fotos ampliadas, vídeos e mapa. Depende de elementos do hero e não serve a outras páginas.
 - `motion.js`: Lenis, GSAP, ScrollTrigger, SplitType, parallax, sequência reversível da formanda, cena do pincel e Vanilla-Tilt somente nas imagens de destaque.
 - `portfolio.html`, `portfolio.css`, `portfolio.js`: página de portfólio, com filtro por categoria e lightbox navegável. JS próprio, independente do `script.js`.
 - `boot.js`: tema antes da primeira pintura. Só a página que declara `data-intro` no `<html>` recebe as classes da abertura; sem isso a navbar ficaria oculta para sempre em páginas sem `script.js`.
 - `config.js`: contatos, retrato, efeitos, autoplay e localização.
-- `guia.html`, `guia.css`, `guia.js`: documentação independente do site público.
+- `guia.html`, `guia.css`, `guia.js`: documentação para uso local; ficam fora do build publicado.
 - `images`: originais, WebP e capas extraídas dos próprios vídeos.
-- `vendor`: Three.js 0.160.1 local e licença MIT.
 
 ## Cena do pincel
 
@@ -53,7 +52,7 @@ As sete fotos adicionais estão separadas em sociais, noiva e três perspectivas
 
 O vídeo original `images/francianavideo.mp4` foi preservado. A intro usa `images/franciana-scroll.mp4`, uma cópia sem áudio com quadros de referência a cada seis frames, adequada a avanço e retorno pelo scroll. A resolução original 854 × 480 foi mantida. No desktop, o clip otimizado é carregado em memória para permitir busca reversa mesmo em servidores sem suporte a Range. Se houver falha, a capa permanece e o site continua acessível.
 
-A navbar aparece depois da intro. As partículas continuam em movimento atrás do retrato enquanto a Hero está visível. Hair e penteados foram incluídos no conteúdo. Avaliações removidas. Não há contador de visitantes. As sete fotos fornecidas continuam no portfólio. O favicon FM é um SVG local.
+A navbar aparece depois da intro. Um contorno de luz, refeito do Next.js Flare (VGPU) em WebGL, acompanha o retrato enquanto a Hero está visível. Hair e penteados foram incluídos no conteúdo. Avaliações removidas. Não há contador de visitantes. As sete fotos fornecidas continuam no portfólio. O favicon FM é um SVG local.
 
 O link enviado pelo proprietário foi resolvido para Fran Make Studio. As coordenadas do marcador são `-2.5197988, -44.2177339`, extraídas de !3d e !4d do estabelecimento; o centro da câmera não foi usado. O botão mantém o link https://maps.app.goo.gl/gSEBqmsFhHYvpRUdA. Para alterações futuras em `config.js`:
 
@@ -61,7 +60,7 @@ O link enviado pelo proprietário foi resolvido para Fran Make Studio. As coorde
 2. `mapsEmbedUrl`: URL do src fornecido pelo Google Maps em Compartilhar > Incorporar um mapa; `mapsUrl` pode conter o link compartilhável.
 3. Somente `mapsUrl`: mostra o link correto, sem presumir iframe a partir de link curto.
 
-O mapa está configurado. O guia permite editar seus campos, vídeo, retrato e partículas e baixar config.js. Consulte `SEGURANCA.md` para os cabeçalhos editáveis de `vercel.json`; não houve publicação.
+O mapa está configurado. O guia permite editar seus campos, vídeo, retrato e o contorno de luz e baixar config.js. Consulte `SEGURANCA.md` para os cabeçalhos editáveis de `vercel.json`; não houve publicação.
 
 ## Verificação
 
@@ -73,7 +72,7 @@ Atualização de serviços: preços removidos da página pública. Make Social, 
 
 No celular a rolagem é nativa, a intro ocupa uma tela e depois segue o fluxo normal e o vídeo toca sem som em loop com playsinline. A reprodução automática depende do navegador; se bloqueada, o botão Reproduzir vídeo permite iniciá-la por toque. Economia de dados também permite início manual. A cópia mobile recebe nitidez leve, sem inventar detalhes; a fonte continua em 854 × 480. Para ganho real de resolução é necessário o original em maior qualidade.
 
-Lenis, SplitType e parallax ficam reservados ao desktop com mouse. No celular, as três fotos da formanda se substituem com a rolagem vertical e as partículas são reduzidas a 60. A galeria permite rolagem vertical sobre as imagens, swipe horizontal e ampliação com dois toques ou dois cliques. Enter e Espaço continuam ampliando para acesso por teclado.
+Lenis, SplitType e parallax ficam reservados ao desktop com mouse. No celular, as três fotos da formanda se substituem com a rolagem vertical e o contorno de luz roda em resolução menor. A galeria permite rolagem vertical sobre as imagens, swipe horizontal e ampliação com dois toques ou dois cliques. Enter e Espaço continuam ampliando para acesso por teclado.
 
 Verificação com emulação de toque: vídeo avançando no tempo, swipe vertical e horizontal, clique simples sem abrir, toque duplo e clique duplo abrindo, rolagem de mouse sobre foto e ausência de overflow em 360, 390, 430 e 768 px. Não equivale a teste em aparelho físico.
 
@@ -81,7 +80,7 @@ Revisão da intro em vídeo: tempo 0 → 2,51 → 5,02 segundos e retorno a 0 ac
 
 Layout verificado em 1440, 1200, 1024, 768, 430, 390 e 360 px: sem overflow horizontal, IDs duplicados, imagens carregadas quebradas ou travessões visíveis. Menu, diálogo, redução de movimento, bibliotecas CDN e pesos tipográficos verificados. A sequência de fotos avança e reverte com o scroll. Guia testado com filtros, demonstração, pesos, busca, checklist e download, sem overflow de 360 a 1440 px. Sessões de teste sem erros JavaScript.
 
-Não houve teste em aparelhos físicos ou medição representativa de FPS nesses aparelhos. Contatos foram preservados e os preços removidos a pedido, com um único botão Consulte para os três serviços. Nenhuma mensagem foi enviada. Confira os dados comerciais antes de publicar usando a lista do guia.
+Não houve teste em aparelhos físicos ou medição representativa de FPS nesses aparelhos. Serviços com preço (Make Social R$ 119,90, Make + Hair R$ 219,90) e orçamento (Make Noiva), cada um com botão Consulte para o WhatsApp. Nenhuma mensagem foi enviada. Confira os dados comerciais antes de publicar usando a lista do guia.
 
 Spotlight: spotlight.css controla a luz rosé dos serviços, fotos e retrato. Ajuste os valores rgba(240,160,160,...) para mudar sua cor e transparência. A luz do retrato fica atrás do PNG transparente. No desktop acompanha o ponteiro; no celular ganha presença ao entrar na tela, sem capturar gestos. O script principal monta as camadas decorativas e respeita a preferência por menos movimento. A intro reúne as letras conforme o scroll no mesmo agendador existente. As duas referências React foram adaptadas para JavaScript e CSS nativos, sem acrescentar frameworks ou imagens externas.
 

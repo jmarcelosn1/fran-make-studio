@@ -1,25 +1,63 @@
-# Configuração de segurança
+# Segurança
 
-O site continua editável em HTML, CSS e JavaScript. Não há painel público de administração, upload remoto ou endpoint que grave arquivos. O guia gera config.js para baixar e substituir manualmente. Todos os valores de config.js são públicos: nunca guarde senhas, tokens ou chaves privadas nele.
+Site estático: HTML, CSS e JavaScript servidos como arquivos. Não há banco de dados, login, painel administrativo, formulário que grave dados, upload ou API própria. Isso elimina as classes de ataque mais comuns (invasão de conta, injeção de SQL, roubo de dados de clientes), porque não existe nada no servidor para invadir. O que resta proteger é a integridade do que o navegador carrega, e é disso que este documento trata.
 
-## Cabeçalhos
+Tudo em `config.js` é público. Nunca coloque senhas, tokens ou chaves nele.
 
-vercel.json configura a hospedagem Vercel quando o projeto for publicado. Não altera o vínculo existente nem publica automaticamente. No servidor local simples os cabeçalhos não são aplicados. Em outra hospedagem, configure os mesmos valores no painel ou arquivo de cabeçalhos correspondente.
+## Cabeçalhos HTTP (vercel.json)
 
-- Content-Security-Policy restringe scripts aos arquivos locais, Unpkg e cdnjs. Não permite eval ou scripts inline. Estilos inline são necessários para GSAP, partículas, tilt e a documentação interativa.
-- frame-src permite o mapa apenas nos domínios Google listados. frame-ancestors e X-Frame-Options impedem que terceiros coloquem o site em iframes.
-- X-Content-Type-Options impede interpretação incorreta dos tipos de arquivo.
-- Referrer-Policy limita as informações de navegação enviadas para outros sites.
-- Permissions-Policy desativa câmera, microfone e geolocalização, recursos que este site não usa. O mapa usa coordenadas fixas e continua funcionando.
+Aplicados pela Vercel em todas as respostas. O servidor local de testes (`quality/server.cjs`) lê o mesmo arquivo, então os testes conferem exatamente o que vai para produção.
 
-## Alterar sem quebrar recursos
+| Cabeçalho | O que faz |
+|---|---|
+| Content-Security-Policy | Lista branca do que a página pode carregar (detalhe abaixo). |
+| Strict-Transport-Security | Obriga HTTPS por 2 anos, inclusive subdomínios; impede rebaixamento para HTTP. |
+| X-Frame-Options: DENY e frame-ancestors 'none' | Ninguém coloca o site dentro de um iframe (protege contra clickjacking). |
+| X-Content-Type-Options: nosniff | O navegador não "adivinha" tipos de arquivo. |
+| Referrer-Policy: strict-origin-when-cross-origin | Outros sites recebem só o domínio de origem, nunca o caminho. |
+| Cross-Origin-Opener-Policy: same-origin | Janelas de outros sites não conseguem controlar esta aba. |
+| Cross-Origin-Resource-Policy: same-origin | Outros sites não conseguem embutir as fotos e vídeos direto do servidor. |
+| Permissions-Policy | Câmera, microfone, localização, pagamento, USB e captura de tela desligados. |
+| Cache-Control | Imagens e vídeos em cache por 7 dias (celular rápido na segunda visita); HTML, JS e CSS sempre revalidados, para uma correção aparecer na hora. |
 
-Antes de integrar outro fornecedor, adicione somente seu domínio exato na diretiva correspondente: script-src para JavaScript, style-src para CSS, img-src para imagens, media-src para vídeo, frame-src para iframes e connect-src para consultas. Evite curingas e não adicione unsafe-eval. Mantenha cópia do arquivo anterior e teste console, intro, mapa, menu e WhatsApp após a alteração.
+### Content-Security-Policy
 
-O código aceita somente imagens e vídeos locais na configuração de mídia. O mapa e os contatos validam protocolo HTTPS e domínios conhecidos. A edição usa texto e propriedades do DOM, sem interpretar HTML fornecido pelo formulário.
+- **Scripts:** só os arquivos do próprio site, unpkg.com e cdnjs.cloudflare.com. Nada de script inline nem `eval`: mesmo que alguém conseguisse injetar texto na página, ele não rodaria.
+- **Estilos:** arquivos do site, Google Fonts e unpkg. O único inline liberado é o atributo `style` (`style-src-attr`), exigido pelo SplitType para montar as palavras dos títulos; tags `<style>` inline continuam bloqueadas.
+- **Mapa:** iframes só dos domínios do Google Maps. O iframe tem `sandbox` (só scripts, a própria origem dele e abrir o Maps em nova aba) e envia apenas o domínio como referência.
+- **Demais:** imagens e vídeo só locais (`blob:` para os vídeos da abertura), conexões só com o próprio site, sem workers, sem plugins (`object-src 'none'`), `base-uri` e `form-action` travados.
 
-A cena do pincel busca o clipe com `fetch` na própria origem e o exibe por `blob:`. Isso já é permitido por `connect-src 'self'` e `media-src 'self' blob:`, então nenhuma diretiva precisou ser afrouxada. O mesmo vale para `portfolio.html`, que não carrega nenhum recurso externo além das fontes já autorizadas.
+## Bibliotecas externas (SRI)
 
-As dependências CDN têm versões fixadas. Atualize uma por vez e confira a documentação oficial. As regras não substituem atualizações da hospedagem, controle de acesso da conta ou revisão de código; não representam garantia absoluta de segurança.
+Lenis, GSAP, ScrollTrigger, SplitType e Vanilla-Tilt vêm de CDN com versão fixa **e** hash de integridade (`integrity="sha384-…"`). Se a CDN for invadida e o arquivo mudar, o navegador recusa o arquivo em vez de executá-lo; o site continua funcionando sem as animações. Ao atualizar uma biblioteca, troque a versão e recalcule o hash:
 
-Não há contador de visitantes, avaliações ou rastreador de analytics adicionado. O mapa Google e os CDNs fazem requisições externas quando carregados.
+```bash
+curl -sL URL_DO_ARQUIVO | openssl dgst -sha384 -binary | openssl base64 -A
+```
+
+O contorno de luz é código próprio (sem biblioteca 3D).
+
+## Código
+
+- Nenhum `innerHTML`, `eval`, `new Function` ou `document.write`; textos traduzidos entram por `textContent` (o teste de contratos bloqueia `innerHTML`).
+- Links de WhatsApp e Instagram do `config.js` só são aceitos se forem HTTPS e do domínio certo; mídia só local.
+- Todos os links externos abrem com `rel="noopener noreferrer"`.
+- O `localStorage` guarda só a escolha de idioma, e o valor lido é comparado, nunca executado.
+- Dependências de desenvolvimento verificadas por `npm audit` na esteira; o Dependabot abre atualizações semanais.
+
+## O que é publicado
+
+Só o que está em `quality/site-files.cjs` vai para `dist/` e para o ar: as duas páginas, CSS, JS, `config.js`, `i18n`, `images`, favicon e `robots.txt`. Ficam de fora: o guia (`guia.*`), testes, documentação, `package.json`, originais em `_fontes/` e configurações locais. O teste de ponta a ponta confere que esses arquivos respondem 404.
+
+## Repositório (GitHub)
+
+- `.gitignore` exclui `node_modules`, `dist`, `.env`, os originais em `_fontes/` (fotos de clientes em alta resolução) e as pastas locais do editor e do assistente (`.claude/`, `.agents/`), que continham caminhos da máquina e histórico de comandos.
+- Não há segredos no código nem no histórico.
+- Recomendado: repositório **privado**, verificação em duas etapas na conta do GitHub e na Vercel, e regra de proteção na branch `main` (ver `QUALIDADE.md`).
+- Guarde `_fontes/` num backup separado (HD externo ou nuvem pessoal): esses arquivos não estão no Git.
+
+## Alterar sem quebrar
+
+Para integrar outro fornecedor, adicione só o domínio exato na diretiva certa: `script-src` para JavaScript, `style-src` para CSS, `img-src` para imagens, `media-src` para vídeo, `frame-src` para iframes, `connect-src` para requisições. Sem curingas e sem `unsafe-eval`. Depois rode `npm run quality`: o teste de cabeçalhos e o console dos quatro navegadores acusam bloqueios.
+
+Nenhuma configuração é garantia absoluta: mantenha as contas (GitHub, Vercel, domínio, Google) com senha forte e verificação em duas etapas, porque é por elas, e não pelo site, que um invasor conseguiria alterar o conteúdo.

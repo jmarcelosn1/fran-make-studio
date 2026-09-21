@@ -15,12 +15,12 @@
 <link rel="stylesheet" href="style.css"/>
 <link rel="stylesheet" href="dark.css"/>
 <link rel="stylesheet" href="spotlight.css"/>
-<link rel="stylesheet" href="https://unpkg.com/lenis@1.3.26/dist/lenis.css"/>
-<script defer src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
-<script defer src="https://unpkg.com/split-type@0.3.4/umd/index.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/lenis@1.3.26/dist/lenis.css" integrity="sha384-gvLq/iOMNnPchdosgVym5huSVkKipHCQaqSw2Eg0V52Mzmlf169ZOsXcNc2cNu8x" crossorigin="anonymous"/>
+<script defer src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js" integrity="sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU+erWDH3k8fQQg0xH2ySjnw" crossorigin="anonymous"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js" integrity="sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc" crossorigin="anonymous"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js" integrity="sha384-P8VzCVnT9NBUkMrpcIZrJbA7EBjJvh/fJS6PmP+4nLIM284DtsImIv8D0fFjIkeh" crossorigin="anonymous"></script>
+<script defer src="https://unpkg.com/split-type@0.3.4/umd/index.min.js" integrity="sha384-wQImCCD/id1jPTwSloatzKlEpnEAQ5aH8H2Ud27FnNcJ1lf2+hB75ctoWnWxyD8X" crossorigin="anonymous"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" integrity="sha384-0k1dj5tm+KUH/4vkNk/i90XsjDA8Ltmt+ybcrFoH4t0dgv/WZsPpVBnkhcroX8UL" crossorigin="anonymous"></script>
 <script defer src="preferencias.js"></script><script defer src="config.js"></script><script defer src="safety.js"></script><script defer src="motion.js"></script><script defer src="script.js"></script>
 </head><body><a class="skip-link" href="#conteudo">Pular para o conteúdo</a><nav id="navbar" aria-label="Navegação principal">
   <div class="nb-inner">
@@ -77,14 +77,14 @@
     </div>
     <div class="sq-viewport">
       <div class="sq-strip" role="tablist" aria-label="Trabalhos do estúdio">
-      <button class="sq-panel" type="button" role="tab" id="sq-tab-0" aria-controls="sq-copy" aria-selected="true" tabindex="0" data-i="0"><img src="images/noivacapa.webp" width="975" height="1200" alt="Noiva com make natural e cabelo preso" loading="lazy" decoding="async" draggable="false"/></button>
-      <button class="sq-panel" type="button" role="tab" id="sq-tab-1" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="1"><img src="images/make2.webp" width="1000" height="1000" alt="Retrato em estúdio com batom frutado e cabelo em ondas" loading="lazy" decoding="async" draggable="false"/></button>
-      <button class="sq-panel" type="button" role="tab" id="sq-tab-2" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="2"><img class="foco-flores" src="images/social-dourado-flores.webp" width="960" height="945" alt="Convidada com esfumado dourado" loading="lazy" decoding="async" draggable="false"/></button>
-      <button class="sq-panel" type="button" role="tab" id="sq-tab-3" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="3"><img src="images/producao-esfumado-rose.webp" width="861" height="741" alt="Esfumado rosé em detalhe" loading="lazy" decoding="async" draggable="false"/></button>
+      <button class="sq-panel" type="button" role="tab" id="sq-tab-0" aria-controls="sq-copy" aria-selected="true" tabindex="0" data-i="0"><img src="images/noivacapa.webp" srcset="images/noivacapa-m.webp 700w, images/noivacapa.webp 975w" sizes="(max-width:720px) 58vw, 45vw" width="975" height="1200" alt="Noiva com make natural e cabelo preso" loading="lazy" decoding="async" draggable="false"/></button>
+      <button class="sq-panel" type="button" role="tab" id="sq-tab-1" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="1"><img src="images/make2.webp" srcset="images/make2-m.webp 700w, images/make2.webp 1000w" sizes="(max-width:720px) 58vw, 45vw" width="1000" height="1000" alt="Retrato em estúdio com batom frutado e cabelo em ondas" loading="lazy" decoding="async" draggable="false"/></button>
+      <button class="sq-panel" type="button" role="tab" id="sq-tab-2" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="2"><img class="foco-flores" src="images/social-dourado-flores.webp" srcset="images/social-dourado-flores-m.webp 700w, images/social-dourado-flores.webp 960w" sizes="(max-width:720px) 58vw, 45vw" width="960" height="945" alt="Convidada com esfumado dourado" loading="lazy" decoding="async" draggable="false"/></button>
+      <button class="sq-panel" type="button" role="tab" id="sq-tab-3" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="3"><img src="images/producao-esfumado-rose.webp" srcset="images/producao-esfumado-rose-m.webp 700w, images/producao-esfumado-rose.webp 861w" sizes="(max-width:720px) 58vw, 45vw" width="861" height="741" alt="Esfumado rosé em detalhe" loading="lazy" decoding="async" draggable="false"/></button>
       <button class="sq-panel" type="button" role="tab" id="sq-tab-4" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="4"><img class="foco-joia" src="images/social-olhar-dourado.webp" width="668" height="613" alt="Sombra metalizada com brincos de cristal" loading="lazy" decoding="async" draggable="false"/></button>
-      <button class="sq-panel" type="button" role="tab" id="sq-tab-5" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="5"><img src="images/social-hair-loiro.webp" width="956" height="960" alt="Penteado em cabelo loiro com ondas" loading="lazy" decoding="async" draggable="false"/></button>
-      <button class="sq-panel" type="button" role="tab" id="sq-tab-6" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="6"><img class="foco-cachos" src="images/make5new.webp" width="1000" height="996" alt="Esfumado em bronze com cachos dourados" loading="lazy" decoding="async" draggable="false"/></button>
-      <button class="sq-panel" type="button" role="tab" id="sq-tab-7" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="7"><img src="images/social-glitter-luzes.webp" width="960" height="861" alt="Make com glitter sob luzes de festa" loading="lazy" decoding="async" draggable="false"/></button>
+      <button class="sq-panel" type="button" role="tab" id="sq-tab-5" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="5"><img src="images/social-hair-loiro.webp" srcset="images/social-hair-loiro-m.webp 700w, images/social-hair-loiro.webp 956w" sizes="(max-width:720px) 58vw, 45vw" width="956" height="960" alt="Penteado em cabelo loiro com ondas" loading="lazy" decoding="async" draggable="false"/></button>
+      <button class="sq-panel" type="button" role="tab" id="sq-tab-6" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="6"><img class="foco-cachos" src="images/make5new.webp" srcset="images/make5new-m.webp 700w, images/make5new.webp 1000w" sizes="(max-width:720px) 58vw, 45vw" width="1000" height="996" alt="Esfumado em bronze com cachos dourados" loading="lazy" decoding="async" draggable="false"/></button>
+      <button class="sq-panel" type="button" role="tab" id="sq-tab-7" aria-controls="sq-copy" aria-selected="false" tabindex="-1" data-i="7"><img src="images/social-glitter-luzes.webp" srcset="images/social-glitter-luzes-m.webp 700w, images/social-glitter-luzes.webp 960w" sizes="(max-width:720px) 58vw, 45vw" width="960" height="861" alt="Make com glitter sob luzes de festa" loading="lazy" decoding="async" draggable="false"/></button>
       </div>
     </div>
     <div class="sq-copy" id="sq-copy" role="tabpanel" aria-live="polite">
@@ -126,7 +126,7 @@
   <div class="container">
     <div class="sh rv"><span class="slabel">Localização</span><h2 class="stitle" data-split data-i18n="mapa.titulo">Onde nos <em>encontrar</em></h2></div>
     <div class="map-box">
-      <div id="map-placeholder" class="mapa-quadro"><iframe title="Mapa do Fran Make Studio em São Luís, MA" src="https://maps.google.com/maps?q=-2.5197988,-44.2177339&amp;z=17&amp;hl=pt-BR&amp;output=embed" width="640" height="480" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div><div class="location-actions"><a href="https://maps.app.goo.gl/gSEBqmsFhHYvpRUdA" class="btn-pk glow-btn" target="_blank" rel="noopener noreferrer">Abrir no Google Maps</a></div>
+      <div id="map-placeholder" class="mapa-quadro"><iframe title="Mapa do Fran Make Studio em São Luís, MA" src="https://maps.google.com/maps?q=-2.5197988,-44.2177339&amp;z=17&amp;hl=pt-BR&amp;output=embed" width="640" height="480" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" allowfullscreen></iframe></div><div class="location-actions"><a href="https://maps.app.goo.gl/gSEBqmsFhHYvpRUdA" class="btn-pk glow-btn" target="_blank" rel="noopener noreferrer">Abrir no Google Maps</a></div>
     </div>
   </div>
 </section>

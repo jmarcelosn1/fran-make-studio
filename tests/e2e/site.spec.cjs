@@ -1,12 +1,18 @@
 const {test,expect}=require('@playwright/test');
 const AxeBuilder=require('@axe-core/playwright').default;
 // Erros de dentro do iframe do Google Maps nao sao do site (o WebKit os repassa a pagina).
-const doSite=e=>!/maps\.googleapis\.com|gstatic\.com|google\.com\/maps/.test(e.message);
+// "Could not load" e o carregador de modulos do Maps, que falha as vezes no WebKit de teste.
+const doSite=e=>!/maps\.googleapis\.com|gstatic\.com|google\.com\/maps|^Error: Could not load "/.test(e.message);
 test('public build omits internal files and sends security headers',async({request})=>{
  const response=await request.get('/');
  expect(response.headers()['content-security-policy']).toContain("frame-ancestors 'none'");
  expect(response.headers()['x-content-type-options']).toBe('nosniff');
- for(const file of ['package.json','QUALIDADE.md','.env','tests/unit/safety.test.cjs'])expect((await request.get('/'+file)).status()).toBe(404);
+ expect(response.headers()['strict-transport-security']).toContain('max-age=');
+ // Scripts sem inline nem eval; o unico inline liberado e o atributo style (SplitType).
+ const csp=response.headers()['content-security-policy'];
+ expect(csp).not.toContain('unsafe-eval');
+ expect(csp.replace("style-src-attr 'unsafe-inline'",'')).not.toContain('unsafe');
+ for(const file of ['package.json','QUALIDADE.md','.env','tests/unit/safety.test.cjs','guia.html','guia.js','config.js.bak','.git/config','_fontes/franciana.jpg','.claude/settings.local.json'])expect((await request.get('/'+file)).status()).toBe(404);
 });
 test('services, map, accessibility and responsive layout',async({page})=>{
  const errors=[];page.on('pageerror',e=>{if(doSite(e))errors.push(e.message);});
