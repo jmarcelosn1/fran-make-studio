@@ -14,8 +14,6 @@ window.FRAN_CONFIG = Object.freeze({
   tilt: true,
   tiltMax: 3,
   noise: true,
-  autoplaySpeed: 18,
-  autoplayPause: 4500,
   // Coordenadas exatas, em números decimais. Ambos precisam ser preenchidos.
   latitude: -2.5197988,
   longitude: -44.2177339,

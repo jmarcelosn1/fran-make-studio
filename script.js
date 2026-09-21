@@ -12,10 +12,9 @@
   const clamp = n => Math.min(1, Math.max(0, n));
   const traduz = texto => (window.FRAN_IDIOMA ? window.FRAN_IDIOMA.t(texto) : texto);
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
-  let frame = 0, lastTime = 0, dirty = true, heroVisible = true;
+  let frame = 0, dirty = true, heroVisible = true;
   let range = 1, start = 0, progress = 0;
   let currentModal = null;
-  const carousels = [];
   const motion = window.FRAN_MOTION;
   const tickerDriven = !!window.gsap;
   const introVideo = $('#intro-video'), introMedia = $('.intro-media'), navbar = $('#navbar');
@@ -24,7 +23,7 @@
   const brushScene = $('.brush-scene'), brushVideo = $('.brush-video');
   let brushLoading = false, brushURL = '', brushFonte = '', brushBroken = false, brushTarget = 0;
   // No touch interception or independent animation loop. Portrait light is behind the cutout.
-  const spotlights = $$('.mp-card,.portfolio-card,.look-frame');
+  const spotlights = $$('.mp-card');
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)');
   const spotlightObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => entry.target.classList.toggle('spotlight-visible', entry.isIntersecting));
@@ -360,7 +359,6 @@
   function measure() {
     start = hero.offsetTop;
     range = Math.max(1, hero.offsetHeight - stage.offsetHeight);
-    carousels.forEach(c => { c.max = c.track.scrollWidth - c.track.clientWidth; c.position = c.track.scrollLeft; c.root?.classList.toggle('sem-curso', c.max < 8); });
     dirty = true; schedule();
   }
   /* Fases da abertura, em fracao do curso do hero. A narrativa e uma so:
@@ -464,30 +462,8 @@
     if(document.hidden) return;
     frame = 0;
     const smoothActive = motion?.frame(time);
-    const dt = Math.min(50, time - (lastTime || time)); lastTime = time;
     if (dirty) { updateIntro(); dirty = false; }
-    let live = !!smoothActive;
-    for (const c of carousels) {
-      if (!c.visible || c.paused || reduced.matches || currentModal || c.hover || c.focus || c.drag || c.touch || time < c.resumeAt || c.max <= 0) continue;
-      // Floating accumulator keeps sub-pixel velocity smooth in every browser.
-      c.position += c.direction * dt * (Math.min(35,Math.max(0,Number(config.autoplaySpeed) || 18)) / 1000);
-      if (c.position >= c.max || c.position <= 0) {
-        c.position = Math.min(c.max, Math.max(0, c.position));
-        c.direction *= -1; c.resumeAt = time + 1300;
-      }
-      c.track.scrollLeft = c.position; live = true;
-    }
-    // A single delayed wake resumes autoplay; no idle animation loop is required.
-    if (live) schedule();
-    else armResume();
-  }
-  let resumeTimer = 0;
-  function armResume() {
-    clearTimeout(resumeTimer);
-    if (reduced.matches || document.hidden) return;
-    const now = performance.now();
-    const times = carousels.filter(c => c.visible && !c.paused && !c.hover && !c.focus && !c.drag && !c.touch && c.max > 0 && !currentModal).map(c => Math.max(20, c.resumeAt - now));
-    if (times.length) resumeTimer = setTimeout(schedule, Math.min(...times));
+    if (smoothActive) schedule();
   }
   function motionPreference() {
     // Trocar de modo muda a altura do hero. O Safari nao tem ancoragem de
@@ -499,7 +475,6 @@
     document.documentElement.classList.toggle('motion-ready', !reduced.matches);
     if (reduced.matches) { introVideo.pause(); playIntro.hidden=true; }
     loadIntroVideo();
-    carousels.forEach(c => { c.position = c.track.scrollLeft; });
     measure();
     if (secao) scrollBy({top: secao.getBoundingClientRect().top - topo, behavior: 'instant'});
     acordarLuz();
@@ -517,8 +492,7 @@
     playIntro.hidden=true; motionPreference(); startMobileVideo();
   });
   document.addEventListener('visibilitychange', () => {
-    lastTime = 0;
-    if (document.hidden) { cancelAnimationFrame(frame); frame = 0; clearTimeout(resumeTimer); $$('video').forEach(v => v.pause()); }
+    if (document.hidden) { cancelAnimationFrame(frame); frame = 0; $$('video').forEach(v => v.pause()); }
     else { dirty = true; schedule(); startMobileVideo(); }
   });
 
@@ -590,76 +564,6 @@
   mobile.addEventListener('change', setupMobileReveals);
   reduced.addEventListener('change', setupMobileReveals);
 
-  // Accessible photograph dialog, native focus trap and Escape handling.
-  const dialog = $('#lightbox'), lbImage = $('#lb-img');
-  let lastPhoto = null;
-  function openPhoto(button) {
-    lastPhoto = button; lbImage.src = button.dataset.img; lbImage.alt = $('img',button).alt;
-    $('#lb-caption').textContent = lbImage.alt;
-    dialog.showModal(); document.body.classList.add('modal-open'); currentModal = 'photo'; motion?.pause(true);
-  }
-  $('#lb-close').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', e => { if(e.target === dialog) { const r = dialog.getBoundingClientRect(); if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close(); } });
-  dialog.addEventListener('close', () => { document.body.classList.remove('modal-open'); currentModal = null; motion?.pause(false); lastPhoto?.focus({preventScroll:true}); schedule(); });
-
-  const galleryObserver = new IntersectionObserver(entries => { for(const e of entries) { const c=carousels.find(c=>c.track===e.target); if(c) c.visible=e.isIntersecting; } schedule(); }, {threshold:.05});
-  $$('[data-carousel]').forEach(root => {
-    const track = $('.portfolio-track',root), toggle = $('[data-autoplay]',root);
-    const c = {root, track, position:0, max:0, direction:1, resumeAt:0, visible:false, paused:false, hover:false, focus:false, touch:false, drag:null, suppress:false};
-    let lastTap = null, pointerType = 'mouse';
-    carousels.push(c);
-    function pause() { c.resumeAt = performance.now() + Math.max(1500,Number(config.autoplayPause) || 4500); c.position = track.scrollLeft; armResume(); }
-    track.addEventListener('pointerenter', e => { if(e.pointerType === 'mouse') c.hover = true; });
-    track.addEventListener('pointerleave', () => { c.hover = false; pause(); });
-    track.addEventListener('focusin', e => { c.focus = e.target.matches(':focus-visible'); pause(); });
-    track.addEventListener('focusout', e => { if(!track.contains(e.relatedTarget)) { c.focus = false; pause(); } });
-    track.addEventListener('wheel', pause, {passive:true});
-    track.addEventListener('touchstart', () => { c.touch=true; pause(); }, {passive:true});
-    track.addEventListener('touchend', () => { c.touch=false; pause(); }, {passive:true});
-    track.addEventListener('touchcancel', () => { c.touch=false; pause(); }, {passive:true});
-    track.addEventListener('scroll', () => { if(c.drag || c.focus || c.hover || performance.now() < c.resumeAt) c.position = track.scrollLeft; }, {passive:true});
-    track.addEventListener('pointerdown', e => {
-      pointerType = e.pointerType;
-      pause(); c.suppress = false;
-      if(e.pointerType !== 'mouse' || e.button !== 0) return;
-      c.drag = {id:e.pointerId,x:e.clientX,y:e.clientY,top:scrollY,left:track.scrollLeft,moved:false,axis:null};
-    });
-    track.addEventListener('pointermove', e => {
-      if(!c.drag) return;
-      const dx = e.clientX - c.drag.x;
-      const dy = e.clientY - c.drag.y;
-      if(!c.drag.axis && Math.max(Math.abs(dx),Math.abs(dy))>7) { c.drag.axis = Math.abs(dx)>Math.abs(dy)?'x':'y'; c.drag.moved = true; c.suppress = true; track.classList.add('dragging'); track.setPointerCapture(e.pointerId); }
-      if(c.drag.axis==='x') { track.scrollLeft = c.drag.left - dx; c.position = track.scrollLeft; }
-      if(c.drag.axis==='y') window.scrollTo({top:c.drag.top-dy,behavior:'instant'});
-    });
-    function endDrag(e) { if(!c.drag) return; if(track.hasPointerCapture(e.pointerId)) track.releasePointerCapture(e.pointerId); c.drag = null; track.classList.remove('dragging'); pause(); }
-    track.addEventListener('pointerup', endDrag); track.addEventListener('pointercancel', endDrag); track.addEventListener('lostpointercapture', endDrag);
-    track.addEventListener('click', e => {
-      if(c.suppress) { e.preventDefault(); lastTap=null; return; }
-      const button=e.target.closest('[data-img]'); if(!button)return;
-      if(e.detail===0) { openPhoto(button); return; } // Keyboard and assistive activation.
-      if(pointerType==='touch') {
-        const now=performance.now();
-        if(lastTap?.button===button && now-lastTap.time<350) { if(!dialog.open)openPhoto(button); lastTap=null; }
-        else lastTap={button,time:now};
-      }
-    });
-    track.addEventListener('dblclick', e => { const button=e.target.closest('[data-img]'); if(button && !c.suppress && !dialog.open)openPhoto(button); });
-    track.addEventListener('keydown', e => {
-      if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) {
-        e.preventDefault(); pause();
-        const left = e.key === 'Home' ? 0 : e.key === 'End' ? c.max : track.scrollLeft + (e.key === 'ArrowRight' ? 1 : -1) * track.clientWidth * .75;
-        track.scrollTo({left,behavior:reduced.matches?'instant':'smooth'});
-      }
-    });
-    $$('[data-direction]',root).forEach(b=>b.addEventListener('click',()=>{ pause(); track.scrollBy({left:Number(b.dataset.direction)*track.clientWidth*.8,behavior:reduced.matches?'instant':'smooth'}); }));
-    toggle.addEventListener('click', () => { c.paused = !c.paused; toggle.setAttribute('aria-pressed',String(c.paused)); toggle.textContent = c.paused?'Retomar':'Pausar'; toggle.setAttribute('aria-label',c.paused?'Retomar movimento automático':'Pausar movimento automático'); pause(); });
-    function reducedControl() { toggle.hidden = reduced.matches; }
-    reduced.addEventListener('change',reducedControl); reducedControl();
-    new ResizeObserver(measure).observe(track); galleryObserver.observe(track);
-  });
-  const videoObserver = new IntersectionObserver(entries=>entries.forEach(e=>{if(!e.isIntersecting)e.target.pause();}),{threshold:.05});
-  $$('video[controls]').forEach((v,i)=>{ v.setAttribute('aria-label',['Transformação principal','Make e penteado, look completo','Make de formanda'][i]); videoObserver.observe(v); v.addEventListener('play',()=>$$('video[controls]').forEach(other=>{if(other!==v)other.pause();})); });
 
   document.addEventListener('click', e => {
     if(reduced.matches || !e.target.closest('a,button') || e.target.closest('dialog')) return;
@@ -804,7 +708,7 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
     luzes.push(acordar);
     acordar();
   }
-  addEventListener('pagehide',e=>{cancelAnimationFrame(frame);frame=0;clearTimeout(resumeTimer);if(!e.persisted){videoRequest.abort();if(videoObjectURL)URL.revokeObjectURL(videoObjectURL);motion?.dispose();}});
+  addEventListener('pagehide',e=>{cancelAnimationFrame(frame);frame=0;if(!e.persisted){videoRequest.abort();if(videoObjectURL)URL.revokeObjectURL(videoObjectURL);motion?.dispose();}});
   addEventListener('pageshow',()=>{dirty=true;schedule();});
   motion?.init();
   if(tickerDriven) gsap.ticker.add(()=>tick(performance.now()));
