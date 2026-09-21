@@ -156,7 +156,7 @@
     draw:     [0,   .20],
     titleOut: [.23, .33],
     brushIn:  [.26, .36],
-    scrub:    [.29, .74],
+    scrub:    [.29, .87],
     wordA:    [.38, .48],
     wordB:    [.52, .62],
     wordOut:  [.68, .78],

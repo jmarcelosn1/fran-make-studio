@@ -266,10 +266,10 @@ html:not(.cinematic) .intro-media{display:none}
    para fora da tela e para com reducao de movimento. */
 .corridor{position:relative;overflow:hidden;container-type:inline-size;background:#000;
   min-height:clamp(430px,60svh,640px);display:grid;place-items:center}
-.corridor-rails{position:absolute;inset:0;pointer-events:none;perspective:30cqw;perspective-origin:50% 52%}
+.corridor-rails{position:absolute;inset:0;pointer-events:none;perspective:62cqw;perspective-origin:50% 52%}
 .corridor-stage{position:absolute;inset:0;transform-style:preserve-3d}
 .corridor-card{position:absolute;left:50%;top:52%;width:18cqw;height:25cqw;margin:-12.5cqw 0 0 -9cqw;
-  border-radius:.4cqw;overflow:hidden;backface-visibility:hidden;animation:rail-dir 20s linear infinite}
+  border-radius:.4cqw;overflow:hidden;backface-visibility:hidden;animation:rail-dir 32s linear infinite}
 .corridor-card.esq{animation-name:rail-esq}
 .corridor-card img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 26%}
 .corridor-veil{position:absolute;inset:0;pointer-events:none;
@@ -353,3 +353,23 @@ html:not(.cinematic) .brush-scene{display:none}
      sobe para tras da navbar. Ancorado no topo, o padding sempre vale. */
   .mobile-layout.cinematic .hero-layout{align-content:start}
 }
+/* Cantos. O raio acompanha o tamanho do elemento em vez de ser um valor unico
+   em tudo: cartao grande parado pede curva maior que lasca em movimento. */
+.portfolio-card,.ctc-card{border-radius:14px;overflow:hidden}
+.portfolio-card img{border-radius:inherit}
+.corridor-card,.corridor-card img{border-radius:10px}
+.corridor-card{overflow:hidden}
+/* Retratos com deriva lenta. No toque nao existe hover, entao sem isto os
+   cartoes ficam parados; a defasagem evita que pulsem em uniforme. O hover usa
+   a propriedade scale, que compoe com o transform da animacao em vez de
+   sobrescrever. */
+@keyframes retrato-deriva{
+  0%  {transform:scale(1.04) translate3d(-.8%,.6%,0)}
+  50% {transform:scale(1.09) translate3d(.9%,-.7%,0)}
+  100%{transform:scale(1.04) translate3d(-.8%,.6%,0)}
+}
+.portfolio-card img{animation:retrato-deriva 26s ease-in-out infinite;will-change:transform}
+.portfolio-card:nth-child(2n) img{animation-duration:31s;animation-delay:-7s}
+.portfolio-card:nth-child(3n) img{animation-duration:23s;animation-delay:-13s}
+.portfolio-card:hover img,.portfolio-card:focus-visible img{scale:1.03}
+@media(prefers-reduced-motion:reduce){.portfolio-card img{animation:none}}
