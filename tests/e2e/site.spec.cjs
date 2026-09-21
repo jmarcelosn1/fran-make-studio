@@ -108,3 +108,26 @@ test('arriving at a section by anchor never flashes the intro',async({page})=>{
  expect(topo).toBeLessThan(260);
 });
 
+// O painel sob o mouse abria de uma vez, estalando. Agora abre aos poucos.
+test('hovering a carousel panel opens it gradually, not in one jump',async({page},info)=>{
+ test.skip(info.project.name==='mobile','sem ponteiro de mouse no celular');
+ await page.goto('/');
+ await page.locator('.sq-strip').scrollIntoViewIfNeeded();
+ await page.waitForTimeout(700);
+ const alvo=await page.evaluate(()=>{const ps=[...document.querySelectorAll('.sq-panel')]
+  .sort((a,b)=>+getComputedStyle(a).order-+getComputedStyle(b).order);
+  const r=ps[1].getBoundingClientRect(); window.__p=ps[1]; return [r.x+r.width/2,r.y+r.height/2];});
+ await page.evaluate(()=>{window.__w=[];(function l(){window.__w.push(window.__p.getBoundingClientRect().width);
+  if(window.__w.length<120) requestAnimationFrame(l);})();});
+ await page.mouse.move(alvo[0]-40,alvo[1]);
+ await page.mouse.move(alvo[0],alvo[1],{steps:4});
+ await page.waitForTimeout(1200);
+ const w=await page.evaluate(()=>window.__w);
+ const inicio=w[0], fim=w[w.length-1];
+ expect(fim-inicio).toBeGreaterThan(20);
+ let maior=0, quadros=0;
+ for(let k=1;k<w.length;k++){ const d=Math.abs(w[k]-w[k-1]); maior=Math.max(maior,d); if(d>.5) quadros++; }
+ expect(quadros).toBeGreaterThanOrEqual(6);
+ expect(maior).toBeLessThan((fim-inicio)*.5);
+});
+

@@ -432,3 +432,9 @@ html.salto-ancora #hero{visibility:hidden}
   .hero-tagline{width:auto;min-width:0;font-size:13.5px;margin-top:8px}
 }
 .mobile-layout.cinematic .hero-marca{margin:0 auto 14px}
+/* CTA do carrossel centrado e com mais ar acima, em vez de colado a legenda. */
+.sq-slide{align-items:stretch;gap:0}
+.sq-slide .btn-pk{align-self:center;margin-top:clamp(26px,3.2vw,38px)}
+@media(min-width:900px){
+  .sq-slide{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0}
+}

@@ -96,10 +96,18 @@
       return frente.concat(cauda);
     };
 
-    const fatia = col => {
-      if (apontado < 1 || apontado > 3 || reduced.matches) return FATIAS[col];
-      return apontado === col ? ESTICADA[col] : ESPREMIDA[col];
+    /* Fatias animadas: o hover muda o alvo e elas deslizam ate la no mesmo laco
+       da mola. Trocadas de uma vez, o painel estalava aberto quando a pagina
+       rolava por baixo do ponteiro. Cada conjunto soma 1, entao a interpolacao
+       nao muda a largura da fita e nao abre vao. */
+    const partes = FATIAS.slice();
+    let alvoPartes = FATIAS;
+    const mirarPartes = () => {
+      alvoPartes = (apontado < 1 || apontado > 3 || reduced.matches) ? FATIAS
+        : FATIAS.map((_, i) => (apontado === i ? ESTICADA[i] : ESPREMIDA[i]));
     };
+    const fatia = col => partes[col];
+    const emMovimento = () => Math.abs(alvo - atual) > .002 || Math.abs(vel) > .01;
 
     /* Tudo sai de um unico valor animado, 'atual'. Antes cada painel tinha a
        sua transicao CSS; cliques seguidos as reiniciavam em pontos diferentes,
@@ -169,13 +177,23 @@
       atual += vel * dt;
       const parado = Math.abs(alvo - atual) < 0.002 && Math.abs(vel) < 0.01;
       if (parado) { atual = alvo; vel = 0; }
+      const k = 1 - Math.exp(-dt * 9);
+      let resto = 0;
+      for (let i = 0; i < partes.length; i++) {
+        partes[i] += (alvoPartes[i] - partes[i]) * k;
+        resto = Math.max(resto, Math.abs(alvoPartes[i] - partes[i]));
+      }
+      if (resto < .0005) alvoPartes.forEach((v, i) => { partes[i] = v; });
       reancorar();
       desenhar();
-      anim = parado ? 0 : requestAnimationFrame(quadro);
+      anim = parado && resto < .0005 ? 0 : requestAnimationFrame(quadro);
     }
 
     function mover() {
-      if (reduced.matches) { atual = alvo; vel = 0; reancorar(); desenhar(); return; }
+      if (reduced.matches) {
+        atual = alvo; vel = 0; alvoPartes.forEach((v, i) => { partes[i] = v; });
+        reancorar(); desenhar(); return;
+      }
       if (!anim) { tAnt = performance.now(); anim = requestAnimationFrame(quadro); }
     }
 
@@ -202,12 +220,19 @@
         alvo = Math.min(lugar, Math.floor(atual) + LIMITE);
         mover();
       });
-      p.addEventListener('pointerenter', e => {
-        if (e.pointerType !== 'mouse' || anim) return;
-        apontado = Math.round(fila().indexOf(p) - atual); desenhar();
+      p.addEventListener('pointermove', e => {
+        // So movimento real do mouse. Quando a pagina rola por baixo de um
+        // ponteiro parado o navegador tambem dispara evento, mas sem deslocamento.
+        if (e.pointerType !== 'mouse' || (!e.movementX && !e.movementY)) return;
+        if (performance.now() < rolandoAte || emMovimento()) return;
+        const col = Math.round(fila().indexOf(p) - atual);
+        if (col === apontado) return;
+        apontado = col; mirarPartes(); mover();
       });
     });
-    sqStrip.addEventListener('pointerleave', () => { apontado = -1; if (!anim) desenhar(); });
+    let rolandoAte = 0;
+    addEventListener('scroll', () => { rolandoAte = performance.now() + 220; }, {passive:true});
+    sqStrip.addEventListener('pointerleave', () => { apontado = -1; mirarPartes(); mover(); });
     sqStrip.addEventListener('keydown', e => {
       const passo = {ArrowRight:1, ArrowLeft:-1}[e.key];
       if (!passo) return;
