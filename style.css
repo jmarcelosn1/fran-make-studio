@@ -462,11 +462,12 @@ html:not(.mobile-layout) .hero-photo{align-self:center;max-width:none;
 .sq-panel .foco-joia{object-position:50% 56%}
 .sq-panel .foco-cachos{object-position:50% 42%}
 
-/* Contorno de luz (acenderLuz, no script.js): canvas atras da foto, 10% maior
-   em cada lado, o bastante para os raios curtos. */
+/* Contorno de luz (acenderLuz, no script.js): canvas atras da foto, 25% maior
+   em cada lado. Com menos folga a cabeca ficava perto da borda do canvas, e o
+   esmaecimento da borda achatava o brilho numa linha reta acima dela. */
 .hero-photo img{display:block}
-.hero-flare{position:absolute;left:-10%;top:-10%;width:120%;height:120%;z-index:-1;pointer-events:none;
-  -webkit-mask-image:linear-gradient(#000 68%,transparent 88%);mask-image:linear-gradient(#000 68%,transparent 88%)}
+.hero-flare{position:absolute;left:-25%;top:-25%;width:150%;height:150%;z-index:-1;pointer-events:none;
+  -webkit-mask-image:linear-gradient(#000 64%,transparent 80%);mask-image:linear-gradient(#000 64%,transparent 80%)}
 
 /* Precos e WhatsApp nos tres servicos, empurrados para o pe do cartao. */
 #servicos .mp-card .service-preco{margin:auto 0 0;font:700 clamp(26px,2.3vw,32px)/1.1 var(--serif);
