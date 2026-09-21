@@ -264,36 +264,11 @@ html:not(.cinematic) .intro-media{display:none}
    proporcao se mantem em qualquer tamanho.
    O laco existe para mostrar trabalho real em rotacao, nao como enfeite: ele
    para fora da tela e para com reducao de movimento. */
-.corridor{position:relative;overflow:hidden;container-type:inline-size;background:#000;
-  display:block}
-.corridor-rails{position:absolute;inset:0;pointer-events:none;perspective:62cqw;perspective-origin:50% 52%}
-.corridor-stage{position:absolute;inset:0;transform-style:preserve-3d}
-.corridor-card{position:absolute;left:50%;top:52%;width:18cqw;height:25cqw;margin:-12.5cqw 0 0 -9cqw;
-  border-radius:.4cqw;overflow:hidden;backface-visibility:hidden;animation:rail-dir 32s linear infinite}
-.corridor-card.esq{animation-name:rail-esq}
-.corridor-card img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 26%}
-.corridor-veil{position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse 70% 62% at 50% 52%,transparent 34%,rgba(0,0,0,.82) 78%,#000 100%)}
-.corridor-copy{position:relative;z-index:1;text-align:center;padding:clamp(52px,7vw,92px) 24px clamp(26px,3.4vw,42px)}
-.corridor-band{position:relative;height:clamp(300px,44svh,470px);
-  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 11%,#000 89%,transparent);
-  mask-image:linear-gradient(to bottom,transparent,#000 11%,#000 89%,transparent)}
 /* Sem este escurecimento o texto cai em cima dos cartoes e some. */
-.corridor-copy h2{font:700 clamp(30px,4.1vw,56px)/1.1 var(--serif);margin:0 0 14px}
-.corridor-copy p{color:var(--muted);max-width:42ch;margin:0 auto 26px}
-.corridor.fora-de-vista .corridor-card{animation-play-state:paused}
 @media(max-width:850px){
   /* Trilhos de 44cqw jogam os cartoes para fora num viewport estreito, mas
      fecha-los demais empilha tudo atras do texto. 38cqw e o meio termo. */
-  .corridor-band{height:clamp(250px,38svh,340px)}
-  .corridor-card{width:18cqw;height:25cqw;margin:-12.5cqw 0 0 -9cqw;animation-name:rail-dir-mob}
-  .corridor-card.esq{animation-name:rail-esq-mob}
-  .corridor-veil{background:radial-gradient(ellipse 108% 96% at 50% 50%,transparent 72%,rgba(0,0,0,.45) 92%,#000 100%)}
 }
-@media(prefers-reduced-motion:reduce){.corridor-card{animation-play-state:paused}}
-@keyframes rail-dir{0.0%{transform:translate3d(-11.0cqw,0,-258.5cqw) rotateY(-6.0deg)}5.6%{transform:translate3d(-1.5cqw,0,-215.9cqw) rotateY(-7.2deg)}11.1%{transform:translate3d(6.7cqw,0,-179.6cqw) rotateY(-8.4deg)}16.7%{transform:translate3d(13.9cqw,0,-148.7cqw) rotateY(-9.7deg)}22.2%{transform:translate3d(20.0cqw,0,-122.3cqw) rotateY(-10.9deg)}27.8%{transform:translate3d(25.2cqw,0,-99.9cqw) rotateY(-12.1deg)}33.3%{transform:translate3d(29.6cqw,0,-80.7cqw) rotateY(-13.3deg)}38.9%{transform:translate3d(33.2cqw,0,-64.4cqw) rotateY(-14.6deg)}44.4%{transform:translate3d(36.1cqw,0,-50.4cqw) rotateY(-15.8deg)}50.0%{transform:translate3d(38.4cqw,0,-38.6cqw) rotateY(-17.0deg)}55.6%{transform:translate3d(40.2cqw,0,-28.5cqw) rotateY(-18.2deg)}61.1%{transform:translate3d(41.6cqw,0,-19.8cqw) rotateY(-19.4deg)}66.7%{transform:translate3d(42.5cqw,0,-12.5cqw) rotateY(-20.7deg)}72.2%{transform:translate3d(43.2cqw,0,-6.2cqw) rotateY(-21.9deg)}77.8%{transform:translate3d(43.6cqw,0,-0.9cqw) rotateY(-23.1deg)}83.3%{transform:translate3d(43.9cqw,0,3.7cqw) rotateY(-24.3deg)}88.9%{transform:translate3d(44.0cqw,0,7.6cqw) rotateY(-25.6deg)}94.4%{transform:translate3d(44.0cqw,0,10.9cqw) rotateY(-26.8deg)}100.0%{transform:translate3d(44.0cqw,0,13.7cqw) rotateY(-28.0deg)}}
-@keyframes rail-esq{0.0%{transform:translate3d(11.0cqw,0,-258.5cqw) rotateY(6.0deg)}5.6%{transform:translate3d(1.5cqw,0,-215.9cqw) rotateY(7.2deg)}11.1%{transform:translate3d(-6.7cqw,0,-179.6cqw) rotateY(8.4deg)}16.7%{transform:translate3d(-13.9cqw,0,-148.7cqw) rotateY(9.7deg)}22.2%{transform:translate3d(-20.0cqw,0,-122.3cqw) rotateY(10.9deg)}27.8%{transform:translate3d(-25.2cqw,0,-99.9cqw) rotateY(12.1deg)}33.3%{transform:translate3d(-29.6cqw,0,-80.7cqw) rotateY(13.3deg)}38.9%{transform:translate3d(-33.2cqw,0,-64.4cqw) rotateY(14.6deg)}44.4%{transform:translate3d(-36.1cqw,0,-50.4cqw) rotateY(15.8deg)}50.0%{transform:translate3d(-38.4cqw,0,-38.6cqw) rotateY(17.0deg)}55.6%{transform:translate3d(-40.2cqw,0,-28.5cqw) rotateY(18.2deg)}61.1%{transform:translate3d(-41.6cqw,0,-19.8cqw) rotateY(19.4deg)}66.7%{transform:translate3d(-42.5cqw,0,-12.5cqw) rotateY(20.7deg)}72.2%{transform:translate3d(-43.2cqw,0,-6.2cqw) rotateY(21.9deg)}77.8%{transform:translate3d(-43.6cqw,0,-0.9cqw) rotateY(23.1deg)}83.3%{transform:translate3d(-43.9cqw,0,3.7cqw) rotateY(24.3deg)}88.9%{transform:translate3d(-44.0cqw,0,7.6cqw) rotateY(25.6deg)}94.4%{transform:translate3d(-44.0cqw,0,10.9cqw) rotateY(26.8deg)}100.0%{transform:translate3d(-44.0cqw,0,13.7cqw) rotateY(28.0deg)}}
-
 /* Chamada para o portfolio: a home mostra um recorte, nao a galeria inteira. */
 .pf-teaser{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;
   padding:30px 0 6px;margin-top:8px;border-top:1px solid var(--line)}
@@ -323,8 +298,6 @@ html:not(.cinematic) .brush-scene{display:none}
   .brush-right{top:82%;right:max(4vw,14px);translate:calc(22px - var(--word-b,0) * 22px) -50%}
   .brush-edge{background:radial-gradient(ellipse 94% 64% at 50% 50%,transparent 58%,#000 100%)}
 }
-@keyframes rail-dir-mob{0.0%{transform:translate3d(-7.0cqw,0,-240.0cqw) rotateY(-5.0deg)}6.3%{transform:translate3d(1.6cqw,0,-197.5cqw) rotateY(-6.1deg)}12.5%{transform:translate3d(9.0cqw,0,-161.7cqw) rotateY(-7.1deg)}18.8%{transform:translate3d(15.3cqw,0,-131.5cqw) rotateY(-8.2deg)}25.0%{transform:translate3d(20.6cqw,0,-106.1cqw) rotateY(-9.3deg)}31.3%{transform:translate3d(24.9cqw,0,-84.7cqw) rotateY(-10.3deg)}37.5%{transform:translate3d(28.5cqw,0,-66.6cqw) rotateY(-11.4deg)}43.8%{transform:translate3d(31.3cqw,0,-51.4cqw) rotateY(-12.4deg)}50.0%{transform:translate3d(33.4cqw,0,-38.6cqw) rotateY(-13.5deg)}56.3%{transform:translate3d(35.1cqw,0,-27.8cqw) rotateY(-14.6deg)}62.5%{transform:translate3d(36.2cqw,0,-18.7cqw) rotateY(-15.6deg)}68.8%{transform:translate3d(37.0cqw,0,-11.0cqw) rotateY(-16.7deg)}75.0%{transform:translate3d(37.5cqw,0,-4.6cqw) rotateY(-17.8deg)}81.3%{transform:translate3d(37.8cqw,0,0.9cqw) rotateY(-18.8deg)}87.5%{transform:translate3d(38.0cqw,0,5.5cqw) rotateY(-19.9deg)}93.8%{transform:translate3d(38.0cqw,0,9.3cqw) rotateY(-20.9deg)}100.0%{transform:translate3d(38.0cqw,0,12.6cqw) rotateY(-22.0deg)}}
-@keyframes rail-esq-mob{0.0%{transform:translate3d(7.0cqw,0,-240.0cqw) rotateY(5.0deg)}6.3%{transform:translate3d(-1.6cqw,0,-197.5cqw) rotateY(6.1deg)}12.5%{transform:translate3d(-9.0cqw,0,-161.7cqw) rotateY(7.1deg)}18.8%{transform:translate3d(-15.3cqw,0,-131.5cqw) rotateY(8.2deg)}25.0%{transform:translate3d(-20.6cqw,0,-106.1cqw) rotateY(9.3deg)}31.3%{transform:translate3d(-24.9cqw,0,-84.7cqw) rotateY(10.3deg)}37.5%{transform:translate3d(-28.5cqw,0,-66.6cqw) rotateY(11.4deg)}43.8%{transform:translate3d(-31.3cqw,0,-51.4cqw) rotateY(12.4deg)}50.0%{transform:translate3d(-33.4cqw,0,-38.6cqw) rotateY(13.5deg)}56.3%{transform:translate3d(-35.1cqw,0,-27.8cqw) rotateY(14.6deg)}62.5%{transform:translate3d(-36.2cqw,0,-18.7cqw) rotateY(15.6deg)}68.8%{transform:translate3d(-37.0cqw,0,-11.0cqw) rotateY(16.7deg)}75.0%{transform:translate3d(-37.5cqw,0,-4.6cqw) rotateY(17.8deg)}81.3%{transform:translate3d(-37.8cqw,0,0.9cqw) rotateY(18.8deg)}87.5%{transform:translate3d(-38.0cqw,0,5.5cqw) rotateY(19.9deg)}93.8%{transform:translate3d(-38.0cqw,0,9.3cqw) rotateY(20.9deg)}100.0%{transform:translate3d(-38.0cqw,0,12.6cqw) rotateY(22.0deg)}}
 @media(max-width:600px){
   /* Lado a lado num viewport estreito os dois CTAs se espremem e as linhas de
      base desencontram; empilhados ficam com area de toque cheia. */
@@ -356,8 +329,6 @@ html:not(.cinematic) .brush-scene{display:none}
    em tudo: cartao grande parado pede curva maior que lasca em movimento. */
 .portfolio-card,.ctc-card{border-radius:14px;overflow:hidden}
 .portfolio-card img{border-radius:inherit}
-.corridor-card,.corridor-card img{border-radius:10px}
-.corridor-card{overflow:hidden}
 /* Retratos com deriva lenta. No toque nao existe hover, entao sem isto os
    cartoes ficam parados; a defasagem evita que pulsem em uniforme. O hover usa
    a propriedade scale, que compoe com o transform da animacao em vez de
@@ -373,3 +344,50 @@ html:not(.cinematic) .brush-scene{display:none}
 .portfolio-card:hover img,.portfolio-card:focus-visible img{scale:1.03}
 @media(prefers-reduced-motion:reduce){.portfolio-card img{animation:none}}
 [data-carousel].sem-curso .portfolio-controls{display:none}
+
+/* Carrossel de painel aberto. Um painel toma a sala, os seguintes estreitam e
+   o resto vira ripa. As larguras saem do JS, porque a fatia de cada coluna
+   muda com o ponteiro e seria uma combinatoria de regras aqui. */
+.squeeze{background:#000;padding:clamp(56px,7vw,96px) 0 clamp(48px,6vw,84px)}
+.squeeze .container{container-type:inline-size}
+.sq-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:clamp(18px,2.4vw,30px)}
+.sq-head h2{font:700 clamp(26px,3.6vw,48px)/1.1 var(--serif);margin:0}
+.sq-arrows{display:flex;gap:8px;flex:0 0 auto}
+.sq-arrow{display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:9px;
+  background:var(--rose);color:#2a1016;cursor:pointer;transition:opacity .25s var(--ease)}
+.sq-arrow:hover{opacity:.85}
+.sq-arrow:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+
+.sq-viewport{overflow:hidden;height:var(--sq-h,clamp(200px,32cqi,340px))}
+.sq-strip{display:flex;height:100%;width:max-content}
+.sq-panel{position:relative;flex:0 0 auto;height:100%;padding:0;border:0;overflow:hidden;
+  background:#171114;cursor:pointer;border-radius:6px;
+  transition:width .9s var(--ease),margin-left .9s var(--ease)}
+.sq-panel:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+/* A foto e desenhada sempre no mesmo bloco 16:9 e centrada, nunca na largura
+   do painel. Deixar o object-fit decidir faz a escala trocar no meio do
+   movimento, e a imagem e reamostrada a cada quadro. */
+.sq-panel img{position:absolute;inset:0 auto;top:0;left:50%;translate:-50% 0;height:100%;
+  width:var(--sq-hero);min-width:100%;max-width:none;object-fit:cover;object-position:50% 28%}
+.sq-mark{position:absolute;inset:auto 0 0;padding:44px 16px 14px;text-align:left;
+  font:600 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#fff;
+  background:linear-gradient(transparent,rgba(0,0,0,.6));opacity:0;
+  transition:opacity .9s var(--ease);pointer-events:none}
+.sq-panel[data-aberto] .sq-mark{opacity:1}
+
+.sq-copy{display:grid;margin-top:clamp(22px,2.6vw,32px)}
+.sq-slide{grid-area:1/1;display:flex;flex-direction:column;align-items:flex-start;gap:18px;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .9s var(--ease),visibility .9s}
+.sq-slide[data-aberto]{opacity:1;visibility:visible;pointer-events:auto}
+.sq-slide p{margin:0;max-width:62ch;font-size:clamp(15px,1.2vw,17px);line-height:1.62}
+.sq-t{color:var(--ink)}
+.sq-d{color:var(--muted)}
+@media(min-width:900px){
+  .sq-slide{flex-direction:row;align-items:flex-start;justify-content:space-between;gap:40px}
+  .sq-slide .btn-pk{flex:0 0 auto}
+}
+@media(prefers-reduced-motion:reduce){
+  .sq-panel,.sq-slide,.sq-mark{transition-duration:1ms}
+}
+.sq-strip.sq-quieto .sq-panel,.sq-strip.sq-quieto~*  .sq-slide{transition:none}

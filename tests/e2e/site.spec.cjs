@@ -44,3 +44,21 @@ test('intro is reversible and never flashes the portrait initially',async({page}
  await expect(page.locator('#navbar')).toHaveAttribute('aria-hidden','true');
  await expect(page.locator('.hero-photo')).toHaveCSS('visibility','hidden');
 });
+
+test('carousel opens a panel and the caption follows',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');
+ await page.locator('.sq-strip').scrollIntoViewIfNeeded();
+ const aberto=()=>page.evaluate(()=>({
+  painel:document.querySelector('.sq-panel[data-aberto]')?.dataset.i,
+  copia:document.querySelector('.sq-slide[data-aberto]')?.dataset.i}));
+ expect(await aberto()).toEqual({painel:'0',copia:'0'});
+ await page.click('.sq-arrow[data-sq="1"]');
+ await expect(page.locator('.sq-panel[data-i="1"][data-aberto]')).toHaveCount(1);
+ expect(await aberto()).toEqual({painel:'1',copia:'1'});
+ // clicar num painel estreito abre aquele, nao o vizinho
+ await page.evaluate(()=>{const ps=[...document.querySelectorAll('.sq-panel')]
+  .sort((a,b)=>+getComputedStyle(a).order-+getComputedStyle(b).order); ps[2].click();});
+ await expect(page.locator('.sq-panel[data-i="3"][data-aberto]')).toHaveCount(1);
+ const fim=await aberto();
+ expect(fim.painel).toBe(fim.copia);
+});

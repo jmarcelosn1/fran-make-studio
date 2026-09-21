@@ -10,10 +10,14 @@
 			"!node_modules/**",
 			"!coverage/**",
 			"!playwright-report/**",
-			"!test-results/**"
+			"!test-results/**",
+			"!.agents/**",
+			"!.claude/**"
 		]
 	},
-	"formatter": { "enabled": false },
+	"formatter": {
+		"enabled": false
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
@@ -29,7 +33,9 @@
 				"noDoubleEquals": "error",
 				"noDebugger": "error"
 			},
-			"security": { "noGlobalEval": "error" }
+			"security": {
+				"noGlobalEval": "error"
+			}
 		}
 	}
 }

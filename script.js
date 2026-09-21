@@ -45,13 +45,117 @@
       surface.style.removeProperty('--spot-x'); surface.style.removeProperty('--spot-y');
     });
   });
-  // O corredor de imagens gira em laco; parar fora da tela evita gastar
-  // bateria animando 18 cartoes que ninguem esta vendo.
-  const corridor = $('.corridor');
-  if (corridor) {
-    new IntersectionObserver(entries => {
-      corridor.classList.toggle('fora-de-vista', !entries[0].isIntersecting);
-    }, {threshold:0}).observe(corridor);
+  /* Carrossel de painel aberto.
+     Quatro colunas dividem a sala que sobra depois do painel aberto, das ripas
+     e dos vaos; o que passa da coluna 3 vira ripa. As larguras sao calculadas
+     em pixel a partir da largura medida, e nao em cqi, porque a fatia de cada
+     coluna muda com o ponteiro e precisa ser recalculada a cada evento. */
+  const sqStrip = $('.sq-strip');
+  if (sqStrip) {
+    const paineis = $$('.sq-panel', sqStrip);
+    const copias = $$('.sq-slide');
+    const total = paineis.length;
+    const FATIAS    = [-0.06, 0.61, 0.30, 0.15];
+    const ESTICADA  = [ 0.00, 0.71, 0.40, 0.25];
+    const ESPREMIDA = [-0.12, 0.59, 0.28, 0.13];
+    const RIPA = 8, VAO_RIPA = 8, VAO = 16;
+    const DUR = 900;
+
+    let ordem = paineis.map((_, i) => i);
+    let pos = 0;            // posicao do painel aberto dentro de ordem
+    let apontado = -1;      // coluna sob o ponteiro
+    let quieto = false;     // um quadro sem transicao, para reassentar
+    let relogio = 0;
+
+    const fatia = col => {
+      if (apontado < 1 || apontado > 3 || reduced.matches) return FATIAS[col];
+      return apontado === col ? ESTICADA[col] : ESPREMIDA[col];
+    };
+
+    function desenhar() {
+      const largura = sqStrip.parentElement.clientWidth;
+      if (!largura) return;
+      const estreito = largura < 720;
+      const alturaCss = getComputedStyle(sqStrip.parentElement).height;
+      const altura = parseFloat(alturaCss) || 240;
+      const colunas = estreito ? 2 : 4;
+      // O bloco 16:9 fixa a escala de desenho de toda foto, entao ela nao e
+      // reamostrada enquanto o painel muda de largura.
+      let heroi = estreito ? largura * 0.58 : altura * 16 / 9;
+      const ripasReais = total - colunas;
+      const fixo = ripasReais * (RIPA + VAO_RIPA) + (colunas - 1) * VAO;
+      let sala = largura - heroi - fixo;
+      if (sala < 0) { heroi = Math.max(120, largura - fixo - 40); sala = largura - heroi - fixo; }
+      sqStrip.style.setProperty('--sq-hero', heroi.toFixed(1) + 'px');
+
+      paineis.forEach(p => {
+        const lugar = ordem.indexOf(+p.dataset.i);
+        const col = lugar - pos;
+        const aberto = col === 0;
+        let w;
+        if (col < 0 || col >= colunas) w = RIPA;
+        else if (col === 0) w = heroi + sala * (estreito ? 0 : fatia(0));
+        else w = estreito ? sala : sala * fatia(col);
+        p.style.order = lugar;
+        p.style.width = Math.max(RIPA, w).toFixed(1) + 'px';
+        p.style.marginLeft = lugar === 0 ? '0px' : (col < colunas ? VAO : VAO_RIPA) + 'px';
+        p.style.borderRadius = Math.min(6, w / 2).toFixed(1) + 'px';
+        p.toggleAttribute('data-aberto', aberto);
+        p.setAttribute('aria-selected', String(aberto));
+        p.tabIndex = aberto ? 0 : -1;
+      });
+
+      const atual = ordem[pos];
+      copias.forEach(c => {
+        const seu = +c.dataset.i === atual;
+        c.toggleAttribute('data-aberto', seu);
+        if (seu) c.removeAttribute('aria-hidden'); else c.setAttribute('aria-hidden', 'true');
+        const link = $('a', c); if (link) link.tabIndex = seu ? 0 : -1;
+      });
+    }
+
+    function semTransicao(fn) {
+      quieto = true;
+      sqStrip.classList.add('sq-quieto');
+      fn();
+      requestAnimationFrame(() => { sqStrip.classList.remove('sq-quieto'); quieto = false; });
+    }
+
+    function andar(passos) {
+      if (!passos || total < 2) return;
+      clearTimeout(relogio);
+      pos = ((pos + passos) % total + total) % total;
+      desenhar();
+      // Terminado o movimento, a ordem gira para que o aberto volte a ser o
+      // primeiro. O desenho e identico, entao nada pode animar nessa troca.
+      relogio = setTimeout(() => {
+        ordem = ordem.slice(pos).concat(ordem.slice(0, pos));
+        pos = 0;
+        semTransicao(desenhar);
+      }, reduced.matches ? 1 : DUR + 30);
+    }
+
+    paineis.forEach(p => {
+      p.addEventListener('click', () => {
+        const col = ordem.indexOf(+p.dataset.i) - pos;
+        if (col > 0) andar(col);
+      });
+      p.addEventListener('pointerenter', e => {
+        if (e.pointerType !== 'mouse' || quieto) return;
+        apontado = ordem.indexOf(+p.dataset.i) - pos; desenhar();
+      });
+    });
+    sqStrip.addEventListener('pointerleave', () => { apontado = -1; desenhar(); });
+    sqStrip.addEventListener('keydown', e => {
+      const passo = {ArrowRight:1, ArrowLeft:-1}[e.key];
+      if (!passo) return;
+      e.preventDefault(); andar(passo);
+    });
+    $$('.sq-arrow').forEach(b => b.addEventListener('click', () => andar(+b.dataset.sq)));
+
+    desenhar();
+    addEventListener('resize', () => semTransicao(desenhar), {passive:true});
+    if (document.fonts?.ready) document.fonts.ready.then(desenhar);
   }
   let introInView = true;
   let videoTarget = 0, videoLoading = false, videoObjectURL = '';
