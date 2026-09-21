@@ -595,8 +595,10 @@
   }
 
   /* Contorno de luz: o Next.js Flare (vgpu.sh) refeito em WebGL 1, para rodar
-     tambem sem WebGPU. Mesmo algoritmo e parametros; o traco aceso, la o N do
-     logo, aqui e a borda da foto e do logo, com o canvas atras de cada um.
+     tambem sem WebGPU. Mesmo algoritmo; o traco aceso, la o N do logo, aqui e a
+     borda da silhueta, com o canvas atras da foto. Luz menor e de alcance menor
+     que o original, a pedido: queda 6.85 (spotReach .25), halo .07, extension
+     .2 (decaimento .875, densidade .51) e raios a 80%.
      Borda e desfoque saem uma vez; por quadro, so a composicao, a 30 quadros. */
   const luzes = [];
   const acordarLuz = () => luzes.forEach(acordar => acordar());
@@ -646,14 +648,14 @@
     const prog = gl.createProgram();
     const shader = (tipo, fonte) => { const sh = gl.createShader(tipo); gl.shaderSource(sh, fonte); gl.compileShader(sh); gl.attachShader(prog, sh); };
     shader(gl.VERTEX_SHADER, 'attribute vec2 p;varying vec2 u;void main(){u=vec2(p.x,-p.y)*.5+.5;gl_Position=vec4(p,0.,1.);}');
-    // Constantes do composite.wgsl e do rim.wgsl originais.
+    // Composicao do composite.wgsl e do rim.wgsl, com a luz reduzida acima.
     shader(gl.FRAGMENT_SHADER, `precision highp float;uniform sampler2D t;uniform vec2 L,A;uniform float f,q,e;varying vec2 u;
-float k(vec2 c){vec2 d=(L-c)*A;return 1./(1.+dot(d,d)*4.7);}
+float k(vec2 c){vec2 d=(L-c)*A;return 1./(1.+dot(d,d)*6.85);}
 void main(){vec2 r=texture2D(t,u).rg;float K=k(u),s=r.x*K,b=r.y*K,w=1.,W=0.,z=0.;
 vec2 d=(u-L)*(${o.densidade}/${o.passos}.),c=u-d*fract(sin(dot(u,vec2(12.9898,78.233))+q)*43758.5453);
 for(int i=0;i<${o.passos};i++){c-=d;z+=texture2D(t,c).g*k(c)*w;W+=w;w*=${o.decai};}
-vec2 h=(u-L)*A;float H=exp(-dot(h,h)/.0088),S=max(s,b*.85)*(1.+H*1.5);
-vec3 C=vec3(.94,.64,.68),R=C*H*max(r.x,b*.65)*f*1.1+vec3(r.x)*e+(mix(vec3(1.),C,.5)+C*.4)*S*f+C*z/W*3.3*f;
+vec2 h=(u-L)*A;float H=exp(-dot(h,h)/.0049),S=max(s,b*.85)*(1.+H*1.5);
+vec3 C=vec3(.94,.64,.68),R=C*H*max(r.x,b*.65)*f*1.1+vec3(r.x)*e+(mix(vec3(1.),C,.5)+C*.4)*S*f+C*z/W*2.6*f;
 vec2 g=smoothstep(0.,.2,u)*smoothstep(0.,.2,1.-u);
 vec3 o=(1.-exp(-R*smoothstep(1.35,.25,length((u-.5)*A))*1.3))*g.x*g.y;
 gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
@@ -715,7 +717,6 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
   motionPreference();
   addEventListener('load', () => setTimeout(() => {
     const m = mobile.matches;
-    acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .14, cena: .22, centro: [.5, .45], N: m ? 360 : 640, passos: m ? 24 : 48, densidade: .83, decai: .925, borrao: 160});
-    acenderLuz($('.hero-logo'), {classe: 'logo-flare', folga: .35, cena: .22, centro: [.5, .5], N: m ? 320 : 560, passos: m ? 20 : 32, densidade: .83, decai: .925, borrao: 160});
+    acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .1, cena: .18, centro: [.5, .45], N: m ? 320 : 512, passos: m ? 16 : 32, densidade: .51, decai: .875, borrao: 160});
   }, 200), {once:true});
 })();

@@ -212,7 +212,9 @@ test('light contour hugs the portrait, appears only with it, and particles are g
  await expect(page.locator('#webgl-canvas')).toHaveCount(0);
  // O flare precisa de WebGL; sem ele a foto fica sem contorno, e so.
  if(await page.evaluate(()=>!!document.createElement('canvas').getContext('webgl')))
-  {await expect(page.locator('.hero-photo canvas.hero-flare')).toHaveCount(1);await expect(page.locator('.hero-marca canvas.logo-flare')).toHaveCount(1);}
+  await expect(page.locator('.hero-photo canvas.hero-flare')).toHaveCount(1);
+ // So na foto: o logo fica sem o flare.
+ await expect(page.locator('canvas.logo-flare')).toHaveCount(0);
  const opacidade=async fracao=>{
   await page.evaluate(f=>{const h=document.getElementById('hero');window.scrollTo(0,h.offsetTop+(h.offsetHeight-innerHeight)*f);},fracao);
   await page.waitForTimeout(250);
