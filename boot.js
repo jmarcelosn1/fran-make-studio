@@ -1,7 +1,13 @@
 /* Hide navigation before the first paint only when the scroll intro is enabled. */
-if (new URLSearchParams(location.search).get('theme') !== 'light') {
-  document.documentElement.dataset.theme = 'dark';
-}
+// Tema decidido antes da primeira pintura, para quem escolheu o claro nao ver um
+// lampejo escuro: ?theme= na URL, depois a escolha salva, e escuro por padrao.
+const temaURL = new URLSearchParams(location.search).get('theme');
+let temaSalvo = null;
+try { temaSalvo = localStorage.getItem('fm-tema'); } catch { temaSalvo = null; }
+const tema = temaURL === 'light' || temaURL === 'dark' ? temaURL : (temaSalvo === 'light' ? 'light' : 'dark');
+document.documentElement.dataset.theme = tema;
+const corDoTema = document.querySelector('meta[name="theme-color"]');
+if (corDoTema) corDoTema.content = tema === 'light' ? '#fff9f6' : '#000000';
 document.documentElement.classList.toggle('mobile-layout', matchMedia('(max-width:850px), (pointer:coarse)').matches);
 
 // Chegando por link com ancora, como do portfolio para #servicos, o navegador

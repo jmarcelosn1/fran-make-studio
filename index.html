@@ -21,7 +21,7 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
 <script defer src="https://unpkg.com/split-type@0.3.4/umd/index.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
-<script defer src="config.js"></script><script defer src="safety.js"></script><script defer src="motion.js"></script><script defer src="script.js"></script>
+<script defer src="preferencias.js"></script><script defer src="config.js"></script><script defer src="safety.js"></script><script defer src="motion.js"></script><script defer src="script.js"></script>
 </head><body><a class="skip-link" href="#conteudo">Pular para o conteúdo</a><nav id="navbar" aria-label="Navegação principal">
   <div class="nb-inner">
     <a href="#hero" class="nb-logo" aria-label="Fran Make Studio, início"><img src="images/logo-transparente.webp" width="1254" height="1254" alt=""/><span class="brand-name">FRAN MAKE<span>STUDIO</span></span></a>
@@ -31,7 +31,7 @@
       <li><a href="#servicos">Serviços</a></li>
       <li><a href="#contato">Contato</a></li>
     </ul>
-    <a href="https://wa.me/message/2SNOKRBPREBYH1" target="_blank" rel="noopener noreferrer" class="nb-cta glow-btn"><span>Agendar</span></a>
+    <div class="nb-acoes"><div class="nb-prefs"><button type="button" class="pref-btn pref-tema" data-tema aria-pressed="false" aria-label="Tema claro"></button></div><a href="https://wa.me/message/2SNOKRBPREBYH1" target="_blank" rel="noopener noreferrer" class="nb-cta glow-btn"><span>Agendar</span></a></div>
     <button class="nb-ham" id="nb-ham" aria-label="Abrir menu" aria-expanded="false" aria-controls="nb-mob"><span></span><span></span><span></span></button>
   </div>
   <div class="nb-mob" id="nb-mob" hidden inert>
@@ -42,6 +42,7 @@
       <li><a href="#contato" class="nb-ml">Contato</a></li>
     </ul>
     <a href="https://wa.me/message/2SNOKRBPREBYH1" target="_blank" rel="noopener noreferrer" class="btn-pk glow-btn">Agendar Horário</a>
+    <div class="nb-prefs nb-prefs-mob"><button type="button" class="pref-btn pref-tema" data-tema aria-pressed="false" aria-label="Tema claro"></button></div>
   </div>
 </nav><main id="conteudo">
 <section id="hero" aria-label="Conheça Fran Make Studio">

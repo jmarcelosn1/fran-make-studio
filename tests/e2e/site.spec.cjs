@@ -147,3 +147,19 @@ test('mobile brush loops on its own while on screen and stops on the way out',as
  expect(await tempoAnda(.785)).toBe(false);
 });
 
+// Tema claro opcional: alterna, fica salvo, e ao recarregar ja pinta claro.
+test('light theme toggles, persists, and loads without a dark flash',async({page})=>{
+ await page.goto('/portfolio.html');
+ await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+ const botao=page.locator('[data-tema]:visible').first();
+ if(!(await botao.count())){ await page.click('#nb-ham'); }
+ await page.locator('[data-tema]:visible').first().click();
+ await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+ await expect(page.locator('[data-tema]:visible').first()).toHaveAttribute('aria-pressed','true');
+ expect(await page.evaluate(()=>document.querySelector('meta[name="theme-color"]').content)).toBe('#fff9f6');
+ await page.addInitScript(()=>{requestAnimationFrame(()=>{window.__primeiro=document.documentElement.dataset.theme;});});
+ await page.reload();
+ await page.waitForFunction(()=>window.__primeiro!==undefined);
+ expect(await page.evaluate(()=>window.__primeiro)).toBe('light');
+});
+

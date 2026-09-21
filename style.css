@@ -434,3 +434,30 @@ html[data-theme] .glow-icone::after{display:none}
   #mapa .map-box{margin-top:26px}
   #mapa .location-actions,#mapa .location-actions .btn-pk{width:100%}
 }
+
+/* Preferencias na navbar: tema (e idioma, a seguir). No celular os botoes moram
+   dentro do menu, porque a barra ja leva o logo, o Agendar e o menu. */
+.nb-acoes{display:flex;align-items:center;gap:14px}
+.nb-prefs{display:flex;align-items:center;gap:8px}
+.pref-btn{display:inline-grid;place-items:center;min-width:40px;height:40px;padding:0 10px;border-radius:999px;
+  border:1px solid var(--line);background:transparent;color:inherit;cursor:pointer;
+  font:600 11px/1 var(--sans);letter-spacing:.12em;transition:border-color .25s var(--ease)}
+.pref-btn:hover{border-color:var(--rose)}
+.pref-btn:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+/* sol no escuro, para ir ao claro; lua no claro */
+.pref-tema::before{content:'';width:17px;height:17px;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Ccircle%20cx%3D%2712%27%20cy%3D%2712%27%20r%3D%274%27%2F%3E%3Cpath%20d%3D%27M12%202v2M12%2020v2m-7.07-17.07%201.41%201.41m11.32%2011.32%201.41%201.41M2%2012h2m16%200h2M6.34%2017.66l-1.41%201.41M19.07%204.93l-1.41%201.41%27%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Ccircle%20cx%3D%2712%27%20cy%3D%2712%27%20r%3D%274%27%2F%3E%3Cpath%20d%3D%27M12%202v2M12%2020v2m-7.07-17.07%201.41%201.41m11.32%2011.32%201.41%201.41M2%2012h2m16%200h2M6.34%2017.66l-1.41%201.41M19.07%204.93l-1.41%201.41%27%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
+[data-theme="light"] .pref-tema::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%203a6%206%200%200%200%209%209%209%209%200%201%201-9-9Z%27%2F%3E%3C%2Fsvg%3E");mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%203a6%206%200%200%200%209%209%209%209%200%201%201-9-9Z%27%2F%3E%3C%2Fsvg%3E")}
+.nb-prefs-mob{justify-content:center}
+@media(max-width:850px){.nb-acoes>.nb-prefs{display:none}}
+.mobile-layout .nb-acoes>.nb-prefs{display:none}
+@media(min-width:851px){html:not(.mobile-layout) .nb-prefs-mob{display:none}}
+
+/* Tema claro. A abertura continua escura nos dois temas: o video do pincel tem o
+   fundo preto gravado na imagem. O rose segue a familia do logo, com azul acima
+   do verde, e tem contraste 5,72:1 sobre o creme. */
+html[data-theme="light"]{color-scheme:light;--rose:#a4444f;--line:rgba(164,68,79,.22)}
+[data-theme="light"] .squeeze{background:var(--paper)}
+[data-theme="light"] .sq-panel{background:#efe3e5}
+html[data-theme="light"] .glow-contorno{color:var(--rose);border-color:rgba(164,68,79,.55)}
+[data-theme="light"] #mapa .mapa-quadro{background:#f3e9eb;border-color:rgba(164,68,79,.2)}
