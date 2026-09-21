@@ -286,7 +286,7 @@ html:not(.cinematic) .intro-media{display:none}
   /* Trilhos de 44cqw jogam os cartoes para fora num viewport estreito, mas
      fecha-los demais empilha tudo atras do texto. 38cqw e o meio termo. */
   .corridor-band{height:clamp(250px,38svh,340px)}
-  .corridor-card{width:26cqw;height:36cqw;margin:-18cqw 0 0 -13cqw;animation-name:rail-dir-mob}
+  .corridor-card{width:20cqw;height:28cqw;margin:-14cqw 0 0 -10cqw;animation-name:rail-dir-mob}
   .corridor-card.esq{animation-name:rail-esq-mob}
   .corridor-veil{background:radial-gradient(ellipse 108% 96% at 50% 50%,transparent 72%,rgba(0,0,0,.45) 92%,#000 100%)}
 }
