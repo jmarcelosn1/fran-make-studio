@@ -32,6 +32,23 @@
   });
   filter('todos');
 
+  /* ---- entrada ao rolar ----
+     A partir do componente InView que o cliente mandou: a foto surge esmaecida,
+     menor e desfocada, e assenta em cascata, uma vez so. Sem JS ou com movimento
+     reduzido as fotos simplesmente estao la. */
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+    grid.classList.add('pf-anima');
+    const olho = new IntersectionObserver(entradas => {
+      let k = 0;
+      entradas.filter(e => e.isIntersecting).forEach(e => {
+        e.target.style.setProperty('--k', String(k++));
+        e.target.classList.add('visto');
+        olho.unobserve(e.target);
+      });
+    }, {rootMargin:'0px 0px -12% 0px'});
+    items.forEach(item => olho.observe(item));
+  }
+
   /* ---- lightbox ---- */
   const dialog = $('#lightbox'), image = $('#lb-img'), caption = $('#lb-caption');
   const prev = $('#lb-prev'), next = $('#lb-next');
