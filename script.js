@@ -599,10 +599,9 @@
      borda da silhueta, com o canvas atras da foto. Luz menor e de alcance menor
      que o original, a pedido: queda 6.85 (spotReach .25), halo .07, extension
      .2 (decaimento .875, densidade .51) e raios a 80%. So a borda borrada entra:
-     a linha nitida e o contorno fixo deixavam a foto com cara de recorte. A
-     mascara radial, mais fechada que a do original, apaga os raios em circulo,
-     e o passo dos raios tem teto (.09 do canvas): no original eles crescem com
-     a distancia ate a luz, subiam ate o menu e o fundo dele os cortava numa reta.
+     a linha nitida e o contorno fixo deixavam a foto com cara de recorte.
+     Acima da cabeca so os raios se apagam, de baixo para cima: com a luz mais
+     baixa que ela, eles subiam ate o menu e o fundo dele os cortava numa reta.
      Borda e desfoque saem uma vez; por quadro, so a composicao, a 30 quadros. */
   const luzes = [];
   const acordarLuz = () => luzes.forEach(acordar => acordar());
@@ -656,11 +655,12 @@
     shader(gl.FRAGMENT_SHADER, `precision highp float;uniform sampler2D t;uniform vec2 L,A;uniform float f,q;varying vec2 u;
 float k(vec2 c){vec2 d=(L-c)*A;return 1./(1.+dot(d,d)*6.85);}
 void main(){float b=texture2D(t,u).g*k(u),w=1.,W=0.,z=0.;
-vec2 d=u-L;d*=min(1.,.09/max(length(d*A),.001))*${o.densidade}/${o.passos}.;vec2 c=u-d*fract(sin(dot(u,vec2(12.9898,78.233))+q)*43758.5453);
+vec2 d=(u-L)*(${o.densidade}/${o.passos}.),c=u-d*fract(sin(dot(u,vec2(12.9898,78.233))+q)*43758.5453);
 for(int i=0;i<${o.passos};i++){c-=d;z+=texture2D(t,c).g*k(c)*w;W+=w;w*=${o.decai};}
 vec2 h=(u-L)*A;float H=exp(-dot(h,h)/.0049),S=b*.85*(1.+H*1.5);
-vec3 C=vec3(.94,.64,.68),R=(C*H*b*.7+(mix(vec3(1.),C,.7)+C*.3)*S+C*z/W*2.6)*f*.8;
-vec3 o=(1.-exp(-R*1.3))*smoothstep(.49,.28,length((u-.5)*A));
+vec3 C=vec3(.94,.64,.68),R=(C*H*b*.7+(mix(vec3(1.),C,.7)+C*.3)*S+C*z/W*2.6*smoothstep(.06,.3,u.y))*f*.8;
+vec2 g=smoothstep(0.,.2,u)*smoothstep(0.,.2,1.-u);
+vec3 o=(1.-exp(-R*smoothstep(1.35,.25,length((u-.5)*A))*1.3))*g.x*g.y;
 gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
     gl.bindAttribLocation(prog, 0, 'p');
     gl.linkProgram(prog);
@@ -719,6 +719,6 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
   motionPreference();
   addEventListener('load', () => setTimeout(() => {
     const m = mobile.matches;
-    acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .25, centro: [.5, .45], N: m ? 320 : 512, passos: m ? 16 : 32, densidade: .51, decai: .875, borrao: 90});
+    acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .1, centro: [.5, .45], N: m ? 320 : 512, passos: m ? 16 : 32, densidade: .51, decai: .875, borrao: 90});
   }, 200), {once:true});
 })();
