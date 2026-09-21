@@ -1,5 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const AxeBuilder=require('@axe-core/playwright').default;
+// Erros de dentro do iframe do Google Maps nao sao do site (o WebKit os repassa a pagina).
+const doSite=e=>!/maps\.googleapis\.com|gstatic\.com|google\.com\/maps/.test(e.message);
 test('public build omits internal files and sends security headers',async({request})=>{
  const response=await request.get('/');
  expect(response.headers()['content-security-policy']).toContain("frame-ancestors 'none'");
@@ -7,7 +9,7 @@ test('public build omits internal files and sends security headers',async({reque
  for(const file of ['package.json','QUALIDADE.md','.env','tests/unit/safety.test.cjs'])expect((await request.get('/'+file)).status()).toBe(404);
 });
 test('services, map, accessibility and responsive layout',async({page})=>{
- const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const errors=[];page.on('pageerror',e=>{if(doSite(e))errors.push(e.message);});
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');
  await expect(page.locator('#servicos h3')).toHaveCount(3);
@@ -75,7 +77,9 @@ test('carousel survives a burst of clicks without gaps or jumps',async({page})=>
    window.__q.push({vao:r.right-Math.max(...bs.map(x=>x.right)),maior:Math.max(...bs.map(x=>x.width))});
    requestAnimationFrame(l);})();});
  for(let i=0;i<8;i++) await page.click('.sq-arrow[data-sq="1"]');
- await page.waitForTimeout(2600);
+ // Espera assentar em vez de um tempo fixo: no WebKit, com os testes em paralelo, os quadros ficam mais lentos.
+ await expect.poll(()=>page.evaluate(()=>{const vp=document.querySelector('.sq-viewport').getBoundingClientRect();
+  return Math.round(document.querySelector('.sq-panel[data-aberto]').getBoundingClientRect().x-vp.x);}),{timeout:10000}).toBe(0);
  const q=await page.evaluate(()=>window.__q);
  expect(q.filter(x=>x.vao>2).length).toBe(0);
  let saltos=0; for(let k=1;k<q.length;k++) if(Math.abs(q[k].maior-q[k-1].maior)>200) saltos++;
@@ -110,7 +114,7 @@ test('arriving at a section by anchor never flashes the intro',async({page})=>{
 
 // O painel sob o mouse abria de uma vez, estalando. Agora abre aos poucos.
 test('hovering a carousel panel opens it gradually, not in one jump',async({page},info)=>{
- test.skip(info.project.name==='mobile','sem ponteiro de mouse no celular');
+ test.skip(!!info.project.use.isMobile,'sem ponteiro de mouse no celular');
  await page.goto('/');
  await page.locator('.sq-strip').scrollIntoViewIfNeeded();
  await page.waitForTimeout(700);
@@ -133,7 +137,7 @@ test('hovering a carousel panel opens it gradually, not in one jump',async({page
 
 // No celular o pincel gira sozinho em cena e para quando sobe para sair.
 test('mobile brush loops on its own while on screen and stops on the way out',async({page},info)=>{
- test.skip(info.project.name!=='mobile','comportamento so do celular');
+ test.skip(!info.project.use.isMobile,'comportamento so do celular');
  await page.goto('/');
  const g=await page.evaluate(()=>{const H=document.querySelector('#hero'),s=document.querySelector('.hero-stage');return {a:H.offsetTop,r:H.offsetHeight-s.offsetHeight};});
  const tempoAnda=async(pr)=>{
@@ -149,8 +153,11 @@ test('mobile brush loops on its own while on screen and stops on the way out',as
 
 // Tema claro opcional: alterna, fica salvo, e ao recarregar ja pinta claro.
 test('English version translates, survives a motion remount, returns to identical Portuguese and loads without a Portuguese flash',async({page})=>{
- const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const errors=[];page.on('pageerror',e=>{if(doSite(e))errors.push(e.message);});
  await page.goto('/#contato');
+ // No WebKit o load chega antes de a pagina soltar o hero escondido do salto.
+ await expect(page.locator('html')).not.toHaveClass(/salto-ancora/);
+ await expect(page.locator('.sq-slide:not([data-aberto])').first()).toBeHidden();
  const retrato=()=>page.evaluate(()=>{
   const texto=document.body.innerText.replace(/\s+/g,' ').trim();
   const atributos=[...document.querySelectorAll('[alt],[aria-label],[title],[placeholder]')].flatMap(el=>['alt','aria-label','title','placeholder'].filter(a=>el.hasAttribute(a)).map(a=>el.tagName+'.'+a+'='+el.getAttribute(a)));

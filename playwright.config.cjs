@@ -7,6 +7,7 @@ module.exports=defineConfig({
  projects:[
   {name:'desktop',use:{...devices['Desktop Chrome'],channel:process.env.PW_CHANNEL||undefined}},
   {name:'mobile',use:{...devices['Pixel 7'],channel:process.env.PW_CHANNEL||undefined}},
-  ...(process.env.CI?[{name:'webkit-mobile',use:{...devices['iPhone 13']}}]:[])
+  // PW_WEBKIT=1 roda o motor do Safari tambem fora do CI.
+  ...(process.env.CI||process.env.PW_WEBKIT?[{name:'webkit-mobile',use:{...devices['iPhone 13']}},{name:'webkit-desktop',use:{...devices['Desktop Safari']}}]:[])
  ]
 });

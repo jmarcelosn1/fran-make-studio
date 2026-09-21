@@ -388,11 +388,6 @@ html[data-theme] .glow-btn:active,html[data-theme] .glow-btn[data-state="clicked
   box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 0 0 4px rgba(239,163,173,.28),0 8px 28px -10px rgba(239,163,173,1)}
 html[data-theme] .glow-btn:focus-visible{outline:2px solid #f4b6be;outline-offset:3px}
 @keyframes faisca{0%,100%{transform:scale(1) rotate(0)}45%{transform:scale(1.28) rotate(20deg)}}
-/* secundario: contorno, mais discreto que o primario */
-html[data-theme] .glow-contorno{background:transparent;color:#f4b6be;border-color:rgba(239,163,173,.7);
-  box-shadow:0 0 0 0 rgba(239,163,173,0)}
-html[data-theme] .glow-contorno::before{background:linear-gradient(105deg,transparent 32%,rgba(239,163,173,.28) 49%,transparent 66%)}
-html[data-theme] .glow-contorno:hover{background:rgba(239,163,173,.08);box-shadow:0 0 24px 0 rgba(239,163,173,.3)}
 /* setas do carrossel: brilho e clique, sem o Sparkles, que brigaria com a seta */
 html[data-theme] .glow-icone{border-radius:10px;gap:0}
 html[data-theme] .glow-icone::after{display:none}

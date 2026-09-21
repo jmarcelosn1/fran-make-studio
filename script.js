@@ -22,7 +22,7 @@
   const playIntro = $('#intro-play');
   const introMark = $('.intro-mark');
   const brushScene = $('.brush-scene'), brushVideo = $('.brush-video');
-  let brushLoading = false, brushURL = '', brushBroken = false, brushTarget = 0;
+  let brushLoading = false, brushURL = '', brushFonte = '', brushBroken = false, brushTarget = 0;
   // No touch interception or independent animation loop. Portrait light is behind the cutout.
   const spotlights = $$('.mp-card,.portfolio-card,.look-frame');
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)');
@@ -223,8 +223,9 @@
       });
       p.addEventListener('pointermove', e => {
         // So movimento real do mouse. Quando a pagina rola por baixo de um
-        // ponteiro parado o navegador tambem dispara evento, mas sem deslocamento.
-        if (e.pointerType !== 'mouse' || (!e.movementX && !e.movementY)) return;
+        // ponteiro parado o navegador tambem dispara evento, mas no mesmo ponto
+        // da tela. O movementX servia para isso, mas o WebKit o deixa em zero.
+        if (e.pointerType !== 'mouse' || (e.clientX === ponteiroX && e.clientY === ponteiroY)) return;
         if (performance.now() < rolandoAte || emMovimento()) return;
         const col = Math.round(fila().indexOf(p) - atual);
         if (col === apontado) return;
@@ -232,6 +233,9 @@
       });
     });
     let rolandoAte = 0;
+    // Ultima posicao do ponteiro, gravada depois do painel conferir o evento.
+    let ponteiroX = -1, ponteiroY = -1;
+    addEventListener('pointermove', e => { ponteiroX = e.clientX; ponteiroY = e.clientY; }, {passive:true});
     addEventListener('scroll', () => { rolandoAte = performance.now() + 220; }, {passive:true});
     sqStrip.addEventListener('pointerleave', () => { apontado = -1; mirarPartes(); mover(); });
     sqStrip.addEventListener('keydown', e => {
@@ -287,7 +291,7 @@
     try {
       // Buffer completo em memoria: hospedagem estatica sem HTTP Range nao
       // permite seek, e o scrub depende de buscar para frente e para tras.
-      const source = mobile.matches ? 'images/pincel-scroll-mobile.mp4' : 'images/pincel-scroll.mp4';
+      const source = brushFonte = mobile.matches ? 'images/pincel-scroll-mobile.mp4' : 'images/pincel-scroll.mp4';
       const response = await fetch(source, {signal:videoRequest.signal});
       if (!response.ok) throw new Error('Brush video unavailable');
       const blob = await response.blob();
@@ -318,7 +322,14 @@
     else if (!brushVideo.paused) brushVideo.pause();
   }
   document.addEventListener('visibilitychange', () => { dirty = true; schedule(); });
-  brushVideo.addEventListener('error', () => { brushBroken = true; });
+  // Alguns WebKit recusam video em blob: (erro 4) e tocam o mesmo arquivo pelo
+  // endereco. Tenta o endereco uma vez antes de desistir do video.
+  const tentarEndereco = (video, blobURL, endereco) => {
+    if (!blobURL || video.src !== blobURL) return false;
+    video.src = endereco; video.load();
+    return true;
+  };
+  brushVideo.addEventListener('error', () => { if (!tentarEndereco(brushVideo, brushURL, brushFonte)) brushBroken = true; });
   function seekVideo() {
     if (mobile.matches || reduced.matches || introVideo.readyState < 1 || introVideo.seeking || !Number.isFinite(introVideo.duration)) return;
     const target = Math.min(videoTarget, Math.max(0, introVideo.duration - .05));
@@ -343,7 +354,7 @@
     if (mobile.matches) { if (introInView) startMobileVideo(); else introVideo.pause(); }
   }, {threshold:.05}).observe(introMedia);
   introVideo.addEventListener('seeked', seekVideo);
-  introVideo.addEventListener('error', () => { introMedia.classList.add('poster-only'); if(mobile.matches && !reduced.matches)playIntro.hidden=false; });
+  introVideo.addEventListener('error', () => { if (tentarEndereco(introVideo, videoObjectURL, videoSource)) return; introMedia.classList.add('poster-only'); if(mobile.matches && !reduced.matches)playIntro.hidden=false; });
 
   function schedule() { if (!tickerDriven && !frame && !document.hidden) frame = requestAnimationFrame(tick); }
   function measure() {
@@ -483,6 +494,10 @@
     if (times.length) resumeTimer = setTimeout(schedule, Math.min(...times));
   }
   function motionPreference() {
+    // Trocar de modo muda a altura do hero. O Safari nao tem ancoragem de
+    // rolagem e a tela caia no meio da intro; volta para a mesma secao.
+    const secao = hero.getBoundingClientRect().bottom <= 0 ? $$('main > section').find(el => el.getBoundingClientRect().bottom > 0) : null;
+    const topo = secao ? secao.getBoundingClientRect().top : 0;
     document.documentElement.classList.toggle('mobile-layout', mobile.matches);
     document.documentElement.classList.toggle('cinematic', !reduced.matches);
     document.documentElement.classList.toggle('motion-ready', !reduced.matches);
@@ -490,6 +505,7 @@
     loadIntroVideo();
     carousels.forEach(c => { c.position = c.track.scrollLeft; });
     measure();
+    if (secao) scrollBy({top: secao.getBoundingClientRect().top - topo, behavior: 'instant'});
   }
   addEventListener('scroll', () => { dirty = true; schedule(); }, { passive: true });
   new ResizeObserver(measure).observe(stage);
