@@ -4,9 +4,9 @@ Site estático: HTML, CSS e JavaScript servidos como arquivos. Não há banco de
 
 Tudo em `config.js` é público. Nunca coloque senhas, tokens ou chaves nele.
 
-## Cabeçalhos HTTP (vercel.json)
+## Cabeçalhos HTTP (vercel.json e _headers)
 
-Aplicados pela Vercel em todas as respostas. O servidor local de testes (`quality/server.cjs`) lê o mesmo arquivo, então os testes conferem exatamente o que vai para produção.
+A fonte é o `vercel.json`. O build gera a partir dele o `dist/_headers`, formato da Cloudflare Pages, então as duas hospedagens recebem os mesmos cabeçalhos; edite só o `vercel.json`. O servidor local de testes (`quality/server.cjs`) lê o mesmo arquivo, então os testes conferem exatamente o que vai para produção.
 
 | Cabeçalho | O que faz |
 |---|---|

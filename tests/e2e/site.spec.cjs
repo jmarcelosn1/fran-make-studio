@@ -14,6 +14,14 @@ test('public build omits internal files and sends security headers',async({reque
  expect(csp.replace("style-src-attr 'unsafe-inline'",'')).not.toContain('unsafe');
  for(const file of ['package.json','QUALIDADE.md','.env','tests/unit/safety.test.cjs','guia.html','guia.js','config.js.bak','.git/config','_fontes/franciana.jpg','.claude/settings.local.json'])expect((await request.get('/'+file)).status()).toBe(404);
 });
+// O build gera _headers (Cloudflare Pages) a partir do vercel.json; aqui o servidor
+// local o entrega como arquivo, o que da para conferir o conteudo gerado.
+test('cloudflare _headers carries the same security headers',async({request})=>{
+ const h=await (await request.get('/_headers')).text();
+ for(const k of ['Content-Security-Policy','Strict-Transport-Security','X-Frame-Options','Cross-Origin-Opener-Policy','Permissions-Policy'])expect(h).toContain(k+': ');
+ expect(h).toContain("frame-ancestors 'none'");
+ expect(h).toContain('/images/*\n  Cache-Control: ');
+});
 test('services, map, accessibility and responsive layout',async({page})=>{
  const errors=[];page.on('pageerror',e=>{if(doSite(e))errors.push(e.message);});
  await page.emulateMedia({reducedMotion:'reduce'});
