@@ -287,7 +287,7 @@ html:not(.cinematic) .intro-media{display:none}
   .corridor{min-height:clamp(430px,58svh,560px)}
   .corridor-card{width:26cqw;height:36cqw;margin:-18cqw 0 0 -13cqw;animation-name:rail-dir-mob}
   .corridor-card.esq{animation-name:rail-esq-mob}
-  .corridor-veil{background:radial-gradient(ellipse 98% 58% at 50% 52%,transparent 50%,rgba(0,0,0,.62) 88%,#000 100%)}
+  .corridor-veil{background:radial-gradient(ellipse 104% 68% at 50% 52%,transparent 74%,rgba(0,0,0,.5) 92%,#000 100%)}
   .corridor-copy::before{inset:-12% -6%;
     background:radial-gradient(ellipse at center,rgba(0,0,0,.95) 0 46%,rgba(0,0,0,.84) 68%,transparent 88%)}
 }
