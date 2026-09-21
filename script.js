@@ -424,7 +424,8 @@
     content.inert = reveal < .92;
     portrait.style.opacity = reveal;
     portrait.style.visibility = reveal > .01 ? 'visible' : 'hidden';
-    portrait.style.transform = `translate3d(${20 * (1 - reveal)}px,${14 * (1 - reveal)}px,0)`;
+    // Sobe de baixo: o palco corta a base, entao ela nasce da borda inferior.
+    portrait.style.transform = `translate3d(0,${36 * (1 - reveal)}%,0)`;
   }
   /* Abertura: o scroll escreve o nome, e o CONHECA e a legenda acendem na mesma
      medida. Antes as legendas ja estavam na tela enquanto o nome ainda nao tinha
@@ -432,7 +433,7 @@
      o video: e o preco de o nome ser escrito pela mao de quem rola. */
   /* Beleza e Sofisticacao acendem letra a letra. As letras ficam em linha, nao
      em caixas, para manter o ajuste entre elas, e o "fi" anda junto para a
-     ligadura da Cormorant nao quebrar. */
+     ligadura nao quebrar. */
   function dividirPalavra(palavra, texto) {
     const unidades = texto.match(/fi|fl|./gu) || [];
     palavra.style.setProperty('--n', unidades.length);

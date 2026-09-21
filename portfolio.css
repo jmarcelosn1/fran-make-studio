@@ -76,7 +76,6 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
   .pf-feature{max-width:460px}
 }
 @media(max-width:620px){
-  .pf-grid{grid-template-columns:1fr}
   .pf-hero{padding:calc(var(--nav) + 34px) 0 26px}
   .lb-nav{width:44px;height:44px}
   #lb-prev{left:8px}
@@ -93,10 +92,12 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
   transition-delay:calc(var(--k,0) * 90ms)}
 .pf-anima .pf-item.visto{opacity:1;transform:none;filter:none}
 #lb-img{border-radius:14px}
-/* No celular a foto do topo dominava a primeira tela: fica menor e encostada a
-   direita, em diagonal com o texto, que esta a esquerda. */
+/* No celular a foto do topo ocupa a largura toda, num recorte mais baixo para
+   nao tomar a primeira tela. A grade fica em duas colunas, como no desktop. */
 @media(max-width:620px){
-  .pf-feature{width:min(68vw,270px);margin-left:auto}
+  .pf-feature img{aspect-ratio:5/4;object-fit:cover;object-position:50% 30%}
+  .pf-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .pf-item img{border-radius:12px}
   /* Os tres filtros numa linha so, para Noivas continuar a direita: com o
      tamanho do desktop ela quebrava para baixo, sozinha, a esquerda. */
   .pf-filters{flex-wrap:nowrap;gap:8px}
