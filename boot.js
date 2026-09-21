@@ -6,6 +6,15 @@ let temaSalvo = null;
 try { temaSalvo = localStorage.getItem('fm-tema'); } catch { temaSalvo = null; }
 const tema = temaURL === 'light' || temaURL === 'dark' ? temaURL : (temaSalvo === 'light' ? 'light' : 'dark');
 document.documentElement.dataset.theme = tema;
+// Ingles salvo: a pagina fica oculta ate o dicionario chegar, para nao piscar em
+// portugues. O preferencias.js libera; este limite cobre o caso de ele falhar.
+let idiomaSalvo = null;
+try { idiomaSalvo = localStorage.getItem('fm-idioma'); } catch { idiomaSalvo = null; }
+if (idiomaSalvo === 'en' && document.documentElement.hasAttribute('data-idiomas')) {
+  document.documentElement.lang = 'en';
+  document.documentElement.classList.add('carrega-idioma');
+  setTimeout(() => document.documentElement.classList.remove('carrega-idioma'), 2500);
+}
 const corDoTema = document.querySelector('meta[name="theme-color"]');
 if (corDoTema) corDoTema.content = tema === 'light' ? '#fff9f6' : '#000000';
 document.documentElement.classList.toggle('mobile-layout', matchMedia('(max-width:850px), (pointer:coarse)').matches);

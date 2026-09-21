@@ -4,6 +4,7 @@
   'use strict';
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+  const traduz = texto => (window.FRAN_IDIOMA ? window.FRAN_IDIOMA.t(texto) : texto);
 
   const grid = $('#pf-grid');
   if (!grid) return;
@@ -12,6 +13,7 @@
   const empty = $('#pf-empty');
 
   /* ---- filtro ---- */
+  const contar = () => { count.textContent = `${visible.length} ${traduz(visible.length === 1 ? 'fotografia' : 'fotografias')}`; };
   let visible = items.slice();
   function filter(category) {
     visible = [];
@@ -21,7 +23,7 @@
       if (match) visible.push(item);
     }
     visible.forEach((item, i) => { item.dataset.index = String(i); });
-    count.textContent = `${visible.length} ${visible.length === 1 ? 'fotografia' : 'fotografias'}`;
+    contar();
     empty.hidden = visible.length > 0;
   }
   $$('.pf-filters button').forEach(button => {
@@ -99,14 +101,14 @@
   const ham = $('#nb-ham'), menu = $('#nb-mob');
   function closeMenu(restore = true) {
     menu.hidden = true; menu.inert = true; menu.classList.remove('on');
-    ham.setAttribute('aria-expanded', 'false'); ham.setAttribute('aria-label', 'Abrir menu');
+    ham.setAttribute('aria-expanded', 'false'); ham.setAttribute('aria-label', traduz('Abrir menu'));
     document.body.classList.remove('modal-open');
     if (restore) ham.focus();
   }
   ham.addEventListener('click', () => {
     if (!menu.hidden) return closeMenu();
     menu.hidden = false; menu.inert = false; menu.classList.add('on');
-    ham.setAttribute('aria-expanded', 'true'); ham.setAttribute('aria-label', 'Fechar menu');
+    ham.setAttribute('aria-expanded', 'true'); ham.setAttribute('aria-label', traduz('Fechar menu'));
     document.body.classList.add('modal-open');
     $('a', menu).focus();
   });
@@ -115,4 +117,8 @@
     if (e.key === 'Escape' && !menu.hidden) closeMenu();
   });
   matchMedia('(min-width:851px)').addEventListener('change', e => { if (e.matches && !menu.hidden) closeMenu(false); });
+  document.addEventListener('fm:idioma', () => {
+    contar();
+    ham.setAttribute('aria-label', traduz(ham.getAttribute('aria-expanded') === 'true' ? 'Fechar menu' : 'Abrir menu'));
+  });
 })();

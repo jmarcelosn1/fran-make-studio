@@ -461,3 +461,6 @@ html[data-theme="light"]{color-scheme:light;--rose:#a4444f;--line:rgba(164,68,79
 [data-theme="light"] .sq-panel{background:#efe3e5}
 html[data-theme="light"] .glow-contorno{color:var(--rose);border-color:rgba(164,68,79,.55)}
 [data-theme="light"] #mapa .mapa-quadro{background:#f3e9eb;border-color:rgba(164,68,79,.2)}
+
+/* Ingles salvo: esconde a pagina ate o dicionario chegar (no maximo 1,5s). */
+html.carrega-idioma body{visibility:hidden}

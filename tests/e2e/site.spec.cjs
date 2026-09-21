@@ -163,3 +163,52 @@ test('light theme toggles, persists, and loads without a dark flash',async({page
  expect(await page.evaluate(()=>window.__primeiro)).toBe('light');
 });
 
+test('English version translates, survives a motion remount, returns to identical Portuguese and loads without a Portuguese flash',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/#contato');
+ const retrato=()=>page.evaluate(()=>{
+  const texto=document.body.innerText.replace(/\s+/g,' ').trim();
+  const atributos=[...document.querySelectorAll('[alt],[aria-label],[title],[placeholder]')].flatMap(el=>['alt','aria-label','title','placeholder'].filter(a=>el.hasAttribute(a)).map(a=>el.tagName+'.'+a+'='+el.getAttribute(a)));
+  return {texto,atributos,titulo:document.title,lang:document.documentElement.lang};
+ });
+ const alternar=async()=>{
+  const menu=!(await page.locator('[data-idioma]:visible').count());
+  if(menu)await page.click('#nb-ham');
+  await page.locator('[data-idioma]:visible').first().click();
+  if(menu)await page.click('#nb-ham');
+  await expect(page.locator('#nb-ham')).toHaveAttribute('aria-expanded','false');
+ };
+ const tituloServicos=()=>page.evaluate(()=>{const c=document.querySelector('#servicos h2').cloneNode(true);c.querySelectorAll('br').forEach(b=>b.replaceWith(' '));return c.textContent.replace(/\s+/g,' ').trim();});
+ const antes=await retrato();
+ await alternar();
+ await expect(page.locator('html')).toHaveAttribute('lang','en');
+ expect(await tituloServicos()).toBe('Three ways to work together.');
+ await expect(page).toHaveTitle(/Fran Make/);
+ expect(await page.title()).not.toBe(antes.titulo);
+ await expect(page.locator('[data-idioma]').first()).toHaveText('PT');
+ // Remontar as animacoes desfaz a quebra dos titulos; a traducao tem que voltar.
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ await page.waitForTimeout(150);
+ expect(await tituloServicos()).toBe('Three ways to work together.');
+ await alternar();
+ await expect(page.locator('html')).toHaveAttribute('lang','pt-BR');
+ const depois=await retrato();
+ expect(depois.texto).toBe(antes.texto);
+ expect(depois.atributos).toEqual(antes.atributos);
+ expect(depois.titulo).toBe(antes.titulo);
+ // A escolha fica salva e a pagina nunca aparece em portugues antes de traduzir.
+ await alternar();
+ await expect(page.locator('html')).toHaveAttribute('lang','en');
+ await page.addInitScript(()=>{requestAnimationFrame(()=>{
+  const h=document.querySelector('#servicos h2');
+  window.__primeiro={oculto:getComputedStyle(document.body).visibility==='hidden',titulo:h?h.textContent:''};
+ });});
+ await page.reload();
+ await page.waitForFunction(()=>window.__primeiro!==undefined);
+ const primeiro=await page.evaluate(()=>window.__primeiro);
+ expect(primeiro.oculto||/Three ways/.test(primeiro.titulo)).toBeTruthy();
+ await expect(page.locator('html')).not.toHaveClass(/carrega-idioma/);
+ expect(await tituloServicos()).toBe('Three ways to work together.');
+ expect(errors).toEqual([]);
+});

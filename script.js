@@ -10,6 +10,7 @@
   const kicker = $('#intro-kicker'), assinatura = $('.intro-signature');
   const content = $('.hero-content'), portrait = $('.hero-photo');
   const clamp = n => Math.min(1, Math.max(0, n));
+  const traduz = texto => (window.FRAN_IDIOMA ? window.FRAN_IDIOMA.t(texto) : texto);
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
   let frame = 0, lastTime = 0, dirty = true, heroVisible = true;
   let range = 1, start = 0, progress = 0, sceneAPI = null;
@@ -416,8 +417,8 @@
   /* Beleza e Sofisticacao acendem letra a letra. As letras ficam em linha, nao
      em caixas, para manter o ajuste entre elas, e o "fi" anda junto para a
      ligadura da Cormorant nao quebrar. */
-  $$('.brush-word').forEach(palavra => {
-    const unidades = palavra.textContent.match(/fi|fl|./gu) || [];
+  function dividirPalavra(palavra, texto) {
+    const unidades = texto.match(/fi|fl|./gu) || [];
     palavra.style.setProperty('--n', unidades.length);
     palavra.textContent = '';
     unidades.forEach((u, i) => {
@@ -427,6 +428,11 @@
       letra.textContent = u;
       palavra.appendChild(letra);
     });
+  }
+  // O original fica guardado para a troca de idioma redividir a palavra traduzida.
+  $$('.brush-word').forEach(palavra => {
+    palavra.dataset.pt = palavra.textContent;
+    dividirPalavra(palavra, traduz(palavra.dataset.pt));
   });
   function aplicarEntrada(e) {
     // Tudo sai do quanto o nome ja foi escrito: o CONHECA acende na mesma medida
@@ -498,18 +504,25 @@
   const ham = $('#nb-ham'), menu = $('#nb-mob');
   function closeMenu(restore = true) {
     menu.hidden = true; menu.inert = true; menu.classList.remove('on');
-    ham.setAttribute('aria-expanded', 'false'); ham.setAttribute('aria-label', 'Abrir menu');
+    ham.setAttribute('aria-expanded', 'false'); ham.setAttribute('aria-label', traduz('Abrir menu'));
     document.body.classList.remove('modal-open'); currentModal = null; motion?.pause(false);
     if (restore) ham.focus(); schedule();
   }
   ham.addEventListener('click', () => {
     if (!menu.hidden) return closeMenu();
     menu.hidden = false; menu.inert = false; menu.classList.add('on');
-    ham.setAttribute('aria-expanded', 'true'); ham.setAttribute('aria-label', 'Fechar menu');
+    ham.setAttribute('aria-expanded', 'true'); ham.setAttribute('aria-label', traduz('Fechar menu'));
     document.body.classList.add('modal-open'); currentModal = 'menu'; motion?.pause(true); $('a', menu).focus();
   });
   $$('a', menu).forEach(a => a.addEventListener('click', () => closeMenu(false)));
   matchMedia('(min-width:851px)').addEventListener('change', e => { if(e.matches && !menu.hidden) closeMenu(false); });
+  // Troca de idioma: rotulo do menu conforme o estado, palavras do pincel e mapa.
+  document.addEventListener('fm:idioma', e => {
+    ham.setAttribute('aria-label', traduz(ham.getAttribute('aria-expanded') === 'true' ? 'Fechar menu' : 'Abrir menu'));
+    $$('.brush-word').forEach(palavra => dividirPalavra(palavra, traduz(palavra.dataset.pt)));
+    const mapa = $('#map-placeholder iframe');
+    if (mapa) mapa.src = mapa.src.replace(/hl=[^&]*/, 'hl=' + (e.detail === 'en' ? 'en' : 'pt-BR'));
+  });
   document.addEventListener('keydown', e => {
     if (currentModal !== 'menu') return;
     if (e.key === 'Escape') closeMenu();

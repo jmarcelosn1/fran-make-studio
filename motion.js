@@ -19,6 +19,12 @@
   }
 
   function setup() {
+    configurar();
+    // Avisa que as animacoes foram (re)montadas. Remontar desfaz a quebra dos
+    // titulos restaurando o HTML original, em portugues; a traducao reaplica.
+    document.dispatchEvent(new CustomEvent('fm:movimento'));
+  }
+  function configurar() {
     cleanup();
     document.body.classList.toggle('no-noise', config.noise === false);
     if(reduce.matches) return;
@@ -41,7 +47,11 @@
         if(window.SplitType && config.titleReveals !== false && pointer.matches) {
           document.querySelectorAll('[data-split]').forEach(heading => {
             const label = heading.getAttribute('aria-label');
-            const text = heading.textContent.replace(/\s+/g,' ').trim();
+            // O <br> nao entra no textContent: sem trocar por espaco, o rotulo
+            // lido pelo leitor de tela saia "detrabalhar".
+            const copia = heading.cloneNode(true);
+            copia.querySelectorAll('br').forEach(br => br.replaceWith(' '));
+            const text = copia.textContent.replace(/\s+/g,' ').trim();
             const split = new SplitType(heading,{types:'words',tagName:'span'});
             splits.push({split,heading,label});
             heading.setAttribute('aria-label',text);
