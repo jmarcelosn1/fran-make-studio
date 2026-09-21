@@ -344,7 +344,8 @@
      assinatura -> pincel com Beleza e Sofisticacao -> Franciana em PNG.
      Um driver unico controla tudo, entao nao ha animacoes concorrentes. */
   const PHASE = {
-    titleOut: [.20, .29],
+    draw:     [0,   .17],
+    titleOut: [.21, .29],
     brushIn:  [.24, .33],
     scrub:    [.27, .80],
     wordA:    [.35, .44],
@@ -360,6 +361,7 @@
   function updateIntro() {
     progress = reduced.matches ? 1 : clamp((scrollY - start) / range);
     const still = reduced.matches;
+    aplicarEntrada(still ? 1 : at('draw', progress));
     const reveal = still ? 1 : at('reveal', progress);
     const fade = still ? 1 : at('titleOut', progress);
 
@@ -395,10 +397,10 @@
     portrait.style.visibility = reveal > .01 ? 'visible' : 'hidden';
     portrait.style.transform = `translate3d(${20 * (1 - reveal)}px,${14 * (1 - reveal)}px,0)`;
   }
-  /* Entrada da abertura: CONHECA, a assinatura e a legenda sobem juntas, uma
-     vez, no carregamento. A assinatura continua sendo escrita pela mascara, so
-     que pelo tempo e nao mais pelo scroll: antes as legendas ja estavam na tela
-     enquanto o nome ainda nao tinha sido escrito, e ficavam soltas. */
+  /* Abertura: o scroll escreve o nome, e o CONHECA e a legenda acendem na mesma
+     medida. Antes as legendas ja estavam na tela enquanto o nome ainda nao tinha
+     sido escrito, e ficavam soltas. No topo, antes do primeiro scroll, aparece so
+     o video: e o preco de o nome ser escrito pela mao de quem rola. */
   function aplicarEntrada(e) {
     // Tudo sai do quanto o nome ja foi escrito: o CONHECA acende na mesma medida
     // e nunca fica na tela antes do nome; a legenda fecha o movimento.
@@ -411,29 +413,6 @@
     const a = smooth(.66, 1, e);
     assinatura.style.opacity = a;
     assinatura.style.transform = `translateY(${8 * (1 - a)}px)`;
-  }
-  if (reduced.matches) aplicarEntrada(1);
-  else {
-    aplicarEntrada(0);
-    let comecou = false;
-    const comecar = () => {
-      if (comecou) return;
-      comecou = true;
-      const t0 = performance.now() + 180;
-      const passo = t => {
-        const e = clamp((t - t0) / 1600);
-        aplicarEntrada(e);
-        if (e < 1) requestAnimationFrame(passo);
-      };
-      requestAnimationFrame(passo);
-    };
-    const arte = $('.intro-mark-draw img');
-    if (!arte || arte.complete) comecar();
-    else {
-      arte.addEventListener('load', comecar, {once:true});
-      arte.addEventListener('error', comecar, {once:true});
-      setTimeout(comecar, 1500);
-    }
   }
   function tick(time) {
     if(document.hidden) return;
