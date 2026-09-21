@@ -22,11 +22,10 @@ test('services, map, accessibility and responsive layout',async({page})=>{
  await expect(page.locator('#mapa a[href*="maps.app.goo.gl"]')).toBeVisible();
  expect(errors).toEqual([]);
 });
-test('gallery single click stays closed, keyboard opens and Escape closes',async({page})=>{
- await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');
- const card=page.locator('.portfolio-card').first();await card.click();
- await expect(page.locator('#lightbox')).not.toBeVisible();
- await card.focus();await page.keyboard.press('Enter');await expect(page.locator('#lightbox')).toBeVisible();
+test('portfolio lightbox opens, Escape closes and focus returns',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/portfolio.html');
+ const card=page.locator('.pf-item').first();await card.click();
+ await expect(page.locator('#lightbox')).toBeVisible();
  await page.keyboard.press('Escape');await expect(page.locator('#lightbox')).not.toBeVisible();
  await expect(card).toBeFocused();
 });
