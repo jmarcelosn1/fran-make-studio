@@ -13,7 +13,7 @@
   const traduz = texto => (window.FRAN_IDIOMA ? window.FRAN_IDIOMA.t(texto) : texto);
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
   let frame = 0, lastTime = 0, dirty = true, heroVisible = true;
-  let range = 1, start = 0, progress = 0, sceneAPI = null;
+  let range = 1, start = 0, progress = 0;
   let currentModal = null;
   const carousels = [];
   const motion = window.FRAN_MOTION;
@@ -361,12 +361,11 @@
     start = hero.offsetTop;
     range = Math.max(1, hero.offsetHeight - stage.offsetHeight);
     carousels.forEach(c => { c.max = c.track.scrollWidth - c.track.clientWidth; c.position = c.track.scrollLeft; c.root?.classList.toggle('sem-curso', c.max < 8); });
-    sceneAPI?.resize(); dirty = true; schedule();
+    dirty = true; schedule();
   }
   /* Fases da abertura, em fracao do curso do hero. A narrativa e uma so:
      assinatura -> pincel com Beleza e Sofisticacao -> Franciana em PNG.
      Um driver unico controla tudo, entao nao ha animacoes concorrentes. */
-  const particulas = $('#webgl-canvas');
   const PHASE = {
     draw:     [0,   .17],
     titleOut: [.21, .29],
@@ -387,10 +386,6 @@
     const still = reduced.matches;
     aplicarEntrada(still ? 1 : at('draw', progress));
     const reveal = still ? 1 : at('reveal', progress);
-    // As particulas entram junto com o retrato. Antes elas ficavam na tela
-    // durante toda a intro e, entre a saida do pincel e a revelacao, sobravam
-    // sozinhas no palco escuro.
-    particulas.style.opacity = reveal.toFixed(3);
     const fade = still ? 1 : at('titleOut', progress);
 
     // Pincel: entra por fade, o scroll conduz o tempo do video, e sai erguido,
@@ -424,6 +419,7 @@
     content.inert = reveal < .92;
     portrait.style.opacity = reveal;
     portrait.style.visibility = reveal > .01 ? 'visible' : 'hidden';
+    portrait.classList.toggle('apagado', reveal <= .01);
     // Sobe de baixo: o palco corta a base, entao ela nasce da borda inferior.
     portrait.style.transform = `translate3d(0,${36 * (1 - reveal)}%,0)`;
   }
@@ -471,7 +467,6 @@
     const dt = Math.min(50, time - (lastTime || time)); lastTime = time;
     if (dirty) { updateIntro(); dirty = false; }
     let live = !!smoothActive;
-    if (sceneAPI && heroVisible && !reduced.matches) { sceneAPI.render(time * .001, progress); live = true; }
     for (const c of carousels) {
       if (!c.visible || c.paused || reduced.matches || currentModal || c.hover || c.focus || c.drag || c.touch || time < c.resumeAt || c.max <= 0) continue;
       // Floating accumulator keeps sub-pixel velocity smooth in every browser.
@@ -502,7 +497,7 @@
     document.documentElement.classList.toggle('mobile-layout', mobile.matches);
     document.documentElement.classList.toggle('cinematic', !reduced.matches);
     document.documentElement.classList.toggle('motion-ready', !reduced.matches);
-    if (reduced.matches) { sceneAPI?.clear(); introVideo.pause(); playIntro.hidden=true; }
+    if (reduced.matches) { introVideo.pause(); playIntro.hidden=true; }
     loadIntroVideo();
     carousels.forEach(c => { c.position = c.track.scrollLeft; });
     measure();
@@ -510,7 +505,11 @@
   }
   addEventListener('scroll', () => { dirty = true; schedule(); }, { passive: true });
   new ResizeObserver(measure).observe(stage);
-  new IntersectionObserver(entries => { heroVisible = entries[0].isIntersecting; schedule(); }, { threshold: 0 }).observe(stage);
+  new IntersectionObserver(entries => {
+    heroVisible = entries[0].isIntersecting;
+    stage.classList.toggle('fora-de-vista', !heroVisible);   // pausa o giro da luz
+    schedule();
+  }, { threshold: 0 }).observe(stage);
   reduced.addEventListener('change', motionPreference);
   mobile.addEventListener('change', () => {
     introVideo.pause(); introVideo.loop=mobile.matches; introVideo.autoplay=mobile.matches;
@@ -690,56 +689,43 @@
     try { const url=new URL(value); if(url.protocol==='https:' && (url.hostname===host || url.hostname==='www.'+host)) $$('a[href*="'+host+'"]').forEach(a=>a.href=url.href); } catch { /* Keep original verified links. */ }
   }
 
-  // Three.js uses one GPU draw call. Particle convergence runs in the vertex shader.
-  async function initThree() {
-    if(reduced.matches || sceneAPI || config.particles === false || navigator.connection?.saveData) return;
+  /* Contorno de luz em volta da Franciana, no lugar das particulas. A mascara
+     sai do proprio PNG: a silhueta desenhada pequena e ampliada vira um borrao
+     que passa um pouco da borda (reducao em vez de ctx.filter, que o Safari nao
+     aceita). Atras da foto so esse halo aparece, e dentro dele gira um gradiente
+     conico, entao o brilho corre pelo contorno. A mascara e feita uma vez; o giro
+     e transform, que o compositor anima sem repintar. */
+  function contornoDeLuz() {
+    const img = $('#hero-img');
+    if (config.lightContour === false || !img || $('.hero-luz')) return;
+    if (!img.complete || !img.naturalWidth) { img.addEventListener('load', contornoDeLuz, {once:true}); return; }
+    const L = 300, A = Math.round(L * img.naturalHeight / img.naturalWidth), F = 24;
+    const tela = n => Object.assign(document.createElement('canvas'), {width: Math.round((L + 2 * F) / n), height: Math.round((A + 2 * F) / n)});
+    const mini = tela(10), meio = tela(3), fim = tela(1);
     try {
-      const THREE = await import('./vendor/three.module.min.js');
-      if(sceneAPI || reduced.matches) return;
-      const canvas=$('#webgl-canvas');
-      const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:false,powerPreference:'low-power'});
-      const scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(38,1,.1,50);
-      camera.position.z=8;
-      const low=innerWidth<700 || (navigator.hardwareConcurrency || 8)<=4;
-      const count=low?60:260;
-      const positions=new Float32Array(count*3), targets=new Float32Array(count*3), seeds=new Float32Array(count);
-      // Stable seed makes the composition deterministic and avoids random flicker on resize.
-      let seed=31;const random=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
-      for(let i=0;i<count;i++) {
-        const j=i*3, angle=random()*Math.PI*2, radius=low ? .55+random()*.75 : .85+random()*.9;
-        positions[j]=(random()-.5)*12;positions[j+1]=(random()-.5)*7;positions[j+2]=(random()-.5)*3;
-        targets[j]=Math.cos(angle)*radius;targets[j+1]=Math.sin(angle)*radius*(low?.85:1.25);targets[j+2]=(random()-.5)*1.8;
-        seeds[i]=random();
-      }
-      const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('target',new THREE.BufferAttribute(targets,3));geometry.setAttribute('seed',new THREE.BufferAttribute(seeds,1));
-      const uniforms={uProgress:{value:0},uTime:{value:0},uMotion:{value:Math.min(.25,Math.max(.03,Number(config.particleMotion)||.12))},uDpr:{value:1},uCenter:{value:new THREE.Vector2(2,0)}};
-      const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms,
-        vertexShader:`attribute vec3 target; attribute float seed; uniform float uProgress; uniform float uTime; uniform float uMotion; uniform float uDpr; uniform vec2 uCenter; varying float vAlpha;
-          void main(){ float p=smoothstep(0.04,0.91,uProgress); vec3 end=target+vec3(uCenter,0.0); vec3 pos=mix(position,end,p);
-          pos.x+=sin(p*3.14159)*sin(seed*20.0)*0.65; pos.y+=sin(p*3.14159)*cos(seed*20.0)*0.4;
-          pos.xy+=vec2(sin(uTime*.32+seed*20.0),cos(uTime*.26+seed*15.0))*uMotion;
-          vec4 mv=modelViewMatrix*vec4(pos,1.0); gl_Position=projectionMatrix*mv; gl_PointSize=clamp((1.3+seed*1.8)*uDpr*(8.0/-mv.z),1.0,5.0*uDpr);
-          vAlpha=(.18+seed*.4)*(.8+p*.2); }`,
-        fragmentShader:`varying float vAlpha; void main(){float d=length(gl_PointCoord-.5);float a=(1.0-smoothstep(.08,.5,d))*vAlpha;gl_FragColor=vec4(${document.documentElement.dataset.theme === 'dark' ? '.94,.63,.63' : '.64,.29,.39'},a);}`});
-      const points=new THREE.Points(geometry,material);points.frustumCulled=false;scene.add(points);
-      let lost=false;
-      const resize=()=>{
-        const w=stage.clientWidth,h=stage.clientHeight;
-        camera.aspect=w/h;camera.updateProjectionMatrix();
-        const dpr=Math.min(devicePixelRatio||1,low?1.25:1.6);renderer.setPixelRatio(dpr);renderer.setSize(w,h,false);uniforms.uDpr.value=dpr;
-        const r=portrait.getBoundingClientRect(),s=stage.getBoundingClientRect();
-        const worldH=2*Math.tan(38*Math.PI/360)*8, worldW=worldH*w/h;
-        uniforms.uCenter.value.set(((r.left-s.left+r.width/2)/w-.5)*worldW,(.5-(r.top-s.top+r.height/2)/h)*worldH);
-      };
-      sceneAPI={resize,clear:()=>renderer.clear(),render:(t,p)=>{if(!lost){uniforms.uTime.value=t;uniforms.uProgress.value=p;renderer.render(scene,camera);}},dispose:()=>{geometry.dispose();material.dispose();renderer.dispose();}};
-      canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;});canvas.addEventListener('webglcontextrestored',()=>{lost=false;resize();schedule();});
-      resize();schedule();
-    } catch { /* Core page remains usable without WebGL or module support. */ $('#webgl-canvas').hidden=true; }
+      mini.getContext('2d').drawImage(img, F / 10, F / 10, L / 10, A / 10);
+      meio.getContext('2d').drawImage(mini, 0, 0, meio.width, meio.height);
+      const f = fim.getContext('2d');
+      f.drawImage(meio, 0, 0, fim.width, fim.height);
+      // Somar a mascara com ela mesma dobra a opacidade perto da borda: o
+      // contorno acende mais sem ficar mais largo.
+      f.globalCompositeOperation = 'lighter';
+      f.drawImage(fim, 0, 0);
+      fim.toBlob(blob => {
+        if (!blob || $('.hero-luz')) return;
+        const luz = Object.assign(document.createElement('span'), {className: 'hero-luz'});
+        luz.setAttribute('aria-hidden', 'true');
+        const mascara = `url(${URL.createObjectURL(blob)})`;
+        luz.style.webkitMaskImage = mascara;
+        luz.style.maskImage = mascara;
+        luz.style.inset = `${(-F / A * 100).toFixed(2)}% ${(-F / L * 100).toFixed(2)}%`;
+        img.before(luz);
+      });
+    } catch { /* Sem canvas utilizavel, a foto fica sem o contorno. */ }
   }
-  reduced.addEventListener('change',()=>{if(!reduced.matches)initThree();});
-  addEventListener('pagehide',e=>{cancelAnimationFrame(frame);frame=0;clearTimeout(resumeTimer);if(!e.persisted){videoRequest.abort();if(videoObjectURL)URL.revokeObjectURL(videoObjectURL);sceneAPI?.dispose();motion?.dispose();}});
+  addEventListener('pagehide',e=>{cancelAnimationFrame(frame);frame=0;clearTimeout(resumeTimer);if(!e.persisted){videoRequest.abort();if(videoObjectURL)URL.revokeObjectURL(videoObjectURL);motion?.dispose();}});
   addEventListener('pageshow',()=>{dirty=true;schedule();});
   motion?.init();
   if(tickerDriven) gsap.ticker.add(()=>tick(performance.now()));
-  motionPreference();initThree();
+  motionPreference();contornoDeLuz();
 })();

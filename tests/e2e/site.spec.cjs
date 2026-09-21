@@ -14,7 +14,8 @@ test('services, map, accessibility and responsive layout',async({page})=>{
  await page.goto('/');
  await expect(page.locator('#servicos h3')).toHaveCount(3);
  await expect(page.locator('#contato a[href*="wa.me"]')).toHaveCount(1);
- await expect(page.locator('#servicos')).not.toContainText('R$');
+ await expect(page.locator('#servicos .service-preco')).toHaveText(['R$ 119,90','R$ 219,90','Faça seu orçamento']);
+ await expect(page.locator('#servicos a[href*="wa.me"]')).toHaveCount(3);
  await page.locator('#servicos').scrollIntoViewIfNeeded();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  const accessibility=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
@@ -204,14 +205,18 @@ test('English version translates, survives a motion remount, returns to identica
  expect(await tituloServicos()).toBe('Three ways to work together.');
  expect(errors).toEqual([]);
 });
-test('particles only appear together with the portrait, never alone on the dark stage',async({page})=>{
+test('light contour hugs the portrait, appears only with it, and particles are gone',async({page})=>{
  await page.goto('/');
+ await expect(page.locator('#webgl-canvas')).toHaveCount(0);
+ const luz=page.locator('.hero-photo .hero-luz');
+ await expect(luz).toHaveCount(1);
+ expect(await luz.evaluate(el=>{const s=getComputedStyle(el);return s.maskImage||s.webkitMaskImage;})).toContain('blob:');
  const opacidade=async fracao=>{
   await page.evaluate(f=>{const h=document.getElementById('hero');window.scrollTo(0,h.offsetTop+(h.offsetHeight-innerHeight)*f);},fracao);
   await page.waitForTimeout(250);
-  return page.evaluate(()=>Number(getComputedStyle(document.getElementById('webgl-canvas')).opacity));
+  return page.evaluate(()=>Number(getComputedStyle(document.querySelector('.hero-photo')).opacity));
  };
- // entre a saida do pincel e a entrada do retrato o palco fica vazio
+ // o contorno mora dentro da foto: antes da revelacao, nenhum dos dois aparece
  expect(await opacidade(.5)).toBe(0);
  expect(await opacidade(.83)).toBe(0);
  expect(await opacidade(1)).toBe(1);

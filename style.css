@@ -28,7 +28,7 @@ section{padding:112px 0;scroll-margin-top:var(--nav)}
    central dessa rolagem, entre a assinatura e a entrada da Franciana. */
 .cinematic #hero{padding-top:0;height:460svh}.cinematic .hero-stage{position:sticky;top:0;height:100svh;min-height:690px}.cinematic .hero-layout{padding-top:calc(var(--nav) + 32px)}
 .hero-halo{position:absolute;inset:0;z-index:-3;background:radial-gradient(ellipse at 73% 58%,#e2b4ba 0%,#f3dfdc 38%,#fcf3ef 72%);opacity:.8;pointer-events:none}
-#webgl-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+
 .intro-title{display:flex;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;text-align:center;pointer-events:none;padding:40px 20px 110px}
 html:not(.cinematic) .intro-title{width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 #intro-kicker{font:700 15px/1.5 var(--sans);letter-spacing:.28em;color:var(--rose);margin-bottom:26px}
@@ -333,15 +333,16 @@ html.salto-ancora #hero{visibility:hidden}
    quadrado, entao o movimento comeca lento e acelera para fora de quadro. */
 .brush-inner{transform:translate3d(0,calc(var(--brush-out,0) * -58%),0) rotate(calc(var(--brush-out,0) * -7deg));
   transform-origin:50% 82%;will-change:transform}
-/* Palavras da cena em serifada italica, que conversa com o MAKE do logo e com a
-   assinatura manuscrita da abertura. Escalonadas: Beleza le primeiro, acima. */
+/* Palavras da cena na fonte dos titulos, sem serifa. Escalonadas: Beleza le
+   primeiro, acima. */
 .brush-word{font:500 clamp(38px,5vw,78px)/1 var(--serif);letter-spacing:-.02em}
 .brush-left{top:45%}
 .brush-right{top:57%}
 @media(max-width:850px){
   /* Ao lado do cabo, onde o pincel e estreito; Sofisticacao sai da borda de
-     baixo, onde ficava colada, e as duas se escalonam em vez de se espalhar. */
-  .brush-word{font-size:clamp(30px,8.6vw,38px)}
+     baixo, onde ficava colada, e as duas se escalonam em vez de se espalhar.
+     Sem serifa a palavra alarga: no tamanho antigo ela encostava no cabo. */
+  .brush-word{font-size:clamp(20px,6vw,27px);letter-spacing:-.01em}
   .brush-left{top:55%;left:max(5vw,18px)}
   .brush-right{top:68%;right:max(5vw,18px)}
 }
@@ -405,7 +406,7 @@ html[data-theme] .glow-icone::after{display:none}
 .brush-left{--w:var(--word-a,0)}
 .brush-right{--w:var(--word-b,0)}
 .brush-left,.brush-right{translate:0 calc(-50% + (1 - var(--w)) * .34em)}
-.brush-word .letra{opacity:clamp(0,calc(var(--w) * 2 - var(--i) / (var(--n) - 1)),1)}
+.brush-word .letra{opacity:clamp(0,calc(var(--w) * 3.3 - var(--i) / (var(--n) - 1)),1)}
 
 /* Localizacao: o mapa no lugar do cartao, e so o botao embaixo. Carrega sob
    demanda (loading=lazy), porque o Google Maps e pesado para o topo da pagina.
@@ -446,11 +447,13 @@ html.carrega-idioma body{visibility:hidden}
 
 /* Retrato maior e apoiado na base do palco: o corte do tronco coincide com a
    borda do hero, em vez de flutuar no meio da tela com a base reta a mostra. */
-html:not(.mobile-layout) .hero-layout{grid-template-columns:52% 48%}
-html:not(.mobile-layout) .hero-photo{align-self:end;max-width:640px;margin-bottom:-98px}
+html:not(.mobile-layout) .hero-layout{grid-template-columns:46% 54%}
+html:not(.mobile-layout) .hero-photo{align-self:end;max-width:none;margin-bottom:-98px;
+  width:min(820px,calc(100% + 60px),calc(100vh - var(--nav) - 40px));
+  width:min(820px,calc(100% + 60px),calc(100svh - var(--nav) - 40px))}
 /* No celular a foto passa da coluna; as laterais da imagem sao transparentes,
    entao o que sai da tela e so o vazio em volta dela. */
-.mobile-layout .hero-photo{width:min(118%,460px);max-width:none}
+.mobile-layout .hero-photo{width:min(104%,380px);max-width:none}
 .mobile-layout.cinematic .hero-layout{grid-template-rows:auto 1fr;padding-bottom:0;row-gap:4px}
 .mobile-layout.cinematic .hero-photo{align-self:end}
 
@@ -473,3 +476,20 @@ html:not(.mobile-layout) .hero-photo{align-self:end;max-width:640px;margin-botto
 .sq-panel .foco-flores{object-position:55% 45%}
 .sq-panel .foco-joia{object-position:50% 56%}
 .sq-panel .foco-cachos{object-position:50% 42%}
+
+/* Contorno de luz (contornoDeLuz, no script.js): halo com a forma da silhueta,
+   atras da foto. A base rosada e fixa; o brilho branco gira e corre pela borda. */
+.hero-photo img{display:block}
+.hero-luz{position:absolute;z-index:-1;overflow:hidden;pointer-events:none;background:rgba(239,163,173,.2);
+  -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.hero-luz::after{content:'';position:absolute;inset:-50%;animation:luz-gira 7s linear infinite;
+  background:conic-gradient(transparent 0 60%,rgba(239,163,173,.9) 70%,#fff 75%,rgba(239,163,173,.9) 80%,transparent 90%)}
+@keyframes luz-gira{to{rotate:1turn}}
+.fora-de-vista .hero-luz::after,.apagado .hero-luz::after{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.hero-luz::after{animation:none;rotate:.4turn}}
+
+/* Precos e WhatsApp nos tres servicos, empurrados para o pe do cartao. */
+#servicos .mp-card .service-preco{margin:auto 0 0;font:700 clamp(26px,2.3vw,32px)/1.1 var(--serif);
+  letter-spacing:-.01em;color:var(--rose);max-width:none}
+#servicos .mp-card .service-orcamento{font-size:clamp(20px,1.7vw,24px)}
+#servicos .mp-card .btn-pk{align-self:flex-start}

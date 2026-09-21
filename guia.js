@@ -27,8 +27,8 @@
     $$('[data-weight]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
   }));
   const defaults={...window.FRAN_CONFIG};
-  const booleans=['smoothScroll','titleReveals','parallax','tilt','noise','particles'];
-  const numbers=['scrollLerp','tiltMax','autoplaySpeed','autoplayPause','particleMotion'];
+  const booleans=['smoothScroll','titleReveals','parallax','tilt','noise','lightContour'];
+  const numbers=['scrollLerp','tiltMax','autoplaySpeed','autoplayPause'];
   const text=['portraitImage','introVideo','introMobileVideo','introPoster','whatsappUrl','instagramUrl','mapsEmbedUrl','mapsUrl'];
   function fill(){[...booleans,...numbers,...text,'latitude','longitude'].forEach(key=>{if(booleans.includes(key))$('#'+key).checked=defaults[key]!==false;else $('#'+key).value=defaults[key]??'';});render();}
   function values(){const data={...defaults};booleans.forEach(k=>data[k]=$('#'+k).checked);numbers.forEach(k=>data[k]=Number($('#'+k).value));text.forEach(k=>data[k]=$('#'+k).value.trim());['latitude','longitude'].forEach(k=>data[k]=$('#'+k).value===''?null:Number($('#'+k).value));return data;}
