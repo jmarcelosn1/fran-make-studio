@@ -42,3 +42,13 @@ html[data-theme="dark"]{
     box-shadow:0 1px 0 rgba(255,255,255,.38) inset,0 -1px 0 rgba(0,0,0,.18) inset,0 12px 28px -12px rgba(239,163,173,.55)
   }
     }
+
+/* Celular: cores mais vivas (video e pincel ja saturados no arquivo). Botoes
+   opacos: o backdrop-filter refazia um desfoque a cada quadro da rolagem. */
+@media(max-width:850px),(pointer:coarse){
+  html[data-theme="dark"]{--rose:#fb8fa2}
+  [data-theme="dark"] .btn-pk,[data-theme="dark"] .nb-cta{background:var(--rose);border-color:var(--rose);-webkit-backdrop-filter:none;backdrop-filter:none}
+  [data-theme="dark"] .btn-pk:hover,[data-theme="dark"] .nb-cta:hover{background:#ffa9b8;border-color:#ffa9b8}
+  :is(.hero-photo img,.sq-panel img,.pf-feature img,.pf-item img,.hero-logo,.ft-logo,.nb-logo img){filter:saturate(1.2) contrast(1.03)}
+  .intro-media.poster-only::before{filter:saturate(1.2) contrast(1.03)}
+}

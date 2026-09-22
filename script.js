@@ -21,7 +21,7 @@
   const introMark = $('.intro-mark');
   const brushScene = $('.brush-scene'), brushVideo = $('.brush-video');
   let brushLoading = false, brushURL = '', brushFonte = '', brushBroken = false, brushTarget = 0;
-  let semAutoplay = false, brushImg = null;
+  let semAutoplay = false;
   // No touch interception or independent animation loop. Portrait light is behind the cutout.
   const spotlights = $$('.mp-card');
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)');
@@ -259,7 +259,7 @@
   const posterSource = localAsset(config.introPoster || 'images/intro-poster.webp');
   if (posterSource) introVideo.poster = posterSource;
   async function loadIntroVideo() {
-    if (navigator.connection?.saveData) introMedia.classList.add('poster-only');
+    if (navigator.connection?.saveData) autoplayRecusado();
     if (reduced.matches || navigator.connection?.saveData || videoLoading || introVideo.getAttribute('src') || !videoSource) return;
     videoLoading = true;
     if (mobile.matches) {
@@ -285,17 +285,15 @@
     }
   }
   async function loadBrushVideo() {
-    if (reduced.matches || navigator.connection?.saveData) return;
-    if (semAutoplay) { pincelAnimado(); return; }
+    if (mobile.matches || reduced.matches || navigator.connection?.saveData) return;
     if (brushLoading || brushBroken || brushVideo.getAttribute('src')) return;
     brushLoading = true;
-    // O preload="none" do HTML so evita baixar antes da hora; com ele o iPhone
-    // nao carregaria nada ate o play.
+    // O preload="none" do HTML so evita baixar antes da hora.
     brushVideo.preload = 'auto';
     try {
       // Buffer completo em memoria: hospedagem estatica sem HTTP Range nao
       // permite seek, e o scrub depende de buscar para frente e para tras.
-      const source = brushFonte = mobile.matches ? 'images/pincel-scroll-mobile.mp4' : 'images/pincel-scroll.mp4';
+      const source = brushFonte = 'images/pincel-scroll.mp4';
       const response = await fetch(source, {signal:videoRequest.signal});
       if (!response.ok) throw new Error('Brush video unavailable');
       const blob = await response.blob();
@@ -315,37 +313,63 @@
   }
   brushVideo.addEventListener('loadedmetadata', () => { dirty = true; schedule(); });
   brushVideo.addEventListener('loadeddata', () => { seekBrush(); dirty = true; schedule(); });
-  /* No celular o pincel gira sozinho, em laco, enquanto esta em cena, e para
-     quando ja subiu e esta quase sumindo. Conduzido pelo scroll ele travava: o
-     seek de video no celular e lento e a rolagem por toque vem em trancos. Sob
-     movimento reduzido a cena nem existe, entao o laco nunca toca. */
-  function pilotarPincel(emCena, visivel) {
-    if (!mobile.matches) return;
-    if (brushImg) { brushScene.classList.toggle('em-cena', visivel); return; }
-    if (brushBroken || !brushVideo.getAttribute('src')) return;
-    brushVideo.loop = true;
-    if (emCena && !document.hidden) { if (brushVideo.paused) brushVideo.play().catch(recusou); }
-    else if (!brushVideo.paused) brushVideo.pause();
+  // Celular: o pincel gira com o dedo por quadros num canvas (seek de video e
+  // lento e autoplay falha). 64 quadros em 4 folhas 8x2, recorte do quadro 414x648.
+  const QUADROS = 64, POR_FOLHA = 16, COLUNAS = 8;
+  const RECORTE = {x: 142, y: 27, w: 136, h: 602}, QUADRO = {w: 414, h: 648};
+  const folhas = [];
+  let telaPincel = null, ctxPincel = null, quadroPincel = -1, quadroAlvo = 0, geometria = null;
+  function carregarQuadros() {
+    if (telaPincel || !mobile.matches || reduced.matches) return;
+    telaPincel = document.createElement('canvas');
+    telaPincel.className = 'brush-quadros';
+    telaPincel.setAttribute('aria-hidden', 'true');
+    ctxPincel = telaPincel.getContext('2d');
+    brushVideo.after(telaPincel);
+    new ResizeObserver(() => { geometria = null; desenharPincel(quadroAlvo, true); }).observe(brushScene);
+    for (let i = 0; i < QUADROS / POR_FOLHA; i++) {
+      const folha = new Image();
+      folha.decoding = 'async';
+      if (i) folha.fetchPriority = 'low';
+      folha.src = `images/pincel-quadros-${i + 1}.webp`;
+      folha.decode().then(() => {
+        folhas[i] = folha;
+        brushScene.classList.add('quadros');
+        desenharPincel(quadroAlvo, true);
+      }).catch(() => {});
+    }
   }
-  /* O iOS recusa play() sem toque no Modo de Pouca Energia, e navegadores
-     embutidos como o do Instagram tambem. Sem video, a capa da abertura respira
-     em CSS e o pincel vira WebP animado, que gira sem depender de autoplay. */
+  function desenharPincel(alvo, forca) {
+    quadroAlvo = alvo;
+    if (!ctxPincel) return;
+    // Enquanto a folha do quadro pedido nao chega, vale o carregado mais perto.
+    let q = -1;
+    for (let d = 0; d < QUADROS && q < 0; d++) {
+      for (const c of [alvo - d, alvo + d]) if (c >= 0 && c < QUADROS && folhas[Math.floor(c / POR_FOLHA)]) { q = c; break; }
+    }
+    if (q < 0 || (q === quadroPincel && !forca)) return;
+    if (!geometria) {
+      // O mesmo "contain" do video e do poster, desenhado na densidade da tela.
+      const w = brushScene.clientWidth, h = brushScene.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+      telaPincel.width = Math.round(w * dpr); telaPincel.height = Math.round(h * dpr);
+      const s = Math.min(w / QUADRO.w, h / QUADRO.h) * dpr;
+      geometria = {s, x: (telaPincel.width - QUADRO.w * s) / 2 + RECORTE.x * s, y: (telaPincel.height - QUADRO.h * s) / 2 + RECORTE.y * s};
+      ctxPincel.imageSmoothingQuality = 'high';
+    }
+    const {s, x, y} = geometria, n = q % POR_FOLHA;
+    ctxPincel.drawImage(folhas[Math.floor(q / POR_FOLHA)], (n % COLUNAS) * RECORTE.w, Math.floor(n / COLUNAS) * RECORTE.h, RECORTE.w, RECORTE.h, x, y, RECORTE.w * s, RECORTE.h * s);
+    quadroPincel = q;
+    telaPincel.dataset.quadro = q;
+  }
+  // iOS em Modo de Pouca Energia (e o Instagram) recusa play() sem toque: fica a
+  // capa respirando em CSS e o nome ja escrito.
   const recusou = error => { if (error?.name === 'NotAllowedError') autoplayRecusado(); };
   function autoplayRecusado() {
     if (semAutoplay) return;
     semAutoplay = true;
     introVideo.pause();
     introMedia.classList.add('poster-only');
-    if (brushLoading) pincelAnimado();
-  }
-  function pincelAnimado() {
-    if (brushImg || !mobile.matches) return;
-    brushVideo.pause();
-    brushImg = document.createElement('img');
-    brushImg.className = 'brush-anim'; brushImg.alt = ''; brushImg.decoding = 'async';
-    brushImg.addEventListener('load', () => brushScene.classList.add('sem-video'), {once:true});
-    brushImg.src = 'images/pincel-mobile.webp';
-    brushVideo.after(brushImg);
+    document.documentElement.classList.add('sem-autoplay');
     dirty = true; schedule();
   }
   document.addEventListener('visibilitychange', () => { dirty = true; acordarLuz(); schedule(); });
@@ -404,7 +428,7 @@
   function updateIntro() {
     progress = reduced.matches ? 1 : clamp((scrollY - start) / range);
     const still = reduced.matches;
-    aplicarEntrada(still ? 1 : at('draw', progress));
+    aplicarEntrada(still || semAutoplay ? 1 : at('draw', progress));
     const reveal = still ? 1 : at('reveal', progress);
     const fade = still ? 1 : at('titleOut', progress);
 
@@ -414,14 +438,16 @@
     const brushOn = still ? 0 : at('brushIn', progress) * (1 - smooth(.72, 1, saida));
     brushScene.style.setProperty('--brush-in', brushOn.toFixed(4));
     brushScene.style.setProperty('--brush-out', (saida * saida).toFixed(4));
-    if (brushOn > .008) loadBrushVideo();
+    if (brushOn > .008) { loadBrushVideo(); carregarQuadros(); }
     const wordsGone = still ? 1 : at('wordOut', progress);
     brushScene.style.setProperty('--word-a', (still ? 0 : at('wordA', progress) * (1 - wordsGone)).toFixed(4));
     brushScene.style.setProperty('--word-b', (still ? 0 : at('wordB', progress) * (1 - wordsGone)).toFixed(4));
-    const [s0, s1] = PHASE.scrub;
-    brushTarget = clamp((progress - s0) / (s1 - s0)) * (Number.isFinite(brushVideo.duration) ? brushVideo.duration : 0);
-    if (brushOn > .008) seekBrush();
-    pilotarPincel(brushOn > .008 && saida < .7, brushOn > .008);
+    const [s0, s1] = PHASE.scrub, giro = clamp((progress - s0) / (s1 - s0));
+    if (mobile.matches) desenharPincel(Math.round(giro * (QUADROS - 1)));
+    else {
+      brushTarget = giro * (Number.isFinite(brushVideo.duration) ? brushVideo.duration : 0);
+      if (brushOn > .008) seekBrush();
+    }
 
     const navigationVisible = still || progress >= .97;
     document.documentElement.classList.toggle('intro-pending', !navigationVisible);
@@ -610,19 +636,11 @@
       || (exact ? `https://maps.google.com/maps?q=${lat},${lng}&z=17&hl=pt-BR&output=embed` : '');
     if (embed && quadroMapa.getAttribute('src') !== embed) quadroMapa.src = embed;
   }
-  // No celular o iframe perde o endereco antes de carregar (e lazy e fica no fim
-  // da pagina) e o recebe no toque da capa. Fica no DOM para o titulo ser traduzido.
-  const abrirMapa = $('.mapa-abrir');
-  if (quadroMapa && abrirMapa && mobile.matches) {
+  // Mapa no inicio, com a rolagem parada: lazy, ele travava ao chegar na secao.
+  if (quadroMapa?.getAttribute('src')) {
     quadroMapa.dataset.src = quadroMapa.getAttribute('src');
     quadroMapa.removeAttribute('src');
-    abrirMapa.hidden = false;
-    abrirMapa.addEventListener('click', () => {
-      quadroMapa.src = quadroMapa.dataset.src;
-      delete quadroMapa.dataset.src;
-      abrirMapa.remove();
-      quadroMapa.focus({preventScroll:true});
-    }, {once:true});
+    quadroMapa.loading = 'eager';
   }
   if(localAsset(config.portraitImage) && config.portraitImage!==$('#hero-img').getAttribute('src')) {
     const img=$('#hero-img');img.addEventListener('error',()=>{img.src='images/franciana.png';},{once:true});img.src=localAsset(config.portraitImage);
@@ -770,9 +788,8 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
   motion?.init();
   if(tickerDriven) gsap.ticker.add(()=>tick(performance.now()));
   motionPreference();
-  // O calculo da borda e pesado para CPU de celular e o retrato so aparece depois
-  // da abertura: roda com a rolagem parada. O Safari nao tem requestIdleCallback,
-  // e um timer fixo caia no meio do primeiro deslize e travava a tela.
+  // Trabalho pesado so com a rolagem parada: o Safari nao tem requestIdleCallback
+  // e um timer fixo caia no meio do primeiro deslize.
   const parado = fn => {
     let espera = 0;
     const armar = () => {
@@ -785,8 +802,12 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
     addEventListener('scroll', armar, {passive: true});
     armar();
   };
-  addEventListener('load', () => parado(() => {
-    const m = mobile.matches;
-    acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .1, centro: [.5, .45], N: m ? 320 : 512, passos: m ? 16 : 32, densidade: .51, decai: .875, borrao: 90});
-  }), {once:true});
+  addEventListener('load', () => {
+    carregarQuadros();
+    parado(() => {
+      if (quadroMapa?.dataset.src) { quadroMapa.src = quadroMapa.dataset.src; delete quadroMapa.dataset.src; }
+      const m = mobile.matches;
+      acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .1, centro: [.5, .45], N: m ? 320 : 512, passos: m ? 16 : 32, densidade: .51, decai: .875, borrao: 90});
+    });
+  }, {once:true});
 })();

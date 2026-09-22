@@ -100,6 +100,8 @@ html:not(.cinematic) .intro-media{display:none}
   -webkit-mask-position:calc(100% - var(--draw) * 100%) 0;
   mask-position:calc(100% - var(--draw) * 100%) 0;
 }
+/* Sem autoplay o nome se escreve sozinho, sem esperar a rolagem. */
+.sem-autoplay .intro-mark-draw{transition:-webkit-mask-position 1.2s var(--ease),mask-position 1.2s var(--ease)}
 .cinematic .intro-mark::after{
   content:'';position:absolute;top:50%;left:calc(var(--draw) * 100%);
   width:clamp(38px,6vw,68px);aspect-ratio:1;translate:-50% -50%;
@@ -133,10 +135,8 @@ html:not(.cinematic) .intro-media{display:none}
 .mobile-layout.cinematic #hero{height:450svh;padding:0}
 .mobile-layout.cinematic .hero-stage{position:sticky;top:0;height:100svh;min-height:0;overflow:hidden}
 .mobile-layout.cinematic .intro-media{height:100svh;min-height:420px;max-height:none}
-/* No iPhone em Modo de Pouca Energia o Safari entrega ao JavaScript so 30 quadros
-   por segundo, e e ele que conduz a abertura. Uma transicao curta deixa o
-   compositor desenhar os quadros do meio seguindo o dedo. O visibility entra
-   junto para o retrato nao sumir antes de terminar de apagar. */
+/* Pouca Energia limita o JS a 30 quadros: a transicao curta deixa o compositor
+   desenhar os do meio. O visibility espera o retrato apagar. */
 .mobile-layout.cinematic :where(.intro-media,.intro-media video,.intro-title,#intro-kicker,.intro-signature,.brush-scene,.brush-inner,.brush-word,.brush-word .letra){transition:opacity .1s linear,transform .1s linear,translate .1s linear}
 .mobile-layout.cinematic :where(.hero-content,.hero-photo){transition:opacity .1s linear,transform .1s linear,visibility .1s linear}
 .mobile-layout.cinematic .intro-title{height:100svh;min-height:420px;max-height:none;padding:30px 24px 60px;align-items:center;text-align:center}
@@ -227,11 +227,11 @@ html:not(.cinematic) .intro-media{display:none}
    traz o movimento. So a saida o transforma. */
 .brush-scene{position:absolute;inset:0;z-index:0;pointer-events:none;background:#000;opacity:var(--brush-in,0)}
 .brush-inner{position:absolute;inset:0;display:grid;place-items:center}
-.brush-video,.brush-anim{display:block;width:100%;height:100%;object-fit:contain;background:#000}
-/* WebP animado de reserva (autoplay recusado): so aparece carregado e em cena,
-   para nao decodificar quadros com a cena invisivel. */
-.brush-anim,.brush-scene.sem-video .brush-video{display:none}
-.brush-scene.sem-video.em-cena .brush-anim{display:block}
+.brush-video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+/* Celular: pincel em canvas; o video so mostra o poster ate os quadros chegarem. */
+.brush-quadros{position:absolute;inset:0;width:100%;height:100%;display:none}
+.brush-scene.quadros .brush-quadros{display:block}
+.brush-scene.quadros .brush-video{visibility:hidden}
 .brush-edge{position:absolute;inset:0;background:radial-gradient(ellipse 82% 72% at 50% 50%,transparent 54%,#000 100%)}
 .brush-word{position:absolute;top:50%;margin:0;white-space:nowrap;color:#fff9f6;
   font:600 clamp(24px,4.2vw,62px)/1 var(--serif);letter-spacing:.015em}
@@ -420,13 +420,6 @@ html[data-theme] .glow-icone::after{display:none}
 #mapa .mapa-quadro iframe{display:block;width:100%;height:100%;border:0}
 [data-theme="dark"] #mapa .mapa-quadro iframe{filter:invert(.9) hue-rotate(180deg) saturate(.6) brightness(.95) contrast(.92)}
 #mapa .location-actions{margin-top:20px}
-/* No celular o Google Maps so carrega no toque: ele roda no mesmo processo da
-   pagina e travava a rolagem ao entrar na tela. Ate la, uma capa desenhada. */
-.mapa-abrir{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;width:100%;padding:0;border:0;cursor:pointer;color:var(--ink);font:600 15px/1.3 var(--sans);letter-spacing:.01em;
-  background:radial-gradient(circle at 50% 42%,rgba(239,163,173,.2),transparent 42%),repeating-linear-gradient(32deg,transparent 0 44px,rgba(255,255,255,.055) 44px 46px),repeating-linear-gradient(122deg,transparent 0 68px,rgba(255,255,255,.04) 68px 71px),#141116}
-.mapa-abrir[hidden]{display:none}
-.mapa-abrir svg{width:28px;height:38px;fill:var(--rose)}
-.mapa-abrir:focus-visible{outline:2px solid var(--rose);outline-offset:-4px}
 /* No desktop: titulo em cima, mapa largo no meio e o botao centrado embaixo. */
 @media(min-width:900px){
   #mapa .mapa-quadro{aspect-ratio:21/9}
@@ -465,8 +458,12 @@ html:not(.mobile-layout) .hero-photo{align-self:center;max-width:none;
 /* No celular a foto passa da coluna; as laterais da imagem sao transparentes,
    entao o que sai da tela e so o vazio em volta dela. */
 .mobile-layout .hero-photo{width:min(104%,380px);max-width:none}
-.mobile-layout.cinematic .hero-layout{grid-template-rows:auto 1fr;padding-bottom:0;row-gap:4px}
-.mobile-layout.cinematic .hero-photo{align-self:end}
+/* Foto com o que sobra da tela, base na borda (largura fixa era cortada). Em
+   tela baixa o logo grande sai; o do menu ja esta a vista. */
+.mobile-layout.cinematic .hero-layout{grid-template-rows:auto minmax(0,1fr);padding-bottom:0;row-gap:4px}
+.mobile-layout.cinematic .hero-photo{align-self:end;width:auto;aspect-ratio:1;max-width:min(104%,380px);max-height:100%}
+.mobile-layout.cinematic .hero-logo{width:clamp(76px,14svh,118px)}
+@media(max-height:640px){.mobile-layout.cinematic .hero-marca{display:none}}
 
 /* Texto do hero: mais leve e com mais ar entre as linhas. */
 .hero-description{font-weight:400;font-size:15px;line-height:1.85;letter-spacing:.005em;max-width:480px;text-wrap:pretty}

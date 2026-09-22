@@ -152,42 +152,52 @@ test('hovering a carousel panel opens it gradually, not in one jump',async({page
  expect(maior).toBeLessThan((fim-inicio)*.5);
 });
 
-// No celular o pincel gira sozinho em cena e para quando sobe para sair.
-test('mobile brush loops on its own while on screen and stops on the way out',async({page},info)=>{
- test.skip(!info.project.use.isMobile,'comportamento so do celular');
- await page.goto('/');
+// No celular o pincel gira com o dedo pela animacao inteira, como o video
+// conduzido pela rolagem no desktop, mas por quadros num canvas: sem seek de
+// video (lento no celular) e sem autoplay. Em laco, quem rolava rapido via so
+// um pedaco do giro.
+const quadroDoPincel=async(page,pr)=>{
  const g=await page.evaluate(()=>{const H=document.querySelector('#hero'),s=document.querySelector('.hero-stage');return {a:H.offsetTop,r:H.offsetHeight-s.offsetHeight};});
- const tempoAnda=async(pr)=>{
-  await page.evaluate(v=>scrollTo(0,v),Math.round(g.a+g.r*pr));
-  await page.waitForTimeout(1800);
-  const t1=await page.evaluate(()=>document.querySelector('.brush-video').currentTime);
-  await page.waitForTimeout(700);
-  return page.evaluate(t1=>{const v=document.querySelector('.brush-video');return !v.paused&&Math.abs(v.currentTime-t1)>.15;},t1);
- };
- expect(await tempoAnda(.5)).toBe(true);
- expect(await tempoAnda(.785)).toBe(false);
+ await page.evaluate(v=>scrollTo(0,v),Math.round(g.a+g.r*pr));
+ await page.waitForTimeout(300);
+ return page.evaluate(()=>Number(document.querySelector('.brush-quadros')?.dataset.quadro??-1));
+};
+// As 4 folhas de quadros baixadas e decodificadas (a rede nao fica ociosa no WebKit: o video segue baixando).
+const folhasProntas=async page=>{await page.waitForFunction(()=>performance.getEntriesByType('resource').filter(e=>/pincel-quadros-\d\.webp/.test(e.name)).length===4);await page.waitForTimeout(400);};
+test('mobile brush turns with the scroll through the whole animation',async({page},info)=>{
+ test.skip(!info.project.use.isMobile,'comportamento so do celular');
+ await page.route(/google\.com|gstatic\.com|googleapis\.com/,r=>r.abort());
+ await page.goto('/');
+ await folhasProntas(page);
+ await expect(page.locator('.brush-scene')).toHaveClass(/quadros/);
+ const inicio=await quadroDoPincel(page,.3), meio=await quadroDoPincel(page,.55), fim=await quadroDoPincel(page,.78);
+ expect(inicio).toBeLessThan(8);
+ expect(meio).toBeGreaterThan(25);expect(meio).toBeLessThan(40);
+ expect(fim).toBeGreaterThan(56);
+ // Volta junto com o dedo.
+ expect(await quadroDoPincel(page,.45)).toBeLessThan(meio);
+ await expect(page.locator('.brush-quadros')).toBeVisible();
+ await expect(page.locator('.brush-video')).toHaveCSS('visibility','hidden');
 });
 
 // iPhone em Modo de Pouca Energia (e o navegador do Instagram) recusa play() sem
-// toque. A abertura fica na capa com zoom lento e o pincel gira em WebP animado.
-test('when iOS refuses autoplay the intro breathes on its poster and the brush spins as animated WebP',async({page},info)=>{
+// toque. A abertura fica na capa com zoom lento e o nome ja vem escrito, sem
+// botao de tocar; o pincel, feito de quadros, gira igual.
+test('when iOS refuses autoplay the name is already written over the breathing poster and the brush still turns',async({page},info)=>{
  test.skip(!info.project.use.isMobile,'comportamento so do celular');
  const errors=[];page.on('pageerror',e=>{if(doSite(e))errors.push(e.message);});
+ await page.route(/google\.com|gstatic\.com|googleapis\.com/,r=>r.abort());
  await page.addInitScript(()=>{HTMLMediaElement.prototype.play=function(){return Promise.reject(new DOMException('autoplay recusado','NotAllowedError'));};});
  await page.goto('/');
  await expect(page.locator('.intro-media')).toHaveClass(/poster-only/);
  await expect(page.locator('#intro-video')).toHaveCSS('visibility','hidden');
  expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.intro-media'),'::before').animationName)).toBe('capa-respira');
  await expect(page.getByRole('button',{name:/reproduzir|play video/i})).toHaveCount(0);
- const g=await page.evaluate(()=>{const H=document.querySelector('#hero'),s=document.querySelector('.hero-stage');return {a:H.offsetTop,r:H.offsetHeight-s.offsetHeight};});
- await page.evaluate(v=>scrollTo(0,v),Math.round(g.a+g.r*.5));
- const anim=page.locator('.brush-anim');
- await expect(anim).toBeVisible();
- expect(await anim.evaluate(img=>img.complete&&img.naturalWidth)).toBe(414);
- await expect(page.locator('.brush-video')).toBeHidden();
- // Fora de cena a imagem sai do layout e para de decodificar quadros.
- await page.evaluate(()=>scrollTo(0,0));
- await expect(anim).toBeHidden();
+ await expect(page.locator('html')).toHaveClass(/sem-autoplay/);
+ await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.querySelector('.intro-mark')).getPropertyValue('--draw').trim())).toBe('1.0000');
+ expect(await page.evaluate(()=>scrollY)).toBe(0);
+ await folhasProntas(page);
+ expect(await quadroDoPincel(page,.55)).toBeGreaterThan(25);
  expect(errors).toEqual([]);
 });
 
@@ -246,19 +256,31 @@ test('English version translates, survives a motion remount, returns to identica
  expect(await tituloServicos()).toBe('Three ways to work together.');
  expect(errors).toEqual([]);
 });
-// No celular o Google Maps roda no mesmo processo da pagina e travava a rolagem
-// por ate um segundo ao entrar na tela: la ele so carrega no toque da capa.
-test('map loads only on tap on mobile and on its own on desktop',async({page},info)=>{
+// A Franciana revelada cabe inteira na tela do celular: com largura fixa o palco
+// cortava o corpo, e na altura do iPhone SE so sobrava o alto da cabeca.
+test('revealed portrait fits the phone screen without being cut',async({page},info)=>{
+ test.skip(!info.project.use.isMobile,'comportamento so do celular');
+ await page.route(/google\.com|gstatic\.com|googleapis\.com/,r=>r.abort());
+ for(const altura of [548,664]){
+  await page.setViewportSize({width:375,height:altura});
+  await page.goto('/');
+  await page.evaluate(()=>{const H=document.querySelector('#hero'),s=document.querySelector('.hero-stage');scrollTo(0,H.offsetTop+H.offsetHeight-s.offsetHeight);});
+  await page.waitForTimeout(500);
+  const r=await page.evaluate(()=>{const s=document.querySelector('.hero-stage').getBoundingClientRect(),f=document.querySelector('.hero-photo img').getBoundingClientRect(),t=document.querySelector('.hero-description').getBoundingClientRect();return {base:f.bottom-s.bottom,altura:f.height,sobre:t.bottom-f.top};});
+  expect(r.base).toBeLessThanOrEqual(1);
+  expect(r.altura).toBeGreaterThan(160);
+  expect(r.sobre).toBeLessThanOrEqual(8);
+ }
+});
+// O mapa carrega logo no inicio, com a rolagem parada. Carregado so ao se
+// aproximar (lazy), o Google Maps travava a tela justamente ao chegar na secao.
+test('map loads at start, before its section is reached',async({page})=>{
  await page.route(/google\.com|gstatic\.com|googleapis\.com/,r=>r.abort());
  await page.goto('/');
- const mapa=page.locator('#map-placeholder iframe'), capa=page.locator('.mapa-abrir');
- await page.locator('#mapa').scrollIntoViewIfNeeded();
- if(!info.project.use.isMobile){await expect(capa).toBeHidden();await expect(mapa).toHaveAttribute('src',/output=embed/);return;}
- await expect(capa).toBeVisible();
- await expect(mapa).not.toHaveAttribute('src',/./);
- await capa.click();
- await expect(mapa).toHaveAttribute('src',/^https:\/\/maps\.google\.com\/.*output=embed/);
- await expect(capa).toHaveCount(0);
+ const mapa=page.locator('#map-placeholder iframe');
+ await expect(mapa).toHaveAttribute('src',/^https:\/\/maps\.google\.com\/.*output=embed/,{timeout:8000});
+ await expect(mapa).toHaveAttribute('loading','eager');
+ expect(await page.evaluate(()=>scrollY)).toBe(0);
 });
 test('light contour hugs the portrait, appears only with it, and particles are gone',async({page})=>{
  await page.goto('/');
