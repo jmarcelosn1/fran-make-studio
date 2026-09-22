@@ -133,6 +133,12 @@ html:not(.cinematic) .intro-media{display:none}
 .mobile-layout.cinematic #hero{height:450svh;padding:0}
 .mobile-layout.cinematic .hero-stage{position:sticky;top:0;height:100svh;min-height:0;overflow:hidden}
 .mobile-layout.cinematic .intro-media{height:100svh;min-height:420px;max-height:none}
+/* No iPhone em Modo de Pouca Energia o Safari entrega ao JavaScript so 30 quadros
+   por segundo, e e ele que conduz a abertura. Uma transicao curta deixa o
+   compositor desenhar os quadros do meio seguindo o dedo. O visibility entra
+   junto para o retrato nao sumir antes de terminar de apagar. */
+.mobile-layout.cinematic :where(.intro-media,.intro-media video,.intro-title,#intro-kicker,.intro-signature,.brush-scene,.brush-inner,.brush-word,.brush-word .letra){transition:opacity .1s linear,transform .1s linear,translate .1s linear}
+.mobile-layout.cinematic :where(.hero-content,.hero-photo){transition:opacity .1s linear,transform .1s linear,visibility .1s linear}
 .mobile-layout.cinematic .intro-title{height:100svh;min-height:420px;max-height:none;padding:30px 24px 60px;align-items:center;text-align:center}
 .mobile-layout.cinematic .intro-mark{width:min(84vw,380px)}
 /* Com o palco fixo, o conteudo ocupa a propria tela em vez de ser empurrado
@@ -414,6 +420,13 @@ html[data-theme] .glow-icone::after{display:none}
 #mapa .mapa-quadro iframe{display:block;width:100%;height:100%;border:0}
 [data-theme="dark"] #mapa .mapa-quadro iframe{filter:invert(.9) hue-rotate(180deg) saturate(.6) brightness(.95) contrast(.92)}
 #mapa .location-actions{margin-top:20px}
+/* No celular o Google Maps so carrega no toque: ele roda no mesmo processo da
+   pagina e travava a rolagem ao entrar na tela. Ate la, uma capa desenhada. */
+.mapa-abrir{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;width:100%;padding:0;border:0;cursor:pointer;color:var(--ink);font:600 15px/1.3 var(--sans);letter-spacing:.01em;
+  background:radial-gradient(circle at 50% 42%,rgba(239,163,173,.2),transparent 42%),repeating-linear-gradient(32deg,transparent 0 44px,rgba(255,255,255,.055) 44px 46px),repeating-linear-gradient(122deg,transparent 0 68px,rgba(255,255,255,.04) 68px 71px),#141116}
+.mapa-abrir[hidden]{display:none}
+.mapa-abrir svg{width:28px;height:38px;fill:var(--rose)}
+.mapa-abrir:focus-visible{outline:2px solid var(--rose);outline-offset:-4px}
 /* No desktop: titulo em cima, mapa largo no meio e o botao centrado embaixo. */
 @media(min-width:900px){
   #mapa .mapa-quadro{aspect-ratio:21/9}

@@ -246,6 +246,20 @@ test('English version translates, survives a motion remount, returns to identica
  expect(await tituloServicos()).toBe('Three ways to work together.');
  expect(errors).toEqual([]);
 });
+// No celular o Google Maps roda no mesmo processo da pagina e travava a rolagem
+// por ate um segundo ao entrar na tela: la ele so carrega no toque da capa.
+test('map loads only on tap on mobile and on its own on desktop',async({page},info)=>{
+ await page.route(/google\.com|gstatic\.com|googleapis\.com/,r=>r.abort());
+ await page.goto('/');
+ const mapa=page.locator('#map-placeholder iframe'), capa=page.locator('.mapa-abrir');
+ await page.locator('#mapa').scrollIntoViewIfNeeded();
+ if(!info.project.use.isMobile){await expect(capa).toBeHidden();await expect(mapa).toHaveAttribute('src',/output=embed/);return;}
+ await expect(capa).toBeVisible();
+ await expect(mapa).not.toHaveAttribute('src',/./);
+ await capa.click();
+ await expect(mapa).toHaveAttribute('src',/^https:\/\/maps\.google\.com\/.*output=embed/);
+ await expect(capa).toHaveCount(0);
+});
 test('light contour hugs the portrait, appears only with it, and particles are gone',async({page})=>{
  await page.goto('/');
  await expect(page.locator('#webgl-canvas')).toHaveCount(0);

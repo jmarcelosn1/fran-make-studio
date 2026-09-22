@@ -538,8 +538,9 @@
   document.addEventListener('fm:idioma', e => {
     ham.setAttribute('aria-label', traduz(ham.getAttribute('aria-expanded') === 'true' ? 'Fechar menu' : 'Abrir menu'));
     $$('.brush-word').forEach(palavra => dividirPalavra(palavra, traduz(palavra.dataset.pt)));
-    const mapa = $('#map-placeholder iframe');
-    if (mapa) mapa.src = mapa.src.replace(/hl=[^&]*/, 'hl=' + (e.detail === 'en' ? 'en' : 'pt-BR'));
+    const mapa = $('#map-placeholder iframe'), hl = 'hl=' + (e.detail === 'en' ? 'en' : 'pt-BR');
+    if (mapa?.dataset.src) mapa.dataset.src = mapa.dataset.src.replace(/hl=[^&]*/, hl);
+    else if (mapa?.getAttribute('src')) mapa.src = mapa.src.replace(/hl=[^&]*/, hl);
   });
   document.addEventListener('keydown', e => {
     if (currentModal !== 'menu') return;
@@ -608,6 +609,20 @@
     const embed = window.FRAN_SAFETY.googleURL(config.mapsEmbedUrl, true)
       || (exact ? `https://maps.google.com/maps?q=${lat},${lng}&z=17&hl=pt-BR&output=embed` : '');
     if (embed && quadroMapa.getAttribute('src') !== embed) quadroMapa.src = embed;
+  }
+  // No celular o iframe perde o endereco antes de carregar (e lazy e fica no fim
+  // da pagina) e o recebe no toque da capa. Fica no DOM para o titulo ser traduzido.
+  const abrirMapa = $('.mapa-abrir');
+  if (quadroMapa && abrirMapa && mobile.matches) {
+    quadroMapa.dataset.src = quadroMapa.getAttribute('src');
+    quadroMapa.removeAttribute('src');
+    abrirMapa.hidden = false;
+    abrirMapa.addEventListener('click', () => {
+      quadroMapa.src = quadroMapa.dataset.src;
+      delete quadroMapa.dataset.src;
+      abrirMapa.remove();
+      quadroMapa.focus({preventScroll:true});
+    }, {once:true});
   }
   if(localAsset(config.portraitImage) && config.portraitImage!==$('#hero-img').getAttribute('src')) {
     const img=$('#hero-img');img.addEventListener('error',()=>{img.src='images/franciana.png';},{once:true});img.src=localAsset(config.portraitImage);
@@ -756,9 +771,21 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
   if(tickerDriven) gsap.ticker.add(()=>tick(performance.now()));
   motionPreference();
   // O calculo da borda e pesado para CPU de celular e o retrato so aparece depois
-  // da abertura: roda quando o navegador esta ocioso, fora do carregamento.
-  const ocioso = fn => (window.requestIdleCallback ? requestIdleCallback(fn, {timeout: 4000}) : setTimeout(fn, 1500));
-  addEventListener('load', () => ocioso(() => {
+  // da abertura: roda com a rolagem parada. O Safari nao tem requestIdleCallback,
+  // e um timer fixo caia no meio do primeiro deslize e travava a tela.
+  const parado = fn => {
+    let espera = 0;
+    const armar = () => {
+      clearTimeout(espera);
+      espera = setTimeout(() => {
+        removeEventListener('scroll', armar);
+        if (window.requestIdleCallback) requestIdleCallback(fn, {timeout: 800}); else fn();
+      }, 450);
+    };
+    addEventListener('scroll', armar, {passive: true});
+    armar();
+  };
+  addEventListener('load', () => parado(() => {
     const m = mobile.matches;
     acenderLuz($('#hero-img'), {classe: 'hero-flare', folga: .1, centro: [.5, .45], N: m ? 320 : 512, passos: m ? 16 : 32, densidade: .51, decai: .875, borrao: 90});
   }), {once:true});
