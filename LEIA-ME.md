@@ -70,7 +70,7 @@ Atualização de serviços: preços removidos da página pública. Make Social, 
 
 ### Revisão mobile
 
-No celular a rolagem é nativa, a intro ocupa uma tela e depois segue o fluxo normal e o vídeo toca sem som em loop com playsinline. A reprodução automática depende do navegador; se bloqueada, o botão Reproduzir vídeo permite iniciá-la por toque. Economia de dados também permite início manual. A cópia mobile recebe nitidez leve, sem inventar detalhes; a fonte continua em 854 × 480. Para ganho real de resolução é necessário o original em maior qualidade.
+No celular a rolagem é nativa, a intro ocupa uma tela e depois segue o fluxo normal e o vídeo toca sem som em loop com playsinline. A reprodução automática depende do navegador. O iPhone a recusa no Modo de Pouca Energia, e o navegador do Instagram também pode recusar; nesse caso a capa da intro ganha um zoom lento em CSS e o pincel troca o vídeo por `images/pincel-mobile.webp` (WebP animado, 15 quadros por segundo), que gira sem depender de autoplay. Com economia de dados a intro fica só na capa com o mesmo zoom. A cópia mobile recebe nitidez leve, sem inventar detalhes; a fonte continua em 854 × 480. Para ganho real de resolução é necessário o original em maior qualidade.
 
 Lenis, SplitType e parallax ficam reservados ao desktop com mouse. No celular, as três fotos da formanda se substituem com a rolagem vertical e o contorno de luz roda em resolução menor. A galeria permite rolagem vertical sobre as imagens, swipe horizontal e ampliação com dois toques ou dois cliques. Enter e Espaço continuam ampliando para acesso por teclado.
 

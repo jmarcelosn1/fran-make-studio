@@ -18,10 +18,10 @@
   const motion = window.FRAN_MOTION;
   const tickerDriven = !!window.gsap;
   const introVideo = $('#intro-video'), introMedia = $('.intro-media'), navbar = $('#navbar');
-  const playIntro = $('#intro-play');
   const introMark = $('.intro-mark');
   const brushScene = $('.brush-scene'), brushVideo = $('.brush-video');
   let brushLoading = false, brushURL = '', brushFonte = '', brushBroken = false, brushTarget = 0;
+  let semAutoplay = false, brushImg = null;
   // No touch interception or independent animation loop. Portrait light is behind the cutout.
   const spotlights = $$('.mp-card');
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)');
@@ -259,6 +259,7 @@
   const posterSource = localAsset(config.introPoster || 'images/intro-poster.webp');
   if (posterSource) introVideo.poster = posterSource;
   async function loadIntroVideo() {
+    if (navigator.connection?.saveData) introMedia.classList.add('poster-only');
     if (reduced.matches || navigator.connection?.saveData || videoLoading || introVideo.getAttribute('src') || !videoSource) return;
     videoLoading = true;
     if (mobile.matches) {
@@ -285,8 +286,12 @@
   }
   async function loadBrushVideo() {
     if (reduced.matches || navigator.connection?.saveData) return;
+    if (semAutoplay) { pincelAnimado(); return; }
     if (brushLoading || brushBroken || brushVideo.getAttribute('src')) return;
     brushLoading = true;
+    // O preload="none" do HTML so evita baixar antes da hora; com ele o iPhone
+    // nao carregaria nada ate o play.
+    brushVideo.preload = 'auto';
     try {
       // Buffer completo em memoria: hospedagem estatica sem HTTP Range nao
       // permite seek, e o scrub depende de buscar para frente e para tras.
@@ -314,11 +319,34 @@
      quando ja subiu e esta quase sumindo. Conduzido pelo scroll ele travava: o
      seek de video no celular e lento e a rolagem por toque vem em trancos. Sob
      movimento reduzido a cena nem existe, entao o laco nunca toca. */
-  function pilotarPincel(emCena) {
-    if (!mobile.matches || brushBroken || brushVideo.readyState < 2) return;
+  function pilotarPincel(emCena, visivel) {
+    if (!mobile.matches) return;
+    if (brushImg) { brushScene.classList.toggle('em-cena', visivel); return; }
+    if (brushBroken || !brushVideo.getAttribute('src')) return;
     brushVideo.loop = true;
-    if (emCena && !document.hidden) { if (brushVideo.paused) brushVideo.play().catch(() => {}); }
+    if (emCena && !document.hidden) { if (brushVideo.paused) brushVideo.play().catch(recusou); }
     else if (!brushVideo.paused) brushVideo.pause();
+  }
+  /* O iOS recusa play() sem toque no Modo de Pouca Energia, e navegadores
+     embutidos como o do Instagram tambem. Sem video, a capa da abertura respira
+     em CSS e o pincel vira WebP animado, que gira sem depender de autoplay. */
+  const recusou = error => { if (error?.name === 'NotAllowedError') autoplayRecusado(); };
+  function autoplayRecusado() {
+    if (semAutoplay) return;
+    semAutoplay = true;
+    introVideo.pause();
+    introMedia.classList.add('poster-only');
+    if (brushLoading) pincelAnimado();
+  }
+  function pincelAnimado() {
+    if (brushImg || !mobile.matches) return;
+    brushVideo.pause();
+    brushImg = document.createElement('img');
+    brushImg.className = 'brush-anim'; brushImg.alt = ''; brushImg.decoding = 'async';
+    brushImg.addEventListener('load', () => brushScene.classList.add('sem-video'), {once:true});
+    brushImg.src = 'images/pincel-mobile.webp';
+    brushVideo.after(brushImg);
+    dirty = true; schedule();
   }
   document.addEventListener('visibilitychange', () => { dirty = true; acordarLuz(); schedule(); });
   // Alguns WebKit recusam video em blob: (erro 4) e tocam o mesmo arquivo pelo
@@ -337,23 +365,17 @@
   introVideo.addEventListener('loadedmetadata', () => { dirty = true; schedule(); });
   introVideo.addEventListener('loadeddata', seekVideo);
   async function startMobileVideo() {
-    if (!mobile.matches || reduced.matches || !introInView || document.hidden) return;
-    try { await introVideo.play(); playIntro.hidden = true; }
-    catch { if (introInView) playIntro.hidden = false; }
+    if (!mobile.matches || reduced.matches || semAutoplay || !introInView || document.hidden || !introVideo.getAttribute('src')) return;
+    try { await introVideo.play(); }
+    catch (error) { recusou(error); }
   }
   introVideo.addEventListener('canplay', startMobileVideo);
-  playIntro.addEventListener('click', () => {
-    introMedia.classList.remove('poster-only');
-    if (!introVideo.getAttribute('src')) { introVideo.src = localAsset(config.introMobileVideo) || videoSource; introVideo.muted = true; introVideo.loop = true; }
-    if (introVideo.error) introVideo.load();
-    startMobileVideo();
-  });
   new IntersectionObserver(entries => {
     introInView = entries[0].isIntersecting;
     if (mobile.matches) { if (introInView) startMobileVideo(); else introVideo.pause(); }
   }, {threshold:.05}).observe(introMedia);
   introVideo.addEventListener('seeked', seekVideo);
-  introVideo.addEventListener('error', () => { if (tentarEndereco(introVideo, videoObjectURL, videoSource)) return; introMedia.classList.add('poster-only'); if(mobile.matches && !reduced.matches)playIntro.hidden=false; });
+  introVideo.addEventListener('error', () => { if (tentarEndereco(introVideo, videoObjectURL, videoSource)) return; introMedia.classList.add('poster-only'); });
 
   function schedule() { if (!tickerDriven && !frame && !document.hidden) frame = requestAnimationFrame(tick); }
   function measure() {
@@ -399,7 +421,7 @@
     const [s0, s1] = PHASE.scrub;
     brushTarget = clamp((progress - s0) / (s1 - s0)) * (Number.isFinite(brushVideo.duration) ? brushVideo.duration : 0);
     if (brushOn > .008) seekBrush();
-    pilotarPincel(brushOn > .008 && saida < .7);
+    pilotarPincel(brushOn > .008 && saida < .7, brushOn > .008);
 
     const navigationVisible = still || progress >= .97;
     document.documentElement.classList.toggle('intro-pending', !navigationVisible);
@@ -473,7 +495,7 @@
     document.documentElement.classList.toggle('mobile-layout', mobile.matches);
     document.documentElement.classList.toggle('cinematic', !reduced.matches);
     document.documentElement.classList.toggle('motion-ready', !reduced.matches);
-    if (reduced.matches) { introVideo.pause(); playIntro.hidden=true; }
+    if (reduced.matches) introVideo.pause();
     loadIntroVideo();
     measure();
     if (secao) scrollBy({top: secao.getBoundingClientRect().top - topo, behavior: 'instant'});
@@ -489,7 +511,7 @@
   reduced.addEventListener('change', motionPreference);
   mobile.addEventListener('change', () => {
     introVideo.pause(); introVideo.loop=mobile.matches; introVideo.autoplay=mobile.matches;
-    playIntro.hidden=true; motionPreference(); startMobileVideo();
+    motionPreference(); startMobileVideo();
   });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { cancelAnimationFrame(frame); frame = 0; $$('video').forEach(v => v.pause()); }

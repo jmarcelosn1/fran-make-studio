@@ -168,6 +168,29 @@ test('mobile brush loops on its own while on screen and stops on the way out',as
  expect(await tempoAnda(.785)).toBe(false);
 });
 
+// iPhone em Modo de Pouca Energia (e o navegador do Instagram) recusa play() sem
+// toque. A abertura fica na capa com zoom lento e o pincel gira em WebP animado.
+test('when iOS refuses autoplay the intro breathes on its poster and the brush spins as animated WebP',async({page},info)=>{
+ test.skip(!info.project.use.isMobile,'comportamento so do celular');
+ const errors=[];page.on('pageerror',e=>{if(doSite(e))errors.push(e.message);});
+ await page.addInitScript(()=>{HTMLMediaElement.prototype.play=function(){return Promise.reject(new DOMException('autoplay recusado','NotAllowedError'));};});
+ await page.goto('/');
+ await expect(page.locator('.intro-media')).toHaveClass(/poster-only/);
+ await expect(page.locator('#intro-video')).toHaveCSS('visibility','hidden');
+ expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.intro-media'),'::before').animationName)).toBe('capa-respira');
+ await expect(page.getByRole('button',{name:/reproduzir|play video/i})).toHaveCount(0);
+ const g=await page.evaluate(()=>{const H=document.querySelector('#hero'),s=document.querySelector('.hero-stage');return {a:H.offsetTop,r:H.offsetHeight-s.offsetHeight};});
+ await page.evaluate(v=>scrollTo(0,v),Math.round(g.a+g.r*.5));
+ const anim=page.locator('.brush-anim');
+ await expect(anim).toBeVisible();
+ expect(await anim.evaluate(img=>img.complete&&img.naturalWidth)).toBe(414);
+ await expect(page.locator('.brush-video')).toBeHidden();
+ // Fora de cena a imagem sai do layout e para de decodificar quadros.
+ await page.evaluate(()=>scrollTo(0,0));
+ await expect(anim).toBeHidden();
+ expect(errors).toEqual([]);
+});
+
 // Tema claro opcional: alterna, fica salvo, e ao recarregar ja pinta claro.
 test('English version translates, survives a motion remount, returns to identical Portuguese and loads without a Portuguese flash',async({page})=>{
  const errors=[];page.on('pageerror',e=>{if(doSite(e))errors.push(e.message);});

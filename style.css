@@ -79,6 +79,13 @@ body.no-noise::after{display:none}
 .intro-media{position:absolute;inset:0;z-index:-2;pointer-events:none;background:#615e56 url('images/intro-poster.webp') center/cover no-repeat}
 .intro-media video{width:100%;height:100%;object-fit:cover;object-position:center;filter:none}
 .intro-media.poster-only video{visibility:hidden}
+/* Sem video (iOS recusou o autoplay, economia de dados ou falha) a capa respira
+   num zoom lento. So transform: nada e repintado a cada quadro. */
+.intro-media.poster-only::before{content:"";position:absolute;inset:0;background:inherit;transform-origin:50% 30%;animation:capa-respira 9s ease-in-out infinite alternate}
+@keyframes capa-respira{to{transform:scale(1.08)}}
+@media(prefers-reduced-motion:reduce){.intro-media.poster-only::before{animation:none}}
+/* O iOS desenha um play proprio sobre video parado; aqui video nunca tem controles. */
+video::-webkit-media-controls-start-playback-button{display:none!important;-webkit-appearance:none}
 .intro-shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(20,15,18,.8),rgba(20,15,18,.1) 62%,transparent)}
 html:not(.cinematic) .intro-media{display:none}
 .cinematic .intro-title{align-items:flex-start;justify-content:flex-end;text-align:left;padding:40px max(7vw,28px) 115px;height:min(100%,100svh);color:#fff9f6}
@@ -112,7 +119,7 @@ html:not(.cinematic) .intro-media{display:none}
   .cinematic #hero{height:calc(950px + 150svh)}
   .cinematic .hero-stage{height:950px;min-height:0}
   .cinematic .hero-layout{padding-top:calc(var(--nav) + 24px)}
-  .intro-media{height:100svh}
+  .intro-media{height:100svh;background-position:50% 25%}
   .intro-media video{object-position:50% 25%}
   .cinematic .intro-title{height:100svh;padding:28px 24px 110px;align-items:center;text-align:center}
   .cinematic .intro-mark{width:min(82vw,360px)}
@@ -120,8 +127,6 @@ html:not(.cinematic) .intro-media{display:none}
     }
 @media(prefers-reduced-motion:reduce){#navbar{transition:none}}
 
-/* Touch devices use native document flow: no oversized pinned stages. */
-.intro-play{position:absolute;right:24px;top:24px;z-index:5;min-height:44px;padding:10px 16px;background:#fff9f6;color:#59343e;border:1px solid #975266;pointer-events:auto;font-size:12px;font-weight:600}
 /* O palco tambem fica fixo no celular: a fase do pincel precisa de curso
    proprio entre a assinatura e a entrada da Franciana. A rolagem segue
    nativa, sem captura de gesto. */
@@ -141,9 +146,9 @@ html:not(.cinematic) .intro-media{display:none}
 .mobile-layout .motion-ready .rv{transform:none}
 .mobile-layout.motion-ready .rv{opacity:1;transform:none;transition:none}
 .mobile-layout body::after{display:none}
-@media(prefers-reduced-motion:reduce){.mobile-layout .intro-play{display:none}.mobile-layout .hero-layout{padding-top:30px}}
+@media(prefers-reduced-motion:reduce){.mobile-layout .hero-layout{padding-top:30px}}
 
-.btn-pk,.nb-cta,.intro-play{border-radius:999px;letter-spacing:.25px;padding-inline:22px}
+.btn-pk,.nb-cta{border-radius:999px;letter-spacing:.25px;padding-inline:22px}
 .service-name{font:600 24px/1.2 var(--sans);letter-spacing:-.025em;color:var(--ink)}
 .location-actions{display:flex;flex-direction:column;align-items:flex-start;gap:16px}
 .location-actions button{background:transparent;color:var(--muted);border:0;border-bottom:1px solid var(--line);cursor:pointer;min-height:44px}
@@ -216,7 +221,11 @@ html:not(.cinematic) .intro-media{display:none}
    traz o movimento. So a saida o transforma. */
 .brush-scene{position:absolute;inset:0;z-index:0;pointer-events:none;background:#000;opacity:var(--brush-in,0)}
 .brush-inner{position:absolute;inset:0;display:grid;place-items:center}
-.brush-video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.brush-video,.brush-anim{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+/* WebP animado de reserva (autoplay recusado): so aparece carregado e em cena,
+   para nao decodificar quadros com a cena invisivel. */
+.brush-anim,.brush-scene.sem-video .brush-video{display:none}
+.brush-scene.sem-video.em-cena .brush-anim{display:block}
 .brush-edge{position:absolute;inset:0;background:radial-gradient(ellipse 82% 72% at 50% 50%,transparent 54%,#000 100%)}
 .brush-word{position:absolute;top:50%;margin:0;white-space:nowrap;color:#fff9f6;
   font:600 clamp(24px,4.2vw,62px)/1 var(--serif);letter-spacing:.015em}
