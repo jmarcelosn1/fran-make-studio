@@ -256,6 +256,7 @@
     return window.FRAN_SAFETY.localAsset(value, location.href);
   }
   const videoSource = localAsset(config.introVideo || 'images/franciana-scroll.mp4');
+  let videoFonte = videoSource;
   const posterSource = localAsset(config.introPoster || 'images/intro-poster.webp');
   if (posterSource) introVideo.poster = posterSource;
   async function loadIntroVideo() {
@@ -265,25 +266,25 @@
     if (mobile.matches) {
       introVideo.muted = true; introVideo.defaultMuted = true;
       introVideo.loop = true; introVideo.autoplay = true;
-      introVideo.src = localAsset(config.introMobileVideo) || videoSource;
-      introVideo.load();
-      startMobileVideo();
-      return;
+      videoFonte = localAsset(config.introMobileVideo) || videoSource;
     }
     try {
-      // The small optimized clip is fully buffered so reverse seeking also works
-      // on static preview servers that do not implement HTTP range requests.
-      const response = await fetch(videoSource, {signal:videoRequest.signal});
+      // Blob inteiro na memoria: a Cloudflare Pages ignora pedidos parciais (HTTP
+      // Range), e sem eles o Safari do iPhone nao toca e o desktop nao volta atras.
+      const response = await fetch(videoFonte, {signal:videoRequest.signal});
       if (!response.ok) throw new Error('Video unavailable');
       const blob = await response.blob();
       if (videoRequest.signal.aborted) return;
       videoObjectURL = URL.createObjectURL(blob);
       introVideo.src = videoObjectURL;
       introVideo.load();
+      startMobileVideo();
     } catch(error) {
-      if (error.name !== 'AbortError') introMedia.classList.add('poster-only');
+      if (error.name !== 'AbortError') semVideo();
     }
   }
+  // Sem video, no celular, vale o mesmo que sem autoplay.
+  const semVideo = () => (mobile.matches ? autoplayRecusado() : introMedia.classList.add('poster-only'));
   async function loadBrushVideo() {
     if (mobile.matches || reduced.matches || navigator.connection?.saveData) return;
     if (brushLoading || brushBroken || brushVideo.getAttribute('src')) return;
@@ -399,7 +400,7 @@
     if (mobile.matches) { if (introInView) startMobileVideo(); else introVideo.pause(); }
   }, {threshold:.05}).observe(introMedia);
   introVideo.addEventListener('seeked', seekVideo);
-  introVideo.addEventListener('error', () => { if (tentarEndereco(introVideo, videoObjectURL, videoSource)) return; introMedia.classList.add('poster-only'); });
+  introVideo.addEventListener('error', () => { if (!tentarEndereco(introVideo, videoObjectURL, videoFonte)) semVideo(); });
 
   function schedule() { if (!tickerDriven && !frame && !document.hidden) frame = requestAnimationFrame(tick); }
   function measure() {

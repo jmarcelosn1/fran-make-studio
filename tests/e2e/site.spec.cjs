@@ -256,6 +256,17 @@ test('English version translates, survives a motion remount, returns to identica
  expect(await tituloServicos()).toBe('Three ways to work together.');
  expect(errors).toEqual([]);
 });
+// No celular o video da abertura toca sozinho. Vem por blob: a Cloudflare Pages
+// ignora pedidos parciais (HTTP Range) e o Safari do iPhone nao toca video servido
+// assim pelo endereco. O WebKit de teste recusa blob e cai no endereco, que ele toca.
+test('mobile intro video plays on its own',async({page},info)=>{
+ test.skip(!info.project.use.isMobile,'comportamento so do celular');
+ await page.route(/google\.com|gstatic\.com|googleapis\.com/,r=>r.abort());
+ await page.goto('/');
+ await expect.poll(()=>page.evaluate(()=>{const v=document.querySelector('#intro-video');return !v.paused&&v.currentTime>.3;}),{timeout:10000}).toBe(true);
+ if(info.project.name==='mobile')expect(await page.evaluate(()=>document.querySelector('#intro-video').src)).toMatch(/^blob:/);
+ await expect(page.locator('html')).not.toHaveClass(/sem-autoplay/);
+});
 // A Franciana revelada cabe inteira na tela do celular: com largura fixa o palco
 // cortava o corpo, e na altura do iPhone SE so sobrava o alto da cabeca.
 test('revealed portrait fits the phone screen without being cut',async({page},info)=>{
