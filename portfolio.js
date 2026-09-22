@@ -54,7 +54,7 @@
   /* ---- lightbox ---- */
   const dialog = $('#lightbox'), image = $('#lb-img'), caption = $('#lb-caption');
   const prev = $('#lb-prev'), next = $('#lb-next');
-  let current = 0, opener = null;
+  let current = 0, opener = null, porToque = false;
 
   function show(index) {
     if (!visible.length) return;
@@ -67,21 +67,27 @@
     const many = visible.length > 1;
     prev.hidden = !many; next.hidden = !many;
   }
-  function open(item) {
+  // Por toque ou mouse (detail > 0) o foco vai para o proprio dialogo: no X o
+  // Safari desenhava o anel rosa. Pelo teclado fica no X, com o anel.
+  function open(item, evento) {
     opener = item;
+    porToque = evento.detail > 0;
     show(Number(item.dataset.index) || 0);
     dialog.showModal();
+    if (porToque) dialog.focus({preventScroll:true});
     document.body.classList.add('modal-open');
   }
-  items.forEach(item => item.addEventListener('click', () => open(item)));
+  items.forEach(item => item.addEventListener('click', e => open(item, e)));
   prev.addEventListener('click', () => show(current - 1));
   next.addEventListener('click', () => show(current + 1));
   $('#lb-close').addEventListener('click', () => dialog.close());
   dialog.addEventListener('close', () => {
     document.body.classList.remove('modal-open');
     image.removeAttribute('src');
+    if (porToque) opener?.classList.add('sem-anel');
     opener?.focus({preventScroll:true});
   });
+  items.forEach(item => item.addEventListener('blur', () => item.classList.remove('sem-anel')));
   dialog.addEventListener('keydown', event => {
     if (event.key === 'ArrowRight') { event.preventDefault(); show(current + 1); }
     if (event.key === 'ArrowLeft') { event.preventDefault(); show(current - 1); }

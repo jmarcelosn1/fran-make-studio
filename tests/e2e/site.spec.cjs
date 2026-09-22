@@ -45,8 +45,15 @@ test('portfolio lightbox opens, Escape closes and focus returns',async({page})=>
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/portfolio.html');
  const card=page.locator('.pf-item').first();await card.click();
  await expect(page.locator('#lightbox')).toBeVisible();
+ // Por toque ou mouse o foco fica no quadro, nao no X: o Safari desenhava ali o anel rosa.
+ await expect(page.locator('#lightbox')).toBeFocused();
  await page.keyboard.press('Escape');await expect(page.locator('#lightbox')).not.toBeVisible();
  await expect(card).toBeFocused();
+ await expect(card).toHaveCSS('outline-style','none');
+ // Pelo teclado o foco vai para o X, com o anel, para quem navega assim.
+ await page.keyboard.press('Enter');
+ await expect(page.locator('#lb-close')).toBeFocused();
+ await page.keyboard.press('Escape');await expect(card).toBeFocused();
 });
 test('animation libraries failing leaves content and booking usable',async({page})=>{
  await page.route('**/vendor/**',r=>r.abort());
@@ -267,6 +274,24 @@ test('mobile intro video plays on its own',async({page},info)=>{
  if(info.project.name==='mobile')expect(await page.evaluate(()=>document.querySelector('#intro-video').src)).toMatch(/^blob:/);
  await expect(page.locator('html')).not.toHaveClass(/sem-autoplay/);
 });
+// Com o requestAnimationFrame limitado a 30 quadros (Modo de Pouca Energia do
+// iPhone) a abertura, conduzida por JS, ia aos trancos: a pagina passa ao layout
+// de menos movimento e a sessao ja abre assim. O WebKit de teste roda a ~85 ms
+// por quadro por conta propria, sem a assinatura de 33 ms, entao fica no Chromium.
+test('capped at 30 fps the page switches to the light layout for the session',async({page},info)=>{
+ test.skip(info.project.name!=='mobile','simulacao de 30 quadros so no Chromium do celular');
+ await page.route(/google\.com|gstatic\.com|googleapis\.com/,r=>r.abort());
+ await page.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=cb=>{const alvo=Math.floor(performance.now()/33.34)+1;return raf(function espera(t){if(Math.floor(t/33.34)<alvo)return raf(espera);cb(t);});};});
+ await page.goto('/');
+ await expect(page.locator('html')).toHaveClass(/modo-leve/,{timeout:10000});
+ await expect(page.locator('html')).not.toHaveClass(/cinematic/);
+ await expect(page.locator('.hero-content h2')).toBeVisible();
+ await expect(page.locator('.hero-photo img')).toBeVisible();
+ expect(await page.evaluate(()=>sessionStorage.getItem('fm-leve'))).toBe('1');
+ await page.reload();
+ expect(await page.evaluate(()=>document.documentElement.className)).toContain('modo-leve');
+ await expect(page.locator('html')).not.toHaveClass(/cinematic/);
+});
 // A Franciana revelada cabe inteira na tela do celular: com largura fixa o palco
 // cortava o corpo, e na altura do iPhone SE so sobrava o alto da cabeca.
 test('revealed portrait fits the phone screen without being cut',async({page},info)=>{
@@ -308,7 +333,8 @@ test('light contour hugs the portrait, appears only with it, and particles are g
  };
  // o contorno mora dentro da foto: antes da revelacao, nenhum dos dois aparece
  expect(await opacidade(.5)).toBe(0);
- expect(await opacidade(.83)).toBe(0);
+ // Aos 80% foto e texto ja estao montados a 0,2% (invisivel), para a entrada nao engasgar.
+ expect(await opacidade(.8)).toBeLessThan(.01);
  expect(await opacidade(1)).toBe(1);
 });
 test('page keeps only the dark theme and the footer has no loose social icons',async({page})=>{

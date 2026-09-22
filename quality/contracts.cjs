@@ -26,7 +26,8 @@ for(const file of fs.readdirSync('.').filter(f=>f.endsWith('.js'))){
 }
 const csp=require('../vercel.json').headers[0].headers.find(h=>h.key==='Content-Security-Policy').value;
 assert.ok(csp.includes("object-src 'none'")&&csp.includes("frame-ancestors 'none'")&&!csp.includes('unsafe-eval'));
-const bytes=fs.readdirSync('.').filter(f=>/\.(js|css)$/.test(f)).reduce((sum,f)=>sum+gzipSync(fs.readFileSync(f)).length,0);
+// So o que vai para o ar (o guia fica fora do build e nao pesa para ninguem).
+const bytes=require('./site-files.cjs').filter(f=>/\.(js|css)$/.test(f)).reduce((sum,f)=>sum+gzipSync(fs.readFileSync(f)).length,0);
 assert.ok(bytes<45000,`First-party JS/CSS gzip budget exceeded: ${bytes}/45000`);
 for(const file of ['images/franciana-mobile.mp4','images/franciana-scroll.mp4','images/pincel-scroll.mp4'])assert.ok(fs.statSync(file).size<4*1024*1024,`Video budget exceeded: ${file}`);
 // O scrub por scroll depende de keyframes densos; sem isso cada seek redecodifica desde o inicio.

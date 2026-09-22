@@ -26,7 +26,7 @@
   function configurar() {
     cleanup();
     document.body.classList.toggle('no-noise', config.noise === false);
-    if(reduce.matches) return;
+    if(reduce.matches || document.documentElement.classList.contains('modo-leve')) return;
     if(window.Lenis && config.smoothScroll !== false && pointer.matches) {
       lenis = new Lenis({
         autoRaf:false,
@@ -73,6 +73,7 @@
     frame(time) { lenis?.raf(time); return !!lenis; },
     pause(value) { paused=value; if(value)lenis?.stop();else lenis?.start(); },
     refresh() { lenis?.resize(); window.ScrollTrigger?.refresh(); },
+    remontar: () => { if(initialized) setup(); },
     dispose:cleanup
   };
 })();

@@ -411,9 +411,7 @@ html[data-theme] .glow-icone::after{display:none}
 .brush-left,.brush-right{translate:0 calc(-50% + (1 - var(--w)) * .34em)}
 .brush-word .letra{opacity:clamp(0,calc(var(--w) * 3.3 - var(--i) / (var(--n) - 1)),1)}
 
-/* Localizacao: o mapa no lugar do cartao, e so o botao embaixo. Carrega sob
-   demanda (loading=lazy), porque o Google Maps e pesado para o topo da pagina.
-   No tema escuro um filtro escurece o mapa, senao ele vira um retangulo branco. */
+/* Localizacao: mapa (escurecido por filtro no tema escuro) e o botao embaixo. */
 #mapa .map-box{border:0;border-radius:0;background:none;overflow:visible}
 #mapa .mapa-quadro{position:relative;aspect-ratio:4/3;border-radius:18px;overflow:hidden;
   border:1px solid rgba(239,163,173,.22);background:#0d0a0b}

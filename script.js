@@ -5,6 +5,9 @@
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   const config = window.FRAN_CONFIG || {};
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  // Menos movimento: pedido pelo sistema ou modo leve (ver medirQuadros).
+  let modoLeve = document.documentElement.classList.contains('modo-leve');
+  const calmo = {get matches() { return reduced.matches || modoLeve; }};
   const mobile = matchMedia('(max-width:850px), (pointer:coarse)');
   const hero = $('#hero'), stage = $('.hero-stage'), title = $('.intro-title');
   const kicker = $('#intro-kicker'), assinatura = $('.intro-signature');
@@ -34,7 +37,7 @@
     light.className = 'spotlight-light'; light.setAttribute('aria-hidden','true'); surface.append(light);
     spotlightObserver.observe(surface);
     surface.addEventListener('pointermove', event => {
-      if (!finePointer.matches || reduced.matches || event.pointerType === 'touch') return;
+      if (!finePointer.matches || calmo.matches || event.pointerType === 'touch') return;
       const rect = surface.getBoundingClientRect();
       surface.style.setProperty('--spot-x', `${event.clientX - rect.left}px`);
       surface.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
@@ -103,7 +106,7 @@
     const partes = FATIAS.slice();
     let alvoPartes = FATIAS;
     const mirarPartes = () => {
-      alvoPartes = (apontado < 1 || apontado > 3 || reduced.matches) ? FATIAS
+      alvoPartes = (apontado < 1 || apontado > 3 || calmo.matches) ? FATIAS
         : FATIAS.map((_, i) => (apontado === i ? ESTICADA[i] : ESPREMIDA[i]));
     };
     const fatia = col => partes[col];
@@ -190,7 +193,7 @@
     }
 
     function mover() {
-      if (reduced.matches) {
+      if (calmo.matches) {
         atual = alvo; vel = 0; alvoPartes.forEach((v, i) => { partes[i] = v; });
         reancorar(); desenhar(); return;
       }
@@ -261,7 +264,7 @@
   if (posterSource) introVideo.poster = posterSource;
   async function loadIntroVideo() {
     if (navigator.connection?.saveData) autoplayRecusado();
-    if (reduced.matches || navigator.connection?.saveData || videoLoading || introVideo.getAttribute('src') || !videoSource) return;
+    if (calmo.matches || navigator.connection?.saveData || videoLoading || introVideo.getAttribute('src') || !videoSource) return;
     videoLoading = true;
     if (mobile.matches) {
       introVideo.muted = true; introVideo.defaultMuted = true;
@@ -286,7 +289,7 @@
   // Sem video, no celular, vale o mesmo que sem autoplay.
   const semVideo = () => (mobile.matches ? autoplayRecusado() : introMedia.classList.add('poster-only'));
   async function loadBrushVideo() {
-    if (mobile.matches || reduced.matches || navigator.connection?.saveData) return;
+    if (mobile.matches || calmo.matches || navigator.connection?.saveData) return;
     if (brushLoading || brushBroken || brushVideo.getAttribute('src')) return;
     brushLoading = true;
     // O preload="none" do HTML so evita baixar antes da hora.
@@ -321,7 +324,7 @@
   const folhas = [];
   let telaPincel = null, ctxPincel = null, quadroPincel = -1, quadroAlvo = 0, geometria = null;
   function carregarQuadros() {
-    if (telaPincel || !mobile.matches || reduced.matches) return;
+    if (telaPincel || !mobile.matches || calmo.matches) return;
     telaPincel = document.createElement('canvas');
     telaPincel.className = 'brush-quadros';
     telaPincel.setAttribute('aria-hidden', 'true');
@@ -383,14 +386,14 @@
   };
   brushVideo.addEventListener('error', () => { if (!tentarEndereco(brushVideo, brushURL, brushFonte)) brushBroken = true; });
   function seekVideo() {
-    if (mobile.matches || reduced.matches || introVideo.readyState < 1 || introVideo.seeking || !Number.isFinite(introVideo.duration)) return;
+    if (mobile.matches || calmo.matches || introVideo.readyState < 1 || introVideo.seeking || !Number.isFinite(introVideo.duration)) return;
     const target = Math.min(videoTarget, Math.max(0, introVideo.duration - .05));
     if (Math.abs(introVideo.currentTime - target) > .025) introVideo.currentTime = target;
   }
   introVideo.addEventListener('loadedmetadata', () => { dirty = true; schedule(); });
   introVideo.addEventListener('loadeddata', seekVideo);
   async function startMobileVideo() {
-    if (!mobile.matches || reduced.matches || semAutoplay || !introInView || document.hidden || !introVideo.getAttribute('src')) return;
+    if (!mobile.matches || calmo.matches || semAutoplay || !introInView || document.hidden || !introVideo.getAttribute('src')) return;
     try { await introVideo.play(); }
     catch (error) { recusou(error); }
   }
@@ -427,10 +430,15 @@
   const at = (name, p) => smooth(PHASE[name][0], PHASE[name][1], p);
 
   function updateIntro() {
-    progress = reduced.matches ? 1 : clamp((scrollY - start) / range);
-    const still = reduced.matches;
+    progress = calmo.matches ? 1 : clamp((scrollY - start) / range);
+    const still = calmo.matches;
     aplicarEntrada(still || semAutoplay ? 1 : at('draw', progress));
-    const reveal = still ? 1 : at('reveal', progress);
+    // No celular o respiro preto entre o pincel e a Franciana e curto: num deslize
+    // o intervalo longo parecia a tela piscando vazia.
+    const reveal = still ? 1 : mobile.matches ? smooth(.82, .94, progress) : at('reveal', progress);
+    // Foto e texto ficam visiveis, em opacidade 0, desde que o pincel sai: pintura
+    // e camadas saem na tela preta, e a entrada vira so opacidade.
+    const pronto = still || reveal > .01 || progress > .8;
     const fade = still ? 1 : at('titleOut', progress);
 
     // Pincel: entra por fade, o scroll conduz o tempo do video, e sai erguido,
@@ -458,15 +466,18 @@
     introVideo.style.transform = mobile.matches && !still ? `translate3d(0,${18 * progress}px,0) scale(1.025)` : '';
     videoTarget = clamp(progress / .22) * (Number.isFinite(introVideo.duration) ? introVideo.duration : 0);
     seekVideo();
-    title.style.opacity = reduced.matches ? 1 : 1 - fade;
+    title.style.opacity = calmo.matches ? 1 : 1 - fade;
     title.style.transform = `translate3d(0,${-45 * fade}px,0)`;
-    content.style.opacity = reveal;
-    content.style.visibility = reveal > .01 ? 'visible' : 'hidden';
+    // 0,2% em vez de 0: invisivel no preto, mas o Chrome so rasteriza camada que
+    // aparece, e assim o trabalho sai antes da entrada.
+    const opaco = pronto ? Math.max(reveal, .002) : reveal;
+    content.style.opacity = opaco;
+    content.style.visibility = pronto ? 'visible' : 'hidden';
     content.style.transform = `translate3d(0,${28 * (1 - reveal)}px,0)`;
     content.inert = reveal < .92;
-    portrait.style.opacity = reveal;
-    portrait.style.visibility = reveal > .01 ? 'visible' : 'hidden';
-    portrait.classList.toggle('apagado', reveal <= .01);
+    portrait.style.opacity = opaco;
+    portrait.style.visibility = pronto ? 'visible' : 'hidden';
+    portrait.classList.toggle('apagado', !pronto);
     // Sobe de baixo: o palco corta a base, entao ela nasce da borda inferior.
     portrait.style.transform = `translate3d(0,${36 * (1 - reveal)}%,0)`;
   }
@@ -520,9 +531,9 @@
     const secao = hero.getBoundingClientRect().bottom <= 0 ? $$('main > section').find(el => el.getBoundingClientRect().bottom > 0) : null;
     const topo = secao ? secao.getBoundingClientRect().top : 0;
     document.documentElement.classList.toggle('mobile-layout', mobile.matches);
-    document.documentElement.classList.toggle('cinematic', !reduced.matches);
-    document.documentElement.classList.toggle('motion-ready', !reduced.matches);
-    if (reduced.matches) introVideo.pause();
+    document.documentElement.classList.toggle('cinematic', !calmo.matches);
+    document.documentElement.classList.toggle('motion-ready', !calmo.matches);
+    if (calmo.matches) introVideo.pause();
     loadIntroVideo();
     measure();
     if (secao) scrollBy({top: secao.getBoundingClientRect().top - topo, behavior: 'instant'});
@@ -598,7 +609,7 @@
   function setupMobileReveals() {
     mobileRevealObserver?.disconnect();
     $$('.mobile-reveal').forEach(el => el.classList.remove('mobile-reveal','is-visible'));
-    if (!mobile.matches || reduced.matches) return;
+    if (!mobile.matches || calmo.matches) return;
     mobileRevealObserver = new IntersectionObserver(entries => {
       for (const entry of entries) if(entry.isIntersecting) {
         entry.target.classList.add('is-visible');
@@ -616,7 +627,7 @@
 
 
   document.addEventListener('click', e => {
-    if(reduced.matches || !e.target.closest('a,button') || e.target.closest('dialog')) return;
+    if(calmo.matches || !e.target.closest('a,button') || e.target.closest('dialog')) return;
     const r=e.target.closest('a,button').getBoundingClientRect();
     const star=document.createElement('span'); star.className='micro-spark'; star.setAttribute('aria-hidden','true');
     star.style.left=(e.detail?e.clientX:r.right-10)+'px';star.style.top=(e.detail?e.clientY:r.top+8)+'px';
@@ -756,7 +767,7 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
     const suave = v => v * v * (3 - 2 * v);
     const pulso = x => { x %= 12; return x < 6 ? 1 : x < 8 ? 1 - .8 * suave((x - 6) / 2) : x < 10 ? .2 : .2 + .8 * suave((x - 10) / 2); };
     const laco = agora => {
-      if (!heroVisible || document.hidden || reduced.matches) { vivo = false; return; }
+      if (!heroVisible || document.hidden || calmo.matches) { vivo = false; return; }
       requestAnimationFrame(laco);
       if (agora - ultimo < 33 || portrait.classList.contains('apagado')) return;
       ultimo = agora;
@@ -776,7 +787,7 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
     stage.addEventListener('pointerleave', () => { alvo = null; });
     const acordar = () => {
       if (!tela.isConnected) return;
-      if (reduced.matches || parado) { luz = noCanvas(o.centro[0] - .2, o.centro[1] - .25); desenhar(1); return; }
+      if (calmo.matches || parado) { luz = noCanvas(o.centro[0] - .2, o.centro[1] - .25); desenhar(1); return; }
       if (!vivo && heroVisible && !document.hidden) { vivo = true; requestAnimationFrame(laco); }
     };
     tela.addEventListener('webglcontextlost', ev => { ev.preventDefault(); tela.remove(); });
@@ -803,7 +814,33 @@ gl_FragColor=vec4(o,max(o.r,max(o.g,o.b)));}`);
     addEventListener('scroll', armar, {passive: true});
     armar();
   };
+  /* Modo leve: com o requestAnimationFrame limitado a 30 quadros (Modo de Pouca
+     Energia do iPhone, economia de bateria do Android) a abertura, conduzida por
+     JS, anda aos trancos. A assinatura do teto e ter quase todos os quadros
+     perto de 33 ms (aparelho so ocupado oscila entre 16 e 80+); nesse caso vale
+     o layout de menos movimento, e o resto da sessao ja abre assim (boot.js). */
+  function medirQuadros() {
+    if (calmo.matches) return;
+    const d = []; let ant = 0;
+    const passo = t => {
+      if (ant) d.push(t - ant);
+      ant = t;
+      if (d.length < 30) { requestAnimationFrame(passo); return; }
+      d.sort((a, b) => a - b);
+      const lento = d[7] > 26 && d[22] < 45;
+      try { if (lento) sessionStorage.setItem('fm-leve', '1'); else sessionStorage.removeItem('fm-leve'); } catch { /* sem armazenamento */ }
+      if (!lento) return;
+      modoLeve = true;
+      document.documentElement.classList.add('modo-leve');
+      motion?.remontar?.();
+      motionPreference();
+      setupMobileReveals();
+      dirty = true; schedule();
+    };
+    requestAnimationFrame(passo);
+  }
   addEventListener('load', () => {
+    setTimeout(medirQuadros, 400);
     carregarQuadros();
     parado(() => {
       if (quadroMapa?.dataset.src) { quadroMapa.src = quadroMapa.dataset.src; delete quadroMapa.dataset.src; }

@@ -56,6 +56,7 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
 .pf-item:hover img,.pf-item:focus-visible img{opacity:.88}
 .pf-item img{transition:opacity .3s var(--ease)}
 .pf-item:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:16px}
+#lightbox:focus,.pf-item.sem-anel:focus-visible{outline:none}
 .pf-empty{padding:40px 0;color:var(--muted)}
 
 .pf-cta{text-align:center;padding:76px 0 90px}
@@ -69,6 +70,9 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
 .lb-nav[hidden]{display:none}
 #lb-prev{left:16px}
 #lb-next{right:16px}
+/* X redondo como as setas; a foto deixa espaco para a legenda caber sem rolar. */
+#lb-close{border-radius:50%;border-color:rgba(255,255,255,.28);cursor:pointer}
+#lb-img{max-height:min(76svh,calc(94svh - 180px))}
 
 @media(max-width:1024px){
   .pf-grid{grid-template-columns:repeat(2,1fr)}
@@ -91,6 +95,8 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
   transition:opacity .7s var(--ease),transform .7s var(--ease),filter .7s var(--ease);
   transition-delay:calc(var(--k,0) * 90ms)}
 .pf-anima .pf-item.visto{opacity:1;transform:none;filter:none}
+/* No celular sem o desfoque: animado em cada foto, derrubava 1 em 20 quadros. */
+@media(max-width:850px),(pointer:coarse){.pf-anima .pf-item{filter:none;transition-property:opacity,transform}}
 #lb-img{border-radius:14px}
 /* No celular a foto do topo ocupa a largura toda, num recorte mais baixo para
    nao tomar a primeira tela. A grade fica em duas colunas, como no desktop. */

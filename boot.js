@@ -32,7 +32,11 @@ if (saltaParaAncora) {
 
 // Somente a pagina que declara data-intro tem a abertura que esconde a navbar.
 // Sem essa checagem, paginas sem script.js ficariam com a navbar oculta para sempre.
-if (document.documentElement.hasAttribute('data-intro') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+// Modo leve (quadros limitados a 30, medido pelo script.js) vale para a sessao.
+let leve = false;
+try { leve = sessionStorage.getItem('fm-leve') === '1'; } catch { leve = false; }
+if (leve) document.documentElement.classList.add('modo-leve');
+if (document.documentElement.hasAttribute('data-intro') && !leve && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
   document.documentElement.classList.add('cinematic');
   // Quem chega direto numa secao ja passou da abertura: a navbar nao some.
   if (!saltaParaAncora) document.documentElement.classList.add('intro-pending');
