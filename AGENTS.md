@@ -1,6 +1,6 @@
 # Contrato de trabalho do projeto
 
-Antes de alterar interfaces, registrar: referência visual (layout, paleta, tipografia, ritmo), avaliação de UX (contraste, toque, teclado, loading, erro, responsividade) e componentes existentes a reutilizar. A estética aprovada é preto sólido e rosé da marca, títulos retos, fotos reais, destaque às noivas e um Consulte para os três serviços. Sem preços ou imagens duplicadas.
+Antes de alterar interfaces, registrar: referência visual (layout, paleta, tipografia, ritmo), avaliação de UX (contraste, toque, teclado, loading, erro, responsividade) e componentes existentes a reutilizar. A estética aprovada é preto sólido e rosé da marca, títulos retos, fotos reais, destaque às noivas e um Agende para os três serviços. Sem preços ou imagens duplicadas.
 
 Use HTML/CSS/JS nativos. Reutilize .portfolio-card, .mp-card, .btn-pk, #lightbox, .spotlight-light e o agendador existente. Não crie um segundo carrossel, modal ou loop permanente. Separe lógica pura quando houver fronteira de segurança ou reutilização concreta; não migre para React por causa de uma referência visual. Não instale frameworks sem necessidade demonstrada.
 

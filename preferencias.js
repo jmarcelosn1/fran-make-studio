@@ -36,7 +36,7 @@
   const tinhaRotulo = new Map();
   const originaisTexto = new Map();
   const originaisAtributo = [];
-  const ATRIBUTOS = ['alt', 'aria-label', 'title', 'placeholder'];
+  const ATRIBUTOS = ['alt', 'aria-label', 'aria-roledescription', 'title', 'placeholder'];
   const DINAMICOS = '#nb-ham,[data-idioma]';
   const normal = s => s.replace(/\s+/g, ' ').trim();
   const descricao = document.querySelector('meta[name="description"]');

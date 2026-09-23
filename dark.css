@@ -4,28 +4,24 @@ html[data-theme="dark"]{
   --ink:#f5f2f3;
   --paper:#000000;
   --muted:#b8b0b4;
-  --rose:#efa3ad;
+  --rose:#fa9daa;
   --line:rgba(255,255,255,.15);
 }
 [data-theme="dark"] body,[data-theme="dark"] #hero,[data-theme="dark"] main>section,[data-theme="dark"] #footer{background:#000}
 [data-theme="dark"] #navbar,[data-theme="dark"] .nb-mob{background:#000;border-bottom:0}
 [data-theme="dark"] .nb-links a{color:#d8c4cc}
 [data-theme="dark"] .nb-links a:hover,[data-theme="dark"] .nb-links a[aria-current]{color:var(--rose)}
-[data-theme="dark"] .hero-halo{background:#000;opacity:1}
-[data-theme="dark"] .hero-content h2 em,[data-theme="dark"] #sobre em,[data-theme="dark"] #sobre .slabel{color:var(--rose)}
+[data-theme="dark"] .hero-titulo em,[data-theme="dark"] #sobre em{color:var(--rose)}
 [data-theme="dark"] #sobre .ssub{color:var(--muted)}
 [data-theme="dark"] .btn-pk{background:var(--rose);color:#180d12;border-color:var(--rose)}
-[data-theme="dark"] .btn-pk:hover{background:#f4b6be;border-color:#f4b6be}
-[data-theme="dark"] #lightbox,[data-theme="dark"] #lb-close{background:#000;color:var(--ink)}
-[data-theme="dark"] .micro-spark{background:#e49ab6}
+[data-theme="dark"] .btn-pk:hover{background:#fcb3c0;border-color:#fcb3c0}
 [data-theme="dark"] ::selection{background:#e49ab6;color:#21101a}
 [data-theme="dark"] body::after{display:none}
-[data-theme="dark"] .makes-prices,[data-theme="dark"] .ctc-card,[data-theme="dark"] #footer,[data-theme="dark"] .ft-bottom{border:0}
+[data-theme="dark"] .makes-prices,[data-theme="dark"] .ctc-card,[data-theme="dark"] #footer{border:0}
 [data-theme="dark"] .mp-featured{background:transparent}
 [data-theme="dark"] .map-box{border:0}
 [data-theme="dark"] .sh{margin-left:0;text-align:left}
 [data-theme="dark"] .sh .ssub{margin-left:0}
-[data-theme="dark"] .ft-bottom{padding-top:0}
 [data-theme="dark"] .nb-cta{color:#180d12;background:var(--rose);border-color:var(--rose)}
 @media(max-width:600px){[data-theme="dark"] .mp-card+.mp-card{border:0}}
 
@@ -35,20 +31,18 @@ html[data-theme="dark"]{
    regras opacas acima e o botao continua legivel. */
 @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   [data-theme="dark"] .btn-pk,[data-theme="dark"] .nb-cta{
-    background:rgba(239,163,173,.9);border-color:rgba(255,212,218,.5)
+    background:rgba(250,157,170,.9);border-color:rgba(255,214,222,.5)
   }
   [data-theme="dark"] .btn-pk:hover,[data-theme="dark"] .nb-cta:hover{
-    background:rgba(244,182,190,.96);border-color:rgba(255,226,230,.72);
-    box-shadow:0 1px 0 rgba(255,255,255,.38) inset,0 -1px 0 rgba(0,0,0,.18) inset,0 12px 28px -12px rgba(239,163,173,.55)
+    background:rgba(252,179,192,.96);border-color:rgba(255,226,230,.72);
+    box-shadow:0 1px 0 rgba(255,255,255,.38) inset,0 -1px 0 rgba(0,0,0,.18) inset,0 12px 28px -12px rgba(250,157,170,.55)
   }
     }
 
-/* Celular: cores mais vivas (video e pincel ja saturados no arquivo). Botoes
-   opacos: o backdrop-filter refazia um desfoque a cada quadro da rolagem. */
+/* Celular: fotos mais vivas. Botoes opacos: o backdrop-filter refazia um
+   desfoque a cada quadro da rolagem. O rose e o mesmo do desktop, o enviado. */
 @media(max-width:850px),(pointer:coarse){
-  html[data-theme="dark"]{--rose:#fb8fa2}
   [data-theme="dark"] .btn-pk,[data-theme="dark"] .nb-cta{background:var(--rose);border-color:var(--rose);-webkit-backdrop-filter:none;backdrop-filter:none}
-  [data-theme="dark"] .btn-pk:hover,[data-theme="dark"] .nb-cta:hover{background:#ffa9b8;border-color:#ffa9b8}
-  :is(.hero-photo img,.sq-panel img,.pf-feature img,.pf-item img,.hero-logo,.ft-logo,.nb-logo img){filter:saturate(1.2) contrast(1.03)}
-  .intro-media.poster-only::before{filter:saturate(1.2) contrast(1.03)}
+  [data-theme="dark"] .btn-pk:hover,[data-theme="dark"] .nb-cta:hover{background:#fcb3c0;border-color:#fcb3c0}
+  :is(.cf-card img,.mp-foto img,.pf-feature img,.pf-item img,.hero-logo,.ft-logo,.nb-logo img){filter:saturate(1.2) contrast(1.03)}
 }

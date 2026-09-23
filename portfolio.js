@@ -11,21 +11,36 @@
   const items = $$('.pf-item', grid);
   const count = $('#pf-count');
   const empty = $('#pf-empty');
+  const mais = $('#pf-mais');
 
-  /* ---- filtro ---- */
-  const contar = () => { count.textContent = `${visible.length} ${traduz(visible.length === 1 ? 'fotografia' : 'fotografias')}`; };
-  let visible = items.slice();
-  function filter(category) {
-    visible = [];
-    for (const item of items) {
-      const match = category === 'todos' || item.dataset.category === category;
-      item.hidden = !match;
-      if (match) visible.push(item);
-    }
+  /* ---- filtro e Ver mais ----
+     Nove fotos por vez, tres linhas de tres: o resto espera o Ver mais, para a
+     pagina nao abrir com a grade inteira. Trocar de filtro volta as nove
+     primeiras daquela categoria. O lightbox anda so pelas que estao a vista. */
+  const PAGINA = 9;
+  let filtradas = items.slice(), limite = PAGINA, visible = [];
+  const contar = () => { count.textContent = `${filtradas.length} ${traduz(filtradas.length === 1 ? 'fotografia' : 'fotografias')}`; };
+  function mostrar() {
+    visible = filtradas.slice(0, limite);
+    const aVista = new Set(visible);
+    for (const item of items) item.hidden = !aVista.has(item);
     visible.forEach((item, i) => { item.dataset.index = String(i); });
-    contar();
-    empty.hidden = visible.length > 0;
+    mais.parentElement.hidden = filtradas.length <= limite;
+    empty.hidden = filtradas.length > 0;
   }
+  function filter(category) {
+    filtradas = items.filter(item => category === 'todos' || item.dataset.category === category);
+    limite = PAGINA;
+    mostrar();
+    contar();
+  }
+  // O foco vai para a primeira foto nova, para quem navega pelo teclado seguir dali.
+  mais.addEventListener('click', () => {
+    const antes = visible.length;
+    limite += PAGINA;
+    mostrar();
+    visible[antes]?.focus({preventScroll: true});
+  });
   $$('.pf-filters button').forEach(button => {
     button.addEventListener('click', () => {
       $$('.pf-filters button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
@@ -52,7 +67,7 @@
   }
 
   /* ---- lightbox ---- */
-  const dialog = $('#lightbox'), image = $('#lb-img'), caption = $('#lb-caption');
+  const dialog = $('#lightbox'), image = $('#lb-img');
   const prev = $('#lb-prev'), next = $('#lb-next');
   let current = 0, opener = null, porToque = false;
 
@@ -63,7 +78,6 @@
     const thumb = $('img', item);
     image.src = item.dataset.full || thumb.src;
     image.alt = thumb.alt;
-    caption.textContent = thumb.alt;
     const many = visible.length > 1;
     prev.hidden = !many; next.hidden = !many;
   }

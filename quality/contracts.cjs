@@ -29,10 +29,17 @@ assert.ok(csp.includes("object-src 'none'")&&csp.includes("frame-ancestors 'none
 // So o que vai para o ar (o guia fica fora do build e nao pesa para ninguem).
 const bytes=require('./site-files.cjs').filter(f=>/\.(js|css)$/.test(f)).reduce((sum,f)=>sum+gzipSync(fs.readFileSync(f)).length,0);
 assert.ok(bytes<45000,`First-party JS/CSS gzip budget exceeded: ${bytes}/45000`);
-for(const file of ['images/franciana-mobile.mp4','images/franciana-scroll.mp4','images/pincel-scroll.mp4'])assert.ok(fs.statSync(file).size<4*1024*1024,`Video budget exceeded: ${file}`);
-// O scrub por scroll depende de keyframes densos; sem isso cada seek redecodifica desde o inicio.
-assert.ok(fs.existsSync('images/pincel-scroll.mp4'),'Missing brush video: images/pincel-scroll.mp4');
-// Pincel do celular: 4 folhas de quadros, baixadas no inicio em qualquer 4G.
-const folhasPincel=[1,2,3,4].map(i=>`images/pincel-quadros-${i}.webp`);
-assert.ok(folhasPincel.reduce((t,f)=>t+fs.statSync(f).size,0)<400*1024,'Brush frame sheets over 400 KiB');
-console.log(`Architecture, assets and security checks passed. JS/CSS gzip: ${bytes}/45000 bytes; intro videos <4 MiB each.`);
+// Home: sem precos, sem foto repetida (o logo da navbar e do rodape e marca, nao
+// foto) e sem video na abertura, que agora e uma tela so, sem rolagem conduzida.
+const home=fs.readFileSync('index.html','utf8');
+assert.ok(!/R\$\s*\d/.test(home),'Prices are not shown on the home page');
+const fotos=[...home.matchAll(/<img\b[^>]*\bsrc="(images\/[^"]+)"/g)].map(m=>m[1]).filter(f=>!/logo/.test(f));
+assert.equal(fotos.length,new Set(fotos).size,`Duplicate photo on the home page: ${fotos.filter((f,i)=>fotos.indexOf(f)!==i)}`);
+assert.ok(!/<video\b/.test(home),'The home opening has no video');
+// A primeira pagina do portfolio (nove fotos) nao repete a apresentacao da home.
+const base=f=>f.replace(/^images\/|(-m|-full)?\.(webp|jpg)$/g,'');
+const capa=[...home.matchAll(/<div class="cf-card"[^>]*><img\b[^>]*\bsrc="(images\/[^"]+)"/g)].map(m=>base(m[1]));
+const pagina=[...fs.readFileSync('portfolio.html','utf8').matchAll(/<button class="pf-item[^"]*"[^>]*><img\b[^>]*\bsrc="(images\/[^"]+)"/g)].slice(0,9).map(m=>base(m[1]));
+assert.equal(capa.length,6,'The home presentation has six photos');
+assert.deepEqual(capa.filter(f=>pagina.includes(f)),[],'The first portfolio page repeats a home photo');
+console.log(`Architecture, assets and security checks passed. JS/CSS gzip: ${bytes}/45000 bytes.`);

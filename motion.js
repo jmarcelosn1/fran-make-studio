@@ -5,9 +5,12 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const pointer = matchMedia('(hover:hover) and (pointer:fine) and (min-width:851px)');
   let lenis = null, context = null, splits = [], paused = false, initialized = false;
+  // O ticker do GSAP conduz o Lenis; sem GSAP, o Lenis usa o proprio requestAnimationFrame.
+  const rafLenis = time => lenis?.raf(time * 1000);
   const number = (value, fallback, min, max) => Number.isFinite(Number(value)) ? Math.min(max, Math.max(min, Number(value))) : fallback;
 
   function cleanup() {
+    window.gsap?.ticker.remove(rafLenis);
     lenis?.destroy(); lenis = null;
     context?.revert(); context = null;
     splits.forEach(({split,heading,label}) => {
@@ -26,10 +29,10 @@
   function configurar() {
     cleanup();
     document.body.classList.toggle('no-noise', config.noise === false);
-    if(reduce.matches || document.documentElement.classList.contains('modo-leve')) return;
+    if(reduce.matches) return;
     if(window.Lenis && config.smoothScroll !== false && pointer.matches) {
       lenis = new Lenis({
-        autoRaf:false,
+        autoRaf:!window.gsap,
         lerp:number(config.scrollLerp,.09,.04,.2),
         smoothWheel:true,
         syncTouch:false,
@@ -37,6 +40,7 @@
         prevent:node => !!node.closest('#nb-mob, dialog')
       });
       if(window.ScrollTrigger) lenis.on('scroll', ScrollTrigger.update);
+      window.gsap?.ticker.add(rafLenis);
       if(paused) lenis.stop();
     }
     if(window.gsap && window.ScrollTrigger) {
@@ -70,7 +74,6 @@
   }
   window.FRAN_MOTION = {
     init() { if(initialized) return; initialized=true;setup();reduce.addEventListener('change',setup);pointer.addEventListener('change',setup); },
-    frame(time) { lenis?.raf(time); return !!lenis; },
     pause(value) { paused=value; if(value)lenis?.stop();else lenis?.start(); },
     refresh() { lenis?.resize(); window.ScrollTrigger?.refresh(); },
     remontar: () => { if(initialized) setup(); },

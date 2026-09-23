@@ -27,9 +27,9 @@
     $$('[data-weight]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
   }));
   const defaults={...window.FRAN_CONFIG};
-  const booleans=['smoothScroll','titleReveals','parallax','noise','lightContour'];
+  const booleans=['smoothScroll','titleReveals','parallax','noise'];
   const numbers=['scrollLerp'];
-  const text=['portraitImage','introVideo','introMobileVideo','introPoster','whatsappUrl','instagramUrl','mapsEmbedUrl','mapsUrl'];
+  const text=['portraitImage','whatsappUrl','instagramUrl','mapsEmbedUrl','mapsUrl'];
   function fill(){[...booleans,...numbers,...text,'latitude','longitude'].forEach(key=>{if(booleans.includes(key))$('#'+key).checked=defaults[key]!==false;else $('#'+key).value=defaults[key]??'';});render();}
   function values(){const data={...defaults};booleans.forEach(k=>data[k]=$('#'+k).checked);numbers.forEach(k=>data[k]=Number($('#'+k).value));text.forEach(k=>data[k]=$('#'+k).value.trim());['latitude','longitude'].forEach(k=>data[k]=$('#'+k).value===''?null:Number($('#'+k).value));return data;}
   function source(){return '/* Configuração do Fran Make Studio. */\nwindow.FRAN_CONFIG = Object.freeze('+JSON.stringify(values(),null,2)+');\n';}

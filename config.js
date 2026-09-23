@@ -1,10 +1,6 @@
 /* Configuração pública e editável. Nunca coloque senhas ou chaves neste arquivo. */
 window.FRAN_CONFIG = Object.freeze({
   portraitImage: 'images/franciana.webp',
-  introVideo: 'images/franciana-scroll.mp4',
-  introMobileVideo: 'images/franciana-mobile.mp4',
-  introPoster: 'images/intro-poster.webp',
-  lightContour: true,
   whatsappUrl: 'https://wa.me/message/2SNOKRBPREBYH1',
   instagramUrl: 'https://instagram.com/fran_make',
   smoothScroll: true,
