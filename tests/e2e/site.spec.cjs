@@ -437,11 +437,11 @@ test('home screen icon and Instagram in the footer of both pages',async({page,re
  expect(icone.status()).toBe(200);
  expect(icone.headers()['content-type']).toBe('image/png');
 });
-// Topo do portfolio colorido, com uma foto que nao se repete na grade.
-test('portfolio opens with a color photo that is not repeated in the grid',async({page})=>{
+// Topo do portfolio: a foto dos bastidores em preto e branco, que o cliente quis manter; nao se repete na grade.
+test('portfolio opens with the backstage photo, not repeated in the grid',async({page})=>{
  await page.goto('/portfolio.html');
  const topo=await page.locator('.pf-feature img').getAttribute('src');
- expect(topo).toBe('images/noiva2.webp');
+ expect(topo).toBe('images/bastidores-noiva-pb.webp');
  const grade=await page.locator('.pf-item img').evaluateAll(imgs=>imgs.map(i=>i.getAttribute('src').replace(/-m\.webp$/,'.webp')));
  expect(grade).not.toContain(topo);
 });

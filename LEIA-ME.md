@@ -51,7 +51,7 @@ Galerias permitem arraste, toque nativo, teclado, avanço e pausa. Autoplay lent
 - `404.html`: endereço inexistente mostra a assinatura e o caminho de volta, com status 404 (Cloudflare Pages e Vercel usam esse arquivo sozinhas). Tudo nela parte da raiz (`/style.css`), porque aparece em qualquer caminho.
 - `images/icone-app.png`: ícone de 180 px para quem salva o site na tela do celular.
 
-Tudo respeita a preferência por menos movimento. O topo do portfólio abre com a noiva de renda em cores (ela sai da grade para não repetir); a foto em preto e branco dos bastidores saiu e continua na tag `antes-das-melhorias`.
+Tudo respeita a preferência por menos movimento. O topo do portfólio continua com a foto em preto e branco da Franciana maquiando uma noiva: a troca por uma foto colorida foi testada e o cliente preferiu a de antes (2026-09-25).
 
 ## Imagens e transparência
 
