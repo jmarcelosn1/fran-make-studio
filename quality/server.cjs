@@ -6,7 +6,11 @@ http.createServer((req,res)=>{
  try{
   const name=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   const file=path.resolve(root,`.${name==='/'?'/index.html':name}`);
-  if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){res.writeHead(404);return res.end();}
+  if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){
+   const pagina=path.join(root,'404.html');
+   if(!fs.existsSync(pagina)){res.writeHead(404);return res.end();}
+   res.writeHead(404,{...headers,'Content-Type':mime['.html']});return fs.createReadStream(pagina).pipe(res);
+  }
   res.writeHead(200,{...headers,'Content-Type':mime[path.extname(file)]||'application/octet-stream'});
   fs.createReadStream(file).pipe(res);
  }catch{res.writeHead(400);res.end();}

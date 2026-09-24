@@ -51,6 +51,16 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
 .pf-cta h2{font:700 clamp(28px,3.6vw,46px)/1.15 var(--serif);margin-bottom:14px}
 .pf-cta p{color:var(--muted);max-width:52ch;margin:0 auto 26px}
 
+/* Foto ampliada: o voo da miniatura mora no portfolio.js; aqui o fundo escurece
+   e o X e as setas aparecem logo depois, e somem juntos ao fechar. */
+@media(prefers-reduced-motion:no-preference){
+  #lightbox[open]::backdrop{animation:lb-aparece .35s ease both}
+  #lightbox[open] :is(#lb-close,.lb-nav){animation:lb-aparece .3s ease .18s both}
+  #lightbox.fechando::backdrop{animation:lb-some .38s ease forwards}
+  #lightbox.fechando :is(#lb-close,.lb-nav){animation:lb-some .15s ease forwards}
+}
+@keyframes lb-aparece{from{opacity:0}}
+@keyframes lb-some{to{opacity:0}}
 /* Setas do lightbox, exclusivas desta pagina; o desenho e o do X, no style.css. */
 .lb-nav{top:50%;translate:0 -50%}
 .lb-nav[hidden]{display:none}

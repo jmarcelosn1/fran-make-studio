@@ -365,3 +365,83 @@ test('Instagram art is the link, with no button repeating it',async({page})=>{
  await expect(page.locator('#contato .btn-pk')).toHaveCount(0);
  await expect(page.locator('#contato a[href*="instagram.com"]')).toHaveCount(1);
 });
+
+// ---- Melhorias de design (branch melhorias-design) ----
+// A foto ampliada nasce da miniatura e volta para ela ao fechar.
+test('lightbox photo grows out of its thumbnail and shrinks back on close',async({page})=>{
+ await page.goto('/portfolio.html');
+ const item=page.locator('.pf-item').first();
+ await item.scrollIntoViewIfNeeded();
+ await page.waitForTimeout(900);
+ await item.click();
+ // No meio do voo a foto ainda esta perto do tamanho da miniatura, e recortada como ela.
+ await expect.poll(()=>page.evaluate(()=>document.querySelector('#lb-img').getAnimations().some(a=>a.effect.getKeyframes().some(k=>k.transform&&k.transform!=='none'))),{timeout:3000}).toBe(true);
+ await expect.poll(()=>page.evaluate(()=>document.querySelector('#lb-img').getAnimations().length)).toBe(0);
+ const aberta=await page.evaluate(()=>{const r=document.querySelector('#lb-img').getBoundingClientRect();return {cx:r.left+r.width/2-innerWidth/2,w:r.width};});
+ expect(Math.abs(aberta.cx)).toBeLessThan(4);
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#lightbox')).toHaveClass(/fechando/);
+ await expect(page.locator('#lightbox')).not.toBeVisible();
+ await expect(item).toBeFocused();
+});
+// Trocar de filtro faz as fotos que continuam a vista deslizarem ate o lugar novo.
+test('filters slide the remaining photos into their new places',async({page})=>{
+ await page.goto('/portfolio.html');
+ // Filtros no alto da tela, com a grade a vista, como quem acabou de olhar as fotos.
+ await page.evaluate(()=>scrollTo(0,document.querySelector('.pf-filters').getBoundingClientRect().top+scrollY-90));
+ await page.waitForTimeout(1500);
+ await page.click('[data-filter="producoes"]');
+ const deslizando=await page.evaluate(()=>[...document.querySelectorAll('.pf-item:not([hidden])')]
+  .filter(i=>i.getAnimations().some(a=>a.effect.getKeyframes().some(k=>/translate/.test(k.transform||'')))).length);
+ expect(deslizando).toBeGreaterThan(0);
+ await expect(page.locator('.pf-item:visible')).toHaveCount(9);
+});
+// Menu do celular: as opcoes entram uma depois da outra.
+test('mobile menu options enter one after the other',async({page},info)=>{
+ test.skip(!info.project.use.isMobile,'menu so do celular');
+ await page.goto('/#servicos');
+ await page.click('#nb-ham');
+ const atrasos=await page.evaluate(()=>[...document.querySelectorAll('#nb-mob li')].map(li=>{const c=getComputedStyle(li);return c.animationName+' '+c.animationDelay;}));
+ expect(atrasos).toEqual(['menu-entra 0s','menu-entra 0.05s','menu-entra 0.1s','menu-entra 0.15s']);
+});
+// No computador, ao rolar, a Franciana sobe mais devagar e a luz rose apaga.
+test('scrolling away from the opening lags the portrait and dims its light',async({page},info)=>{
+ test.skip(!!info.project.use.isMobile,'so no computador');
+ await semAbertura(page);
+ await page.route(/google\.com|gstatic\.com|googleapis\.com/,r=>r.abort());
+ await page.goto('/');
+ await page.waitForTimeout(600);
+ await page.evaluate(()=>scrollTo(0,document.querySelector('#hero').offsetHeight*.5));
+ await expect.poll(()=>page.evaluate(()=>new DOMMatrix(getComputedStyle(document.querySelector('#hero-img')).transform).m42),{timeout:5000}).toBeGreaterThan(20);
+ expect(await page.evaluate(()=>Number(getComputedStyle(document.querySelector('.hero-photo')).getPropertyValue('--luz')))).toBeLessThan(.8);
+});
+// Endereco inexistente: pagina propria, com status 404 e o caminho de volta.
+test('unknown addresses get a real 404 page with a way home',async({page,request})=>{
+ const r=await request.get('/nao/existe');
+ expect(r.status()).toBe(404);
+ expect(await r.text()).toContain('Voltar ao início');
+ await page.goto('/qualquer/coisa');
+ await expect(page.locator('h1')).toHaveText('Esta página não existe');
+ await expect(page.locator('.nao-achou .btn-pk')).toHaveAttribute('href','/');
+ await expect(page.locator('.nao-achou-marca img')).toBeVisible();
+ expect(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor)).toBe('rgb(0, 0, 0)');
+});
+// Icone para a tela inicial do celular e Instagram no rodape das duas paginas.
+test('home screen icon and Instagram in the footer of both pages',async({page,request})=>{
+ for(const url of ['/','/portfolio.html']){
+  await page.goto(url);
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href','images/icone-app.png');
+  await expect(page.locator('#footer a[href="https://instagram.com/fran_make"]')).toHaveText('Instagram');
+ }
+ const icone=await request.get('/images/icone-app.png');
+ expect(icone.status()).toBe(200);
+ expect(icone.headers()['content-type']).toBe('image/png');
+});
+// Topo do portfolio colorido, com uma foto que nao se repete na grade.
+test('portfolio opens with a color photo that is not repeated in the grid',async({page})=>{
+ await page.goto('/portfolio.html');
+ const topo=await page.locator('.pf-feature img').getAttribute('src');
+ expect(topo).toBe('images/noiva2.webp');
+ const grade=await page.locator('.pf-item img').evaluateAll(imgs=>imgs.map(i=>i.getAttribute('src').replace(/-m\.webp$/,'.webp')));
+ expect(grade).not.toContain(topo);
+});

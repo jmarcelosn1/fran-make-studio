@@ -67,6 +67,15 @@
           document.querySelectorAll('[data-parallax]').forEach(img => {
             gsap.fromTo(img,{yPercent:-3},{yPercent:3,ease:'none',scrollTrigger:{trigger:img.parentElement,start:'top bottom',end:'bottom top',scrub:.45}});
           });
+          // Inicio se despedindo: a Franciana sobe mais devagar que o texto e a
+          // luz rose apaga conforme a secao sai da tela. Na foto (o <figure> tem a
+          // animacao de entrada, que venceria o transform) e na variavel da luz.
+          const retrato = document.querySelector('#hero-img'), moldura = document.querySelector('.hero-photo');
+          if(retrato && moldura) {
+            const saida = {trigger:'#hero',start:'top top',end:'bottom top',scrub:.4};
+            gsap.to(retrato,{y:90,ease:'none',scrollTrigger:saida});
+            gsap.to(moldura,{'--luz':0,ease:'none',scrollTrigger:{...saida}});
+          }
         }
       });
       document.fonts.ready.then(()=>ScrollTrigger.refresh());

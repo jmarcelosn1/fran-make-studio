@@ -23,6 +23,16 @@ for(const page of ['index.html','portfolio.html']){
   assert.ok(/\bwidth="\d+"/.test(m[0])&&/\bheight="\d+"/.test(m[0]),`Image without width/height in ${page}: ${m[0].slice(0,90)}`);
  }
 }
+// Pagina de nao encontrado: aparece em qualquer caminho, entao tudo parte da raiz.
+{
+ const html=fs.readFileSync('404.html','utf8');
+ assert.ok(!/\son\w+\s*=|javascript:/i.test(html),'Inline executable HTML is forbidden: 404.html');
+ for(const m of html.matchAll(/(?:src|href)="([^"#]+)"/g)){
+  assert.ok(m[1].startsWith('/'),`404.html must use root paths: ${m[1]}`);
+  if(m[1]!=='/')assert.ok(fs.existsSync(m[1].slice(1)),`Missing asset in 404.html: ${m[1]}`);
+ }
+ assert.ok(/<meta name="robots" content="noindex"/.test(html),'404.html must not be indexed');
+}
 for(const file of fs.readdirSync('.').filter(f=>f.endsWith('.js'))){
  const source=fs.readFileSync(file,'utf8');
  assert.ok(!/\beval\s*\(|new Function\s*\(|\.innerHTML\s*=/.test(source),`Unsafe code in ${file}`);

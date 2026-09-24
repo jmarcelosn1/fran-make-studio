@@ -42,6 +42,17 @@ Lenis 1.3.26, SplitType 0.3.4 e GSAP/ScrollTrigger 3.13.0 ficam na pasta vendor,
 
 Galerias permitem arraste, toque nativo, teclado, avanço e pausa. Autoplay lento de ida e volta, sem duplicar imagens. Interação pausa por 4,5 segundos por padrão; foco e hover também suspendem o movimento. Vídeos usam controles nativos.
 
+## Movimento que responde à pessoa
+
+- Foto ampliada do portfólio: nasce da própria miniatura (mesmo tamanho e recorte) e cresce até a tela; ao fechar, volta para ela. Uma animação de transform e clip-path no `#lb-img`, sem cópia da foto. Com a miniatura fora da tela, só esmaece.
+- Filtros do portfólio: as fotos que continuam à vista deslizam até o lugar novo; as que ainda não entraram ao rolar ficam com a entrada delas.
+- Menu do celular: as opções entram uma depois da outra (0,05 s de diferença).
+- Início no computador: ao rolar, a Franciana sobe mais devagar que o texto e a luz rosé apaga (GSAP ScrollTrigger, no `motion.js`).
+- `404.html`: endereço inexistente mostra a assinatura e o caminho de volta, com status 404 (Cloudflare Pages e Vercel usam esse arquivo sozinhas). Tudo nela parte da raiz (`/style.css`), porque aparece em qualquer caminho.
+- `images/icone-app.png`: ícone de 180 px para quem salva o site na tela do celular.
+
+Tudo respeita a preferência por menos movimento. O topo do portfólio abre com a noiva de renda em cores (ela sai da grade para não repetir); a foto em preto e branco dos bastidores saiu e continua na tag `antes-das-melhorias`.
+
 ## Imagens e transparência
 
 Compartilhamento e busca: `images/compartilhar.jpg` (1200 × 630, 95 KB) é a prévia do link no WhatsApp e no Instagram, feita com a Franciana, a luz rosé e o nome. Canonical, `og:url` e `og:image` usam o endereço completo em `https://fran-make-studio.pages.dev` (a Cloudflare redireciona `/portfolio.html` para `/portfolio`); os contratos conferem isso. `sitemap.xml` lista as duas páginas e o `robots.txt` aponta para ele. Se o site ganhar domínio próprio, troque esse endereço nos dois HTML, no `sitemap.xml` e no `robots.txt`. Os vídeos antigos (`videoprincipal.mp4`, `video_formanda.mp4`, `cacheada.mp4`), `logo-transparente.png` e `noiva-vestido-branco.webp` não eram usados e saíram do site; estão em `_fontes/fora-do-site/`.
