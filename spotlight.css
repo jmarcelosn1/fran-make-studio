@@ -1,17 +1,14 @@
-/* Rosé light, adapted from the supplied GlowCard reference. */
-.spotlight-surface{--spot-x:50%;--spot-y:35%;--spot-strength:.3;isolation:isolate}
-.spotlight-light{position:absolute;inset:0;z-index:2;border-radius:inherit;pointer-events:none;opacity:var(--spot-strength);background:radial-gradient(280px circle at var(--spot-x) var(--spot-y),rgba(250,157,170,.2),transparent 72%);box-shadow:inset 0 0 0 1px rgba(250,157,170,.26);transition:opacity .45s ease}
-.spotlight-surface:focus-within{--spot-strength:1}
+/* Cartoes de servico. Sem borda e sem a luz rose que seguia o ponteiro, a pedido
+   (2026-09-25): ela desenhava um fio fino em volta. Um fundo um tom acima do
+   preto da a forma do cartao sem linha nenhuma. */
 #servicos .makes-prices{gap:20px;border:0;align-items:stretch}
-#servicos .mp-card{position:relative;overflow:hidden;padding:0;gap:0;border:1px solid rgba(250,157,170,.22);border-radius:18px;background:linear-gradient(145deg,rgba(250,157,170,.075),transparent 62%);justify-content:flex-start}
+#servicos .mp-card{position:relative;overflow:hidden;padding:0;gap:0;border:0;border-radius:18px;background:#0e0b0c;justify-content:flex-start}
 /* Foto de referencia de ponta a ponta no alto do cartao; o texto embaixo. */
 #servicos .mp-foto{width:100%;aspect-ratio:4/5;overflow:hidden;background:#140d10}
 #servicos .mp-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
-#servicos .mp-foto .foco-social{object-position:56% 40%}
 #servicos .mp-texto{display:flex;flex-direction:column;gap:12px;padding:26px 28px 30px}
 #servicos .service-name{font-size:clamp(25px,2.5vw,36px);line-height:1.15;letter-spacing:-.8px;font-weight:700}
-#servicos .mp-card p{color:var(--muted);line-height:1.85;max-width:34ch}
-/* Um Consulte so para os tres servicos, centrado embaixo dos cartoes. */
+#servicos .mp-card p{color:#d8d1d4;font-size:15px;line-height:1.7;max-width:36ch}
+/* Um Agende so para os tres servicos, centrado embaixo dos cartoes. */
 #servicos .servicos-cta{display:flex;justify-content:center;margin-top:clamp(28px,3.4vw,44px)}
-@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px}#servicos .mp-foto{aspect-ratio:1}#servicos .mp-texto{padding:22px 22px 26px}#servicos .service-name{font-size:30px}.spotlight-surface.spotlight-visible{--spot-strength:.65}}
-@media(prefers-reduced-motion:reduce){.spotlight-light{transition:none;opacity:.25}}
+@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px}#servicos .mp-foto{aspect-ratio:1}#servicos .mp-texto{padding:22px 22px 26px}#servicos .service-name{font-size:30px}}

@@ -30,29 +30,6 @@
     };
     escrita?.finished.then(deslizar).catch(() => {});
   }
-  // No touch interception or independent animation loop.
-  const spotlights = $$('.mp-card');
-  const finePointer = matchMedia('(hover:hover) and (pointer:fine)');
-  const spotlightObserver = new IntersectionObserver(entries => {
-    entries.forEach(entry => entry.target.classList.toggle('spotlight-visible', entry.isIntersecting));
-  }, {threshold:.25});
-  spotlights.forEach(surface => {
-    surface.classList.add('spotlight-surface');
-    const light = document.createElement('span');
-    light.className = 'spotlight-light'; light.setAttribute('aria-hidden','true'); surface.append(light);
-    spotlightObserver.observe(surface);
-    surface.addEventListener('pointermove', event => {
-      if (!finePointer.matches || reduced.matches || event.pointerType === 'touch') return;
-      const rect = surface.getBoundingClientRect();
-      surface.style.setProperty('--spot-x', `${event.clientX - rect.left}px`);
-      surface.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
-      surface.style.setProperty('--spot-strength', '1');
-    }, {passive:true});
-    surface.addEventListener('pointerleave', () => {
-      surface.style.removeProperty('--spot-strength');
-      surface.style.removeProperty('--spot-x'); surface.style.removeProperty('--spot-y');
-    });
-  });
   /* Coverflow, a partir do componente que o cliente mandou (coverflow-carousel),
      reescrito sem React. Um unico numero, 'pos' (o cartao no centro, fracionario),
      decide tudo: cada cartao se inclina e recua conforme a distancia ao centro.

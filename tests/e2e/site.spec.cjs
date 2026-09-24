@@ -445,3 +445,19 @@ test('portfolio opens with a color photo that is not repeated in the grid',async
  const grade=await page.locator('.pf-item img').evaluateAll(imgs=>imgs.map(i=>i.getAttribute('src').replace(/-m\.webp$/,'.webp')));
  expect(grade).not.toContain(topo);
 });
+// Cartoes de servico limpos: sem borda, sem luz seguindo o ponteiro, texto legivel,
+// foto da Make Social sem o letreiro cortado e "teste" em minuscula.
+test('service cards have no border or pointer light and readable text',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/#servicos');
+ const cards=page.locator('#servicos .mp-card');
+ await expect(cards).toHaveCount(3);
+ await expect(page.locator('#servicos .spotlight-light')).toHaveCount(0);
+ for(const c of await cards.all()){
+  await expect(c).toHaveCSS('border-top-width','0px');
+  await expect(c).toHaveCSS('box-shadow','none');
+  expect(parseFloat(await c.locator('p').evaluate(p=>getComputedStyle(p).fontSize))).toBeGreaterThanOrEqual(15);
+ }
+ await expect(cards.first().locator('img')).toHaveAttribute('src','images/social-estudio-brilho-cartao.webp');
+ await expect(cards.nth(2).locator('p')).toContainText('Pacote luxo: teste de maquiagem');
+});

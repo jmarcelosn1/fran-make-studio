@@ -56,6 +56,6 @@ As referências de spotlight e texto no scroll já foram adaptadas para o sistem
 | URLs validadas dentro do script | Fronteira safety.js compartilhada com os testes | Testar segurança sem reconstruir componentes |
 | Pasta inteira como publicação | Lista explícita de arquivos públicos em dist | Não expor artefatos internos |
 
-Antes de cada tela: extrair referência e hierarquia, antecipar riscos, mapear componentes existentes. Componentes atuais: navbar/menu, galeria, sequência de formandas, lightbox, cards de serviços, spotlight, CTA e mapa sob demanda. Revisar loading do vídeo e poster, erro de CDN, mapa fechado, foco visível, zoom/texto grande, contraste e toque. Nenhum componente decorativo novo foi criado nesta etapa de qualidade.
+Antes de cada tela: extrair referência e hierarquia, antecipar riscos, mapear componentes existentes. Componentes atuais: navbar/menu, galeria, sequência de formandas, lightbox, cards de serviços, CTA e mapa sob demanda. Revisar loading do vídeo e poster, erro de CDN, mapa fechado, foco visível, zoom/texto grande, contraste e toque. Nenhum componente decorativo novo foi criado nesta etapa de qualidade.
 
 Referências técnicas: https://biomejs.dev/reference/configuration/ ; https://playwright.dev/docs/test-configuration ; https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches

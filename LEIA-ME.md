@@ -28,7 +28,7 @@ O início é uma tela só, sem vídeo, sem pincel e sem rolagem conduzida. Na pr
 - `boot.js`: tema e idioma antes da primeira pintura, e o estado de clique dos botões com brilho.
 - `config.js`: contatos, retrato, efeitos e localização.
 - `guia.html`, `guia.css`, `guia.js`: documentação para uso local; ficam fora do build publicado.
-- `images`: originais e WebP. `social-estudio-brilho.webp` (Make Social) e `instagram-fran-make.webp` (arte do perfil, recortada no conteúdo, fundo transparente) entraram nesta versão; os originais ficam em `_fontes/`, fora do repositório.
+- `images`: originais e WebP. `social-estudio-brilho-cartao.webp` (Make Social, recortado abaixo do letreiro; o original está em `_fontes/`) e `instagram-fran-make.webp` (arte do perfil, recortada no conteúdo, fundo transparente) entraram nesta versão; os originais ficam em `_fontes/`, fora do repositório.
 
 ## Cores
 
@@ -96,7 +96,7 @@ Layout verificado em 1440, 1200, 1024, 768, 430, 390 e 360 px: sem overflow hori
 
 Não houve teste em aparelhos físicos ou medição representativa de FPS nesses aparelhos. Os serviços não mostram preço; o único botão Agende leva ao WhatsApp. Nenhuma mensagem foi enviada. Confira os dados comerciais antes de publicar usando a lista do guia.
 
-Spotlight: spotlight.css controla a luz rosé dos cartões de serviço; o halo do retrato fica no style.css. Ajuste os valores rgba(250,157,170,...) para mudar sua cor e transparência. No desktop acompanha o ponteiro; no celular ganha presença ao entrar na tela, sem capturar gestos. O script principal monta as camadas decorativas e respeita a preferência por menos movimento. As duas referências React foram adaptadas para JavaScript e CSS nativos, sem acrescentar frameworks ou imagens externas.
+Cartões de serviço: o `spotlight.css` guarda o desenho deles (o nome ficou do tempo em que tinham uma luz rosé seguindo o ponteiro). A luz e a borda fina saíram a pedido em 2026-09-25: o cartão é um fundo um tom acima do preto, com a foto no alto e o texto em 15 px. A foto da Make Social usa um recorte próprio (`social-estudio-brilho-cartao.webp`, 474 × 592) que começa abaixo do letreiro, que já vinha cortado na foto original. O halo do retrato fica no `style.css`.
 
 
 No mobile, títulos e cartões ganham entradas curtas de 14px via IntersectionObserver, executadas uma vez. Não há captura do scroll nem novo loop de animação. A preferência por menos movimento desativa essas transições.
