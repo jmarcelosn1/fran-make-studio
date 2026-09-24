@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://fran-make-studio.pages.dev/sitemap.xml

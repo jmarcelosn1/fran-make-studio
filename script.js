@@ -9,6 +9,27 @@
   const traduz = texto => (window.FRAN_IDIOMA ? window.FRAN_IDIOMA.t(texto) : texto);
   let currentModal = null;
   const motion = window.FRAN_MOTION;
+  /* Abertura: quando o nome termina de se escrever na cortina, ele desliza e
+     muda de tamanho ate cair exatamente sobre o nome do inicio, enquanto o preto
+     se desfaz; ai os dois trocam de lugar sem salto. Medido na hora, entao vale
+     para qualquer tela. Se o script chegar tarde, a queda do CSS ja resolveu. */
+  const raiz = document.documentElement, nomeAbertura = $('.abertura-nome');
+  if (raiz.classList.contains('abertura-on') && nomeAbertura) {
+    const escrita = nomeAbertura.getAnimations()[0], saida = $('.abertura').getAnimations()[0];
+    const deslizar = () => {
+      // Pelo relogio da propria cortina: perto dos 2,4s ela ja sai sozinha.
+      if (saida && saida.currentTime > 2300) return;
+      const de = nomeAbertura.getBoundingClientRect(), para = $('.hero-mark img').getBoundingClientRect();
+      if (!de.width || !para.width) return;
+      const dx = (para.left + para.width / 2) - (de.left + de.width / 2);
+      const dy = (para.top + para.height / 2) - (de.top + de.height / 2);
+      const tempo = {duration: 750, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'forwards'};
+      nomeAbertura.animate([{transform: 'none'}, {transform: `translate(${dx}px,${dy}px) scale(${para.width / de.width})`}], tempo)
+        .finished.then(() => raiz.classList.add('abertura-fim'));
+      $('.abertura').animate([{backgroundColor: '#000'}, {backgroundColor: 'rgba(0,0,0,0)'}], tempo);
+    };
+    escrita?.finished.then(deslizar).catch(() => {});
+  }
   // No touch interception or independent animation loop.
   const spotlights = $$('.mp-card');
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)');

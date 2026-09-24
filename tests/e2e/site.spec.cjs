@@ -14,6 +14,11 @@ test('public build omits internal files and sends security headers',async({reque
  // Tudo da propria origem: sem CDN e sem Google Fonts.
  expect(csp).not.toMatch(/unpkg|cdnjs|googleapis|gstatic/);
  expect(csp.replace("style-src-attr 'unsafe-inline'",'')).not.toContain('unsafe');
+ // Unico script de fora: a contagem de visitas sem cookies da Cloudflare, so nos dois enderecos dela.
+ expect(csp).toContain("script-src 'self' https://static.cloudflareinsights.com;");
+ expect(csp).toContain("connect-src 'self' https://cloudflareinsights.com;");
+ const externos=csp.match(/https:\/\/[^ ;]+/g).filter(o=>!/^https:\/\/(maps|www)\.google\.com(\.br)?$/.test(o));
+ expect(externos.sort()).toEqual(['https://cloudflareinsights.com','https://static.cloudflareinsights.com']);
  for(const file of ['package.json','QUALIDADE.md','.env','tests/unit/safety.test.cjs','guia.html','guia.js','config.js.bak','.git/config','_fontes/franciana.jpg','.claude/settings.local.json'])expect((await request.get('/'+file)).status()).toBe(404);
 });
 // O build gera _headers (Cloudflare Pages) a partir do vercel.json; aqui o servidor
@@ -93,25 +98,51 @@ test('animation libraries failing leaves content and booking usable',async({page
  await expect(page.locator('#servicos a[href*="wa.me"]')).toBeVisible();
  await expect(page.locator('#servicos a[href*="wa.me"]')).toHaveAttribute('href','https://wa.me/message/2SNOKRBPREBYH1');
 });
-// A abertura e uma tela so: sem video, sem pincel e sem sequencia conduzida pela
-// rolagem. A assinatura se escreve sozinha, como no portfolio, e a Franciana
-// assenta sem ninguem rolar.
-test('opening writes the signature on its own, with no video, brush or scroll sequence',async({page})=>{
+// Pula a abertura, como numa segunda visita na mesma sessao.
+const semAbertura=page=>page.addInitScript(()=>{try{sessionStorage.setItem('fm-abertura','1');}catch{/* sem armazenamento */}});
+// Abertura: o nome se escreve numa tela preta e desliza ate o lugar dele no
+// inicio, a cortina some e o resto ja esta la. Sem video, pincel nem rolagem.
+test('intro writes the name on black, glides it into place and gets out of the way',async({page})=>{
  const errors=[];page.on('pageerror',e=>{if(doSite(e))errors.push(e.message);});
  await page.route(/google\.com|gstatic\.com|googleapis\.com/,r=>r.abort());
  await page.goto('/');
+ await expect(page.locator('html')).toHaveClass(/abertura-on/);
+ await expect(page.locator('.abertura')).toBeVisible();
+ expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.abertura-nome')).animationName)).toBe('pf-escreve');
+ // O nome da cortina desliza e para exatamente sobre o nome do inicio. Mede no
+ // ultimo quadro do deslize, antes de a cortina sair do layout.
+ await expect.poll(()=>page.evaluate(()=>document.querySelector('.abertura-nome').getAnimations().some(a=>!a.animationName)),{timeout:6000}).toBe(true);
+ const fim=await page.evaluate(()=>{const n=document.querySelector('.abertura-nome');
+  n.getAnimations().find(a=>!a.animationName).finish();
+  const a=n.getBoundingClientRect(),b=document.querySelector('.hero-mark img').getBoundingClientRect();
+  return [a.left-b.left,a.top-b.top,a.width-b.width];});
+ for(const d of fim) expect(Math.abs(d)).toBeLessThan(2);
+ await expect(page.locator('html')).toHaveClass(/abertura-fim/,{timeout:6000});
+ await expect(page.locator('.abertura')).toBeHidden();
+ expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.hero-mark')).opacity)).toBe('1');
  await expect(page.locator('video, canvas, .brush-scene, .intro-media, .hero-credit')).toHaveCount(0);
  await expect(page.locator('#navbar')).toBeVisible();
  await expect(page.locator('#hero h1')).toHaveText('Fran Make Studio');
- expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.assinatura-escrita')).animationName)).toBe('pf-escreve');
  await expect.poll(()=>page.evaluate(()=>Number(getComputedStyle(document.querySelector('.hero-photo')).opacity))).toBe(1);
  expect(await page.evaluate(()=>scrollY)).toBe(0);
  // Sem trilho de rolagem: o inicio ocupa pouco mais que a propria tela.
  expect(await page.evaluate(()=>document.querySelector('#hero').offsetHeight<innerHeight*1.6)).toBeTruthy();
  expect(errors).toEqual([]);
 });
-// Assinatura, retrato, titulo e texto entram juntos, no mesmo tempo.
+// Uma vez por sessao: recarregar, voltar do portfolio ou chegar por ancora nao repete.
+test('intro plays once per session and never on arrival at a section',async({page})=>{
+ await page.goto('/');
+ await expect(page.locator('html')).toHaveClass(/abertura-on/);
+ await page.reload();
+ await expect(page.locator('html')).not.toHaveClass(/abertura-on/);
+ await expect(page.locator('.abertura')).toBeHidden();
+ const outra=await page.context().newPage();
+ await outra.goto('/#servicos');
+ await expect(outra.locator('html')).not.toHaveClass(/abertura-on/);
+});
+// Sem a abertura, assinatura, retrato, titulo e texto entram juntos, no mesmo tempo.
 test('opening pieces enter together, on the same clock',async({page})=>{
+ await semAbertura(page);
  await page.goto('/');
  const tempos=await page.evaluate(()=>['.hero-mark .assinatura-escrita','.hero-photo','.hero-titulo','.hero-description']
   .map(s=>{const c=getComputedStyle(document.querySelector(s));return c.animationDuration+' '+c.animationDelay+' '+c.animationTimingFunction;}));
@@ -259,6 +290,12 @@ test('on the phone the text sits under the portrait, which is whole and faded at
   expect(r.largura).toBeGreaterThan(300);
   expect(r.base).toContain('linear-gradient');
   expect(r.sw).toBe(r.iw);
+ }
+ // O portfolio nunca espia na primeira tela do celular.
+ for(const altura of [664,915]){
+  await page.setViewportSize({width:412,height:altura});
+  await page.goto('/');
+  expect(await page.evaluate(()=>document.querySelector('#squeeze-titulo').getBoundingClientRect().top)).toBeGreaterThanOrEqual(altura);
  }
 });
 // O mapa carrega logo no inicio, com a rolagem parada. Carregado so ao se

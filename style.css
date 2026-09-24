@@ -137,7 +137,10 @@ body.no-noise::after{display:none}
 @media(min-width:1600px){.hero-layout{width:min(1320px,100% - 160px)}}
 @media(max-width:1100px){.hero-mark,.hero-titulo,.hero-description{padding-right:24px}.hero-titulo{font-size:38px}.hero-description{font-size:14px}}
 @media(max-width:850px){
-  .hero-layout{grid-template-columns:1fr;grid-template-rows:none;justify-items:center;min-height:0;padding:30px 0 8px;text-align:center}
+  /* A tela inteira: o portfolio so aparece depois de rolar, nunca espiando na
+     primeira tela enquanto a abertura acontece. */
+  .hero-layout{grid-template-columns:1fr;grid-template-rows:none;justify-items:center;align-content:center;text-align:center;
+    min-height:calc(100vh - var(--nav));min-height:calc(100svh - var(--nav));padding:24px 0 32px}
   .hero-mark,.hero-titulo,.hero-description,.hero-photo{grid-area:auto;padding-right:0}
   .hero-mark{width:min(78vw,340px);margin:0 auto 4px}
   .hero-photo{align-self:auto;justify-self:center;width:min(calc(100% + 24px),440px)}
@@ -172,6 +175,33 @@ body.no-noise::after{display:none}
   .hero-photo{animation:pf-surge 1.6s var(--ease) .2s both}
   .hero-titulo,.hero-description{animation:pf-texto 1.6s var(--ease) .2s both}
 }
+/* ---- Abertura ------------------------------------------------------------
+   Primeira visita da sessao (boot.js poe .abertura-on). O nome se escreve no
+   centro de uma tela preta; o script.js entao o desliza ate o lugar dele no
+   inicio enquanto o preto se desfaz, e retrato, titulo e texto sobem juntos.
+   Sem o script, a cortina some sozinha e o nome aparece no lugar. Tudo em
+   CSS e uma animacao de transform: nada roda depois que termina. */
+.abertura{display:none}
+.abertura-on .abertura{display:grid;place-items:center;position:fixed;inset:0;z-index:60;background:#000;pointer-events:none;
+  animation:abertura-sai .6s var(--ease) 2.4s forwards}
+.abertura-nome{display:block;width:min(78vw,460px);aspect-ratio:1637/521;
+  background:url(images/fran-make-assinatura-m.webp) center/contain no-repeat}
+@supports ((mask-image:linear-gradient(#000,#000)) or (-webkit-mask-image:linear-gradient(#000,#000))){
+  .abertura-nome{
+    -webkit-mask-image:linear-gradient(97deg,#000 0 40%,rgba(0,0,0,.5) 41.5%,transparent 43%);
+    mask-image:linear-gradient(97deg,#000 0 40%,rgba(0,0,0,.5) 41.5%,transparent 43%);
+    -webkit-mask-size:300% 100%;mask-size:300% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    animation:pf-escreve 1.3s cubic-bezier(.3,.7,.2,1) .15s both}
+}
+/* O nome do inicio fica escondido enquanto o da cortina chega; o resto entra
+   quando o preto comeca a sair. */
+.abertura-on .hero-mark{animation:abertura-marca .4s var(--ease) 2.4s both}
+.abertura-on .hero-mark .assinatura-escrita{animation:none;-webkit-mask-image:none;mask-image:none}
+.abertura-on :is(.hero-photo,.hero-titulo,.hero-description){animation-delay:1.5s;animation-duration:1.3s}
+.abertura-fim .abertura{display:none}
+.abertura-fim .hero-mark{animation:none;opacity:1}
+@keyframes abertura-sai{to{opacity:0;visibility:hidden}}
+@keyframes abertura-marca{from{opacity:0}to{opacity:1}}
 @keyframes pf-escreve{
   from{-webkit-mask-position:100% 0;mask-position:100% 0}
   to{-webkit-mask-position:0 0;mask-position:0 0}

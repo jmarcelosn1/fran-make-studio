@@ -11,6 +11,9 @@ for(const page of ['index.html','portfolio.html']){
   const destino=fs.readFileSync(m[1],'utf8');
   assert.ok(new RegExp('id="'+m[2]+'"').test(destino),`Dead cross-page anchor in ${page}: ${m[1]}#${m[2]}`);
  }
+ // Previa no WhatsApp e endereco oficial so funcionam com URL completa.
+ for(const re of [/<link rel="canonical" href="([^"]+)"/,/<meta property="og:image" content="([^"]+)"/,/<meta property="og:url" content="([^"]+)"/])
+  assert.ok(/^https:\/\//.test((html.match(re)||[])[1]||''),`Relative or missing ${re.source.slice(1,26)} in ${page}`);
  const scripts=[...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(m=>m[1]);
  assert.equal(scripts.length,new Set(scripts).size,`Duplicate scripts in ${page}`);
  // Imagem sem dimensao declarada empurra o layout quando carrega (CLS). As que

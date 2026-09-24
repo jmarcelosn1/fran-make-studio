@@ -58,6 +58,6 @@ Só o que está em `quality/site-files.cjs` vai para `dist/` e para o ar: as dua
 
 ## Alterar sem quebrar
 
-Para integrar outro fornecedor, adicione só o domínio exato na diretiva certa: `script-src` para JavaScript, `style-src` para CSS, `img-src` para imagens, `media-src` para vídeo, `frame-src` para iframes, `connect-src` para requisições. Sem curingas e sem `unsafe-eval`. Depois rode `npm run quality`: o teste de cabeçalhos e o console dos quatro navegadores acusam bloqueios.
+Único fornecedor de script externo liberado: a Cloudflare Web Analytics (`script-src https://static.cloudflareinsights.com` e `connect-src https://cloudflareinsights.com`), para a contagem de visitas sem cookies aprovada pelo cliente; ver `QUALIDADE.md`. O script dela muda de versão, então não leva hash SRI como as bibliotecas de `vendor/`. Para integrar outro fornecedor, adicione só o domínio exato na diretiva certa: `script-src` para JavaScript, `style-src` para CSS, `img-src` para imagens, `media-src` para vídeo, `frame-src` para iframes, `connect-src` para requisições. Sem curingas e sem `unsafe-eval`. Depois rode `npm run quality`: o teste de cabeçalhos e o console dos quatro navegadores acusam bloqueios.
 
 Nenhuma configuração é garantia absoluta: mantenha as contas (GitHub, Vercel, domínio, Google) com senha forte e verificação em duas etapas, porque é por elas, e não pelo site, que um invasor conseguiria alterar o conteúdo.
