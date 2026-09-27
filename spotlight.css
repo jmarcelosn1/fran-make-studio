@@ -1,14 +1,14 @@
 /* Cartoes de servico. Sem borda e sem a luz rose que seguia o ponteiro, a pedido
    (2026-09-25): ela desenhava um fio fino em volta. Um fundo um tom acima do
    preto da a forma do cartao sem linha nenhuma. */
-#servicos .makes-prices{gap:20px;border:0;align-items:stretch}
+#servicos .makes-prices{gap:20px;border:0;align-items:stretch;max-width:960px;margin-inline:auto}
 #servicos .mp-card{position:relative;overflow:hidden;padding:0;gap:0;border:0;border-radius:18px;background:#0e0b0c;justify-content:flex-start}
 /* Foto de referencia de ponta a ponta no alto do cartao; o texto embaixo. */
-#servicos .mp-foto{width:100%;aspect-ratio:4/5;overflow:hidden;background:#140d10}
+#servicos .mp-foto{width:100%;aspect-ratio:1;overflow:hidden;background:#140d10}
 #servicos .mp-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
-#servicos .mp-texto{display:flex;flex-direction:column;gap:12px;padding:26px 28px 30px}
+#servicos .mp-texto{display:flex;flex-direction:column;gap:10px;padding:20px 22px 24px}
 #servicos .service-name{font-size:clamp(25px,2.5vw,36px);line-height:1.15;letter-spacing:-.8px;font-weight:700}
 #servicos .mp-card p{color:#d8d1d4;font-size:15px;line-height:1.7;max-width:36ch}
 /* Um Agende so para os tres servicos, centrado embaixo dos cartoes. */
 #servicos .servicos-cta{display:flex;justify-content:center;margin-top:clamp(28px,3.4vw,44px)}
-@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px}#servicos .mp-foto{aspect-ratio:1}#servicos .mp-texto{padding:22px 22px 26px}#servicos .service-name{font-size:30px}}
+@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px;max-width:460px}#servicos .mp-foto{aspect-ratio:4/3}#servicos .mp-texto{padding:18px 18px 22px}#servicos .service-name{font-size:26px}}
