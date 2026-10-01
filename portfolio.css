@@ -10,7 +10,10 @@
 .pf-lead h1{font:700 clamp(38px,5.4vw,74px)/1.04 var(--serif);letter-spacing:-.01em;margin:14px 0 18px}
 .pf-lead h1 em{font-style:normal;color:var(--rose)}
 .pf-lead p{max-width:44ch;color:var(--muted)}
-.pf-feature img{display:block;width:100%;height:auto;border-radius:18px}
+.pf-feature{justify-self:end;margin:0}
+/* No notebook a foto inteira cabe na primeira tela: a altura segue a janela e
+   a largura acompanha a proporcao original, sem cortar ninguem. */
+.pf-feature img{display:block;width:auto;max-width:100%;height:min(620px,calc(100svh - var(--nav) - 120px));object-fit:cover;object-position:50% 25%;border-radius:18px}
 
 /* Filtros no desenho do glow: Noivas em prata, a direita; Todos e Producoes em
    preto. O selecionado ganha anel e halo acesos, os outros ficam um tom abaixo.
@@ -69,7 +72,7 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
 
 @media(max-width:1024px){
   .pf-hero .container{grid-template-columns:1fr;gap:26px}
-  .pf-feature{max-width:460px}
+  .pf-feature{max-width:460px;justify-self:start}
 }
 @media(max-width:620px){
   .pf-hero{padding:calc(var(--nav) + 34px) 0 26px}
@@ -88,10 +91,10 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
 .pf-anima .pf-item.visto{opacity:1;transform:none;filter:none}
 /* No celular sem o desfoque: animado em cada foto, derrubava 1 em 20 quadros. */
 @media(max-width:850px),(pointer:coarse){.pf-anima .pf-item{filter:none;transition-property:opacity,transform}}
-/* No celular a foto do topo ocupa a largura toda, num recorte mais baixo para
-   nao tomar a primeira tela. A grade fica em tres colunas, como no desktop. */
+/* No celular a foto do topo ocupa a largura toda, num recorte 4:5 que mostra
+   a noiva e a Fran inteiras. A grade fica em tres colunas, como no desktop. */
 @media(max-width:620px){
-  .pf-feature img{aspect-ratio:5/4;object-fit:cover;object-position:50% 30%}
+  .pf-feature img{width:100%;height:auto;aspect-ratio:4/5;object-position:50% 22%}
   /* Tres por linha tambem no celular, a pedido: nove fotos cabem em tres linhas. */
   .pf-grid{gap:8px}
   .pf-item img{border-radius:10px}

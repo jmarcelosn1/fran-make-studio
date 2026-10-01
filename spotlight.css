@@ -4,11 +4,16 @@
 #servicos .makes-prices{gap:20px;border:0;align-items:stretch;max-width:960px;margin-inline:auto}
 #servicos .mp-card{position:relative;overflow:hidden;padding:0;gap:0;border:0;border-radius:18px;background:#0e0b0c;justify-content:flex-start}
 /* Foto de referencia de ponta a ponta no alto do cartao; o texto embaixo. */
-#servicos .mp-foto{width:100%;aspect-ratio:1;overflow:hidden;background:#140d10}
-#servicos .mp-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+/* Retrato 4:5, a proporcao das proprias fotos: quase sem zoom, entao a imagem
+   fica nitida. Cada foto mira o proprio rosto. */
+#servicos .mp-foto{width:100%;aspect-ratio:4/5;overflow:hidden;background:#140d10;margin:0}
+#servicos .mp-foto img{display:block;width:100%;height:100%;object-fit:cover;object-position:54% 25%}
+#servicos .mp-foto .foco-social{object-position:54% 20%}
+#servicos .mp-foto .foco-hair{object-position:54% 18%}
+#servicos .mp-foto .foco-noiva{object-position:54% 45%}
 #servicos .mp-texto{display:flex;flex-direction:column;gap:10px;padding:20px 22px 24px}
 #servicos .service-name{font-size:clamp(25px,2.5vw,36px);line-height:1.15;letter-spacing:-.8px;font-weight:700}
 #servicos .mp-card p{color:#d8d1d4;font-size:15px;line-height:1.7;max-width:36ch}
 /* Um Agende so para os tres servicos, centrado embaixo dos cartoes. */
 #servicos .servicos-cta{display:flex;justify-content:center;margin-top:clamp(28px,3.4vw,44px)}
-@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px;max-width:460px}#servicos .mp-foto{aspect-ratio:4/3}#servicos .mp-texto{padding:18px 18px 22px}#servicos .service-name{font-size:26px}}
+@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px;max-width:400px;margin-inline:auto}#servicos .mp-foto{aspect-ratio:1}#servicos .mp-texto{padding:18px 18px 22px}#servicos .service-name{font-size:26px}}
