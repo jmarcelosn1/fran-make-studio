@@ -4,16 +4,24 @@
 #servicos .makes-prices{gap:20px;border:0;align-items:stretch;max-width:960px;margin-inline:auto}
 #servicos .mp-card{position:relative;overflow:hidden;padding:0;gap:0;border:0;border-radius:18px;background:#0e0b0c;justify-content:flex-start}
 /* Foto de referencia de ponta a ponta no alto do cartao; o texto embaixo. */
-/* Retrato 4:5, a proporcao das proprias fotos: quase sem zoom, entao a imagem
-   fica nitida. Cada foto mira o proprio rosto. */
-#servicos .mp-foto{width:100%;aspect-ratio:4/5;overflow:hidden;background:#140d10;margin:0}
-#servicos .mp-foto img{display:block;width:100%;height:100%;object-fit:cover;object-position:54% 25%}
-#servicos .mp-foto .foco-social{object-position:54% 20%}
-#servicos .mp-foto .foco-hair{object-position:54% 18%}
-#servicos .mp-foto .foco-noiva{object-position:54% 45%}
-#servicos .mp-texto{display:flex;flex-direction:column;gap:10px;padding:20px 22px 24px}
+/* Retrato 4:5 em todas as telas. A foto fica maior que o quadro e cada uma
+   desloca para o rosto ficar no meio da largura (e da altura, quando a foto
+   deixa); assim o rosto e o centro do cartao, nao o fundo. Valores por foto:
+   --w largura em % do quadro, --l e --t deslocamento. */
+#servicos .mp-foto{position:relative;width:100%;aspect-ratio:4/5;overflow:hidden;background:#140d10;margin:0}
+#servicos .mp-foto img{position:absolute;max-width:none;height:auto;width:var(--w,100%);left:var(--l,0);top:var(--t,0);
+  transition:transform .9s cubic-bezier(.2,.7,.2,1);transform-origin:50% 40%}
+#servicos .mp-foto .foco-social{--w:125%;--l:-17.5%;--t:0%}
+#servicos .mp-foto .foco-hair{--w:135%;--l:-22%;--t:0%}
+#servicos .mp-foto .foco-noiva{--w:140%;--l:-25.6%;--t:-4.5%}
+/* A base da foto se dissolve no fundo do cartao, sem linha de corte. */
+#servicos .mp-foto::after{content:"";position:absolute;inset:auto 0 0;height:34%;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(14,11,12,0),#0e0b0c)}
+@media(hover:hover){#servicos .mp-card:hover .mp-foto img{transform:scale(1.04)}}
+@media(prefers-reduced-motion:reduce){#servicos .mp-foto img{transition:none}}
+#servicos .mp-texto{position:relative;display:flex;flex-direction:column;gap:10px;padding:4px 24px 26px;margin-top:-28px}
 #servicos .service-name{font-size:clamp(25px,2.5vw,36px);line-height:1.15;letter-spacing:-.8px;font-weight:700}
 #servicos .mp-card p{color:#d8d1d4;font-size:15px;line-height:1.7;max-width:36ch}
 /* Um Agende so para os tres servicos, centrado embaixo dos cartoes. */
 #servicos .servicos-cta{display:flex;justify-content:center;margin-top:clamp(28px,3.4vw,44px)}
-@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px;max-width:400px;margin-inline:auto}#servicos .mp-foto{aspect-ratio:1}#servicos .mp-texto{padding:18px 18px 22px}#servicos .service-name{font-size:26px}}
+@media(max-width:850px){#servicos .makes-prices{grid-template-columns:1fr;gap:16px;max-width:360px;margin-inline:auto}#servicos .mp-texto{padding:6px 20px 24px}#servicos .service-name{font-size:26px}}
