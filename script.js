@@ -63,8 +63,8 @@
         const ramp = distance ** FALLOFF;
         const tilt = Math.min(ROTATE * ramp, 82) * Math.sign(offset);
         card.style.transform = `translateX(calc(-50% + ${(offset * pitch).toFixed(2)}px)) translateZ(${(-DEPTH * width * ramp).toFixed(2)}px) rotateY(${(-tilt).toFixed(2)}deg)`;
-        const edge = Math.max(0, count / 2 + 1 - distance);
-        card.style.opacity = String(Math.min(1, Math.max(0.6, 1 - FADE * distance * 0.8)) * Math.min(1, edge));
+        // Garante opacidade mínima de 20% mesmo nas bordas
+        card.style.opacity = String(Math.max(0.2, 1 - FADE * distance * (distance <= count / 2 ? 1 : 1.5)));
         card.style.zIndex = String(100 - Math.round(distance));
       });
     }
