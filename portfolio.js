@@ -31,14 +31,12 @@
     empty.hidden = filtradas.length > 0;
   }
   /* Trocar de filtro reorganiza a grade deslizando: cada foto que continua a
-     vista sai de onde estava e vai ate o lugar novo; as que chegam surgem. As
-     que ainda esperam a entrada ao rolar ficam com ela, sem animacao dupla. */
+     vista sai de onde estava e vai ate o lugar novo; as que chegam surgem. */
   function reorganizar(mudar) {
     if (calmo.matches) { mudar(); return; }
     const antes = new Map(visible.map(item => [item, item.getBoundingClientRect()]));
     mudar();
     for (const item of visible) {
-      if (grid.classList.contains('pf-anima') && !item.classList.contains('visto')) continue;
       const de = antes.get(item);
       if (!de) { item.animate([{opacity: 0, transform: 'scale(.94)'}, {opacity: 1, transform: 'none'}], {duration: 450, easing: curva}); continue; }
       const para = item.getBoundingClientRect(), dx = de.left - para.left, dy = de.top - para.top;
@@ -65,23 +63,6 @@
     });
   });
   filter('todos');
-
-  /* ---- entrada ao rolar ----
-     A partir do componente InView que o cliente mandou: a foto surge esmaecida,
-     menor e desfocada, e assenta em cascata, uma vez so. Sem JS ou com movimento
-     reduzido as fotos simplesmente estao la. */
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
-    grid.classList.add('pf-anima');
-    const olho = new IntersectionObserver(entradas => {
-      let k = 0;
-      entradas.filter(e => e.isIntersecting).forEach(e => {
-        e.target.style.setProperty('--k', String(k++));
-        e.target.classList.add('visto');
-        olho.unobserve(e.target);
-      });
-    }, {rootMargin:'0px 0px -12% 0px'});
-    items.forEach(item => olho.observe(item));
-  }
 
   /* ---- lightbox ---- */
   const dialog = $('#lightbox'), image = $('#lb-img');

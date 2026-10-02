@@ -83,14 +83,6 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
   .pf-filters button,.pf-item img{transition:none}
 }
 
-/* Entrada ao rolar (componente InView): opacidade, escala e desfoque, em
-   cascata de 90ms, como no prompt do cliente. */
-.pf-anima .pf-item{opacity:0;transform:scale(.8);filter:blur(10px);
-  transition:opacity .7s var(--ease),transform .7s var(--ease),filter .7s var(--ease);
-  transition-delay:calc(var(--k,0) * 90ms)}
-.pf-anima .pf-item.visto{opacity:1;transform:none;filter:none}
-/* No celular sem o desfoque: animado em cada foto, derrubava 1 em 20 quadros. */
-@media(max-width:850px),(pointer:coarse){.pf-anima .pf-item{filter:none;transition-property:opacity,transform}}
 /* No celular a foto do topo ocupa a largura toda, num recorte 4:5 que mostra
    a noiva e a Fran inteiras. A grade fica em tres colunas, como no desktop. */
 @media(max-width:620px){
@@ -103,7 +95,3 @@ html[data-theme] .pf-filters .glow-prata[aria-pressed="true"]{
   .pf-filters{flex-wrap:nowrap;gap:8px}
   .pf-filters button{padding:10px 13px;font-size:11px;letter-spacing:.07em}
 }
-@media(prefers-reduced-motion:reduce){
-  .pf-anima .pf-item{opacity:1;transform:none;filter:none;transition:none}
-}
-
